@@ -9,22 +9,10 @@ import SwiftUI
 
 struct NavBarView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    // when using buttons to switch to other tabs
+    // when using nav links to switch to other navbar tabs
     @State private var selectedTab: Int = 0
 
     var body: some View {
-        // if just signed up - go to onboarding
-        if authViewModel.isNewUser == true {
-//            OnboardingGenresView(onboardingViewModel: OnboardingViewModel())
-        // if already logged in go to home page
-        } else if authViewModel.userSession != nil && authViewModel.isNewUser == false {
-            navBar
-        } else {
-            LoginView()
-        }
-    }
-    
-    var navBar: some View {
         NavigationStack {
             TabView(selection: $selectedTab) {
                 HomeView(selectedTab: $selectedTab)

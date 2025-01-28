@@ -16,6 +16,7 @@ struct SignUpView: View {
     @StateObject var signUpViewModel: SignUpViewModel
     @FocusState private var focusedField: Field?  // to go between textfields
     @State private var showPassword: Bool = false
+//    @State private var showPasswordPrompt: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -32,58 +33,68 @@ struct SignUpView: View {
                 }
                 .padding(.bottom, 20)
                 
-                // textfields
-                VStack(alignment: .leading, spacing: 5) {
+                VStack {
                     // textfields
-                    ViewTemplates.signupTextField(placeholder: "Name", input: $signUpViewModel.name, isSecureField: false, prompt: signUpViewModel.namePrompt)
-                        .focused($focusedField, equals: .name)
-                        .onSubmit {
-                            focusedField = .email
-                        }
-                    
-                    ViewTemplates.signupTextField(placeholder: "Email", input: $signUpViewModel.email, isSecureField: false, prompt: signUpViewModel.emailPrompt)
-                        .focused($focusedField, equals: .email)
-                        .onSubmit {
-                            focusedField = .password
-                        }
-                    
-                    // password
-                    HStack {
-                        ViewTemplates.passwordSecureField(placeholder: "Password", input: $signUpViewModel.password, showPassword: $showPassword)
-                            .focused($focusedField, equals: .password)
+                    VStack(alignment: .leading, spacing: 5) {
+                        // textfields
+                        ViewTemplates.signupTextField(placeholder: "Name", input: $signUpViewModel.name, isSecureField: false, prompt: signUpViewModel.namePrompt)
+                            .focused($focusedField, equals: .name)
                             .onSubmit {
-                                focusedField = nil
+                                focusedField = .email
                             }
                         
-                        if !signUpViewModel.password.isEmpty {
-                            Button("SHOW") {
-                                // tap to show input entered
-                                showPassword.toggle()
-                                print("show button pressed")
+                        ViewTemplates.signupTextField(placeholder: "Email", input: $signUpViewModel.email, isSecureField: false, prompt: signUpViewModel.emailPrompt)
+                            .focused($focusedField, equals: .email)
+                            .onSubmit {
+                                focusedField = .password
                             }
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
+                        
+                        // password
+                        HStack {
+                            ViewTemplates.passwordSecureField(placeholder: "Password", input: $signUpViewModel.password, showPassword: $showPassword)
+                                .focused($focusedField, equals: .password)
+                                .onSubmit {
+                                    focusedField = nil
+                                }
+                                .onChange(of: signUpViewModel.password) {
+                                    // show password info when start typing
+                                    signUpViewModel.showPasswordPrompt = true
+                                }
+                            
+                            if !signUpViewModel.password.isEmpty {
+                                Button("SHOW") {
+                                    // tap to show input entered
+                                    showPassword.toggle()
+                                    print("show button pressed")
+                                }
+                                .foregroundStyle(.secondary)
+                                .font(.subheadline)
+                            }
                         }
-                    }
-                    Text(signUpViewModel.passwordPrompt)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                }  // vstack
-                .padding(.bottom, 10)
 
-                // sign up buttons
-                VStack {
-                    Button("Sign up with Email") {
+                        if signUpViewModel.showPasswordPrompt {
+                            Text("Password must be at least 6 characters and include an uppercase letter, number, and special character.")
+                                .foregroundStyle(signUpViewModel.passwordPromptColor)  // turns red if invalid
+                                .font(.footnote)
+                        }
+                    }  // vstack
+                    
+                    Button {
                         if signUpViewModel.isFormValid() {
                             print("All fields valid")
                             Task {
-                                try await authViewModel.signUp(email: signUpViewModel.email, password: signUpViewModel.password)
+                                // try create new user in Firebase
+                                try await authViewModel.signUp(name: signUpViewModel.name, email: signUpViewModel.email, password: signUpViewModel.password)
                             }
                         } else {
+                            // show any errors for invalid field inputs
                             signUpViewModel.showValidationErrors = true
+                            signUpViewModel.showPasswordPrompt = true
                         }
+                    } label: {
+                        Text("Sign up with email")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     // alert only for if email is already in use
                     .alert(isPresented: $authViewModel.isEmailInUse) {
                         Alert(
@@ -91,18 +102,25 @@ struct SignUpView: View {
                             message: Text("Please log in or use a different email.")
                         )
                     }
-                    
-                    Spacer()
-                    
-                    Button("Continue with Apple") {
+                }
+                
+                Spacer()
+                
+                // sign up buttons
+                VStack {
+                    Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    } label: {
+                        Text("Continue with Apple")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     
-                    Button("Continue with Google") {
+                    Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    } label: {
+                        Text("Continue with Google")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     .padding(.bottom, 20)
                     
                     // log in link

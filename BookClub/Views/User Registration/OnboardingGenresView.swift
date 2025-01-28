@@ -11,12 +11,14 @@ struct OnboardingGenresView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
     
     let topGenres: [String] = ["Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
-    let fictionGenres: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry", "Science-Fiction", "Short Stories", "Young Adult"]
-    let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment", "Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
+    let fictionGenres: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry"]
+    let extraFiction: [String] = ["Science-Fiction", "Short Stories", "Young Adult"]
+    let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment"]
+    let extraNonFiction: [String] = ["Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
     
     var body: some View {
         NavigationStack {
-            VStack {
+            VStack(spacing: 15) {
                 VStack(alignment: .leading, spacing: 5) {
                     Text("What are your favourite genres?")
                         .font(.title)
@@ -27,53 +29,46 @@ struct OnboardingGenresView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text("Top Genres")
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text("options here")
+                    TagView(tags: topGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text("Fiction")
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text("options here")
+                    TagView(tags: fictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
                     Button("View more...") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                        
                     }
+                    .font(.subheadline)
                     .foregroundStyle(.tint)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Spacer()
-                
-                VStack(alignment: .leading) {
+                VStack(alignment: .leading, spacing: 5) {
                     Text("Non-Fiction")
                         .font(.title2)
                         .fontWeight(.semibold)
-                    Text("options here")
+                    TagView(tags: nonFictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
                     Button("View more...") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                        
                     }
+                    .font(.subheadline)
                     .foregroundStyle(.tint)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
                 
                 Spacer()
                 
-                Group {
+                VStack(spacing: 15) {
                     NavigationLink(destination: OnboardingLocationView(onboardingViewModel: OnboardingViewModel(), signUpViewModel: SignUpViewModel())) {
                         Text("Next")
-                            .foregroundStyle(.tint)
+                            .onboardingButtonStyle()
                     }
                     // button disabled until choose genre
-//                    .disabled(onboardingViewModel.selectedGenres.isEmpty)
+                    .disabled(onboardingViewModel.selectedGenres.isEmpty)
                     
                     Text("You can update your preferences from your profile")
                         .foregroundStyle(.secondary)

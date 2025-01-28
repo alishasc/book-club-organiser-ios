@@ -9,6 +9,7 @@ import Foundation
 import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
+import MapKit
 
 @MainActor
 class AuthViewModel: ObservableObject {
@@ -19,7 +20,7 @@ class AuthViewModel: ObservableObject {
     @Published var invalidCredentialPrompt = ""
     @Published var isEmailInUse = false  // return if email already in use when sign up
     @Published var isNewUser: Bool = false  // go to onboarding if just signed up
-
+    
     init() {
         self.userSession = Auth.auth().currentUser
         // if logged in
@@ -35,7 +36,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func signUp(email: String, password: String) async throws {
+    func signUp(name: String, email: String, password: String) async throws {
         print("sign up...")
         
         do {
@@ -43,11 +44,53 @@ class AuthViewModel: ObservableObject {
             self.userSession = result.user
             isNewUser = true  // flag to trigger onboarding
             print("sign up successful")
+            
+            guard let id = Auth.auth().currentUser?.uid else {
+                print("couldn't get the uid to add new user")
+                return
+            }
+            // create instance of Firestore
+            let db = Firestore.firestore()
+            // try save sign up details to new document
+            do {
+                try await db.collection("User").document(id).setData([
+                    "id": id,
+                    "name": name,
+                    "email": email,
+                ])
+                
+                print("successfully added new user details to Firestore")
+            } catch {
+                print("Error writing sign up info to Firestore: \(error.localizedDescription)")
+            }
         } catch {
             print("Failed to create user: \(error.localizedDescription)")
             if error.localizedDescription == "The email address is already in use by another account." {
                 isEmailInUse = true
             }
+        }
+    }
+    
+    func saveOnboardingDetails(favouriteGenres: [String], location: MKMapItem) async throws {
+        do {
+            guard let id = Auth.auth().currentUser?.uid else {
+                print("couldn't get the uid to save onboarding details")
+                return
+            }
+            
+            // create instance of Firestore
+            let db = Firestore.firestore()
+            // convert location to GeoPoint
+//            let location = GeoPoint(latitude: <#T##Double#>, longitude: <#T##Double#>)
+            // try save sign up details to new document
+            try await db.collection("User").document(id).setData([
+                "favouriteGenres": [favouriteGenres],
+                "location": location,
+            ])
+            
+            print("successfully saved onboarding details to Firestore")
+        } catch {
+            print("Failed to save onboarding info: \(error.localizedDescription)")
         }
     }
     
@@ -81,14 +124,14 @@ class AuthViewModel: ObservableObject {
         print("Fetch user...")
         
         // get uid created when user signed up
-        guard let uid = Auth.auth().currentUser?.uid else {
+        guard let id = Auth.auth().currentUser?.uid else {
             print("no user signed in")
             return
         }
-        print("uid: \(uid)")
+        print("id: \(id)")
         
         do {
-            let snapshot = try? await Firestore.firestore().collection("User").document(uid).getDocument()
+            let snapshot = try? await Firestore.firestore().collection("User").document(id).getDocument()
             self.currentUser = try snapshot?.data(as: User.self)
             
             print("Current user is: \(String(describing: self.currentUser))")
@@ -98,28 +141,28 @@ class AuthViewModel: ObservableObject {
     }
     
     // create User after onboarding
-    func addNewUser(name: String, email: String, favouriteGenres: [String], location: GeoPoint?) {
-        print("add new user...")
-        
-        // use the same uid as what was generated during sign up
-        guard let uid = Auth.auth().currentUser?.uid else {
-            print("couldn't get the uid to add new user")
-            return
-        }
-        print("new user uid: \(uid)")
-        
-        // create instance of Firestore
-        let db = Firestore.firestore()
-        // create instance of User to create new document in Firebase
-        let user = User(id: uid, name: name, email: email, favouriteGenres: favouriteGenres, location: location)
-        
-        do {
-            // try make new document
-            try db.collection("User").document(user.id).setData(from: user)
-        } catch let error {
-            print("Error writing new user to Firestore: \(error.localizedDescription)")
-        }
-    }
+    //    func addNewUser(name: String, email: String, favouriteGenres: [String], location: GeoPoint?) {
+    //        print("add new user...")
+    //
+    //        // use the same uid as what was generated during sign up
+    //        guard let uid = Auth.auth().currentUser?.uid else {
+    //            print("couldn't get the uid to add new user")
+    //            return
+    //        }
+    //        print("new user uid: \(uid)")
+    //
+    //        // create instance of Firestore
+    //        let db = Firestore.firestore()
+    //        // create instance of User to create new document in Firebase
+    //        let user = User(id: uid, name: name, email: email, favouriteGenres: favouriteGenres, location: location)
+    //
+    //        do {
+    //            // try make new document
+    //            try db.collection("User").document(user.id).setData(from: user)
+    //        } catch let error {
+    //            print("Error writing new user to Firestore: \(error.localizedDescription)")
+    //        }
+    //    }
     
     // check first version of code
     func logOut() {
@@ -128,6 +171,8 @@ class AuthViewModel: ObservableObject {
         let firebaseAuth = Auth.auth()
         do {
             try firebaseAuth.signOut()
+            userSession = nil
+            currentUser = nil
             print("sign out successful")
         } catch let signOutError as NSError {
             print("Error signing out: %@", signOutError)

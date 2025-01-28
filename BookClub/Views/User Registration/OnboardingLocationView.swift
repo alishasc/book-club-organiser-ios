@@ -14,7 +14,7 @@ struct OnboardingLocationView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
     @StateObject var signUpViewModel: SignUpViewModel
     @State private var searchInput: String = ""  // in textfield
-    @State private var isLocationSelected: Bool = false  // true when tap search result from list
+    @State private var isLocationSelected: Bool = false  // changes when tap search result
     
     var body: some View {
         NavigationStack {
@@ -54,10 +54,11 @@ struct OnboardingLocationView: View {
                             ForEach(onboardingViewModel.searchResults, id: \.self) { location in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    // highlight tapped option only
-                                        .foregroundStyle(location == onboardingViewModel.selectedLocation ? .orange : .clear)
+                                        // highlight tapped option only
+                                        .foregroundStyle(location == onboardingViewModel.selectedLocation ? .accent : .clear)
                                     VStack(alignment: .leading) {
                                         Text("\(location.placemark.title ?? "")")
+                                            .foregroundStyle(location == onboardingViewModel.selectedLocation ? .white : .black)
                                             .lineLimit(2)
                                     }
                                     .padding()
@@ -91,25 +92,18 @@ struct OnboardingLocationView: View {
                 Spacer()
                 
                 // buttons
-                Group {
-                    NavigationLink(destination: NavBarView()) {
-                        Button("Done") {
-                            // call function to save location to User - add to firebase!
-//                            authViewModel.addNewUser(name: signUpViewModel.name, email: signUpViewModel.email, favouriteGenres: onboardingViewModel.selectedGenres, location: <#T##GeoPoint?#>)
-                        }
-                        .fontWeight(.medium)
-                        .padding(.vertical, 10)  // inside button
-                        .background(
-                            Capsule()
-                                .frame(minWidth: 240)
-                                .foregroundStyle(.yellow)
-                        )
-                        .padding(.bottom, 10)  // under button
-                    }
-                    .disabled(onboardingViewModel.selectedLocation == nil)
-                    
+                VStack(spacing: 15) {
                     NavigationLink("Skip for now", destination: NavBarView())
                         .font(.subheadline)
+                    
+                    NavigationLink(destination: NavBarView()) {
+                        Button("Done") {
+                            // call function to save genres and location to firebase!
+                            //
+                        }
+                        .onboardingButtonStyle()
+                    }
+                    .disabled(onboardingViewModel.selectedLocation == nil)
                     
                     Text("You can update your preferences from your profile")
                         .font(.footnote)

@@ -8,12 +8,14 @@
 // validation for when use tries to sign up
 
 import Foundation
+import SwiftUI
 
 class SignUpViewModel: ObservableObject {
     @Published var name: String = ""
     @Published var email: String = ""
     @Published var password: String = ""
     @Published var showValidationErrors: Bool = false  // changes to true after pressing sign up
+    @Published var showPasswordPrompt: Bool = false
 
     var namePrompt: String {
         if showValidationErrors && name.isEmpty {
@@ -30,12 +32,12 @@ class SignUpViewModel: ObservableObject {
             return ""
         }
     }
-    
-    var passwordPrompt: String {
+
+    var passwordPromptColor: Color {
         if showValidationErrors && !isPasswordValid() {
-            return "Your password must be at least 6 characters and include at least one uppercase letter, one number, and one special character (e.g. !@#$%^&*)"
+            return .red
         } else {
-            return ""
+            return .gray
         }
     }
     

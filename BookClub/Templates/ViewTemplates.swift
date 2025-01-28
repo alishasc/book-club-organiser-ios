@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
+// ref: https://github.com/happyiosdeveloper/swiftui-tagview?tab=readme-ov-file
+
 import SwiftUI
 
 class ViewTemplates {
@@ -74,11 +76,20 @@ class ViewTemplates {
             content
                 .foregroundStyle(.white)  // text colour
                 .padding(.vertical, 10)
-                .background(
-                    Capsule()
-                        .frame(minWidth: 340)
-                        .foregroundStyle(.tint)
-                )
+                .frame(minWidth: 340)
+                .background(.tint)
+                .clipShape(Capsule())
+        }
+    }
+    
+    struct onboardingButtonModifier: ViewModifier {
+        func body(content: Content) -> some View {
+            content
+                .foregroundStyle(.white)  // text colour
+                .padding(.vertical, 10)
+                .frame(minWidth: 240)
+                .background(.tint)
+                .clipShape(Capsule())
         }
     }
 }
@@ -86,5 +97,11 @@ class ViewTemplates {
 extension View {
     func loginSignupButtonStyle() -> some View {
         modifier(ViewTemplates.loginSignupButtonModifier())
+    }
+}
+
+extension View {
+    func onboardingButtonStyle() -> some View {
+        modifier(ViewTemplates.onboardingButtonModifier())
     }
 }

@@ -19,7 +19,7 @@ struct BookClubApp: App {
     
     var body: some Scene {
         WindowGroup {
-            NavBarView()
+            ContentView()
                 .environmentObject(authViewModel)
         }
     }

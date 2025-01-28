@@ -84,7 +84,7 @@ struct LoginView: View {
                 
                 // login buttons
                 VStack {
-                    Button("Log In with Email") {
+                    Button {
                         print("login button tapped")
                         
                         if !email.isEmpty && !password.isEmpty {
@@ -92,20 +92,26 @@ struct LoginView: View {
                                 try await authViewModel.logIn(email: email, password: password)
                             }
                         }
+                    } label: {
+                        Text("Log in with email")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     
                     Spacer()
                     
-                    Button("Continue with Apple") {
+                    Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    } label: {
+                        Text("Continue with Apple")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     
-                    Button("Continue with Google") {
+                    Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    } label: {
+                        Text("Continue with Google")
+                            .loginSignupButtonStyle()
                     }
-                    .loginSignupButtonStyle()
                     .padding(.bottom, 20)
                     
                     HStack(spacing: 5) {
@@ -127,4 +133,5 @@ struct LoginView: View {
 
 #Preview {
     LoginView()
+        .environmentObject(AuthViewModel())
 }
