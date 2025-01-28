@@ -1,0 +1,26 @@
+//
+//  BookClubApp.swift
+//  BookClub
+//
+//  Created by Alisha Carrington on 26/01/2025.
+//
+
+import SwiftUI
+import FirebaseCore
+
+@main
+struct BookClubApp: App {
+    @StateObject var authViewModel = AuthViewModel()
+    
+    init() {
+        FirebaseApp.configure()
+        print("firebase configured")
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            NavBarView()
+                .environmentObject(authViewModel)
+        }
+    }
+}
