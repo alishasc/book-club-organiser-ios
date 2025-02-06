@@ -77,7 +77,7 @@ struct UserProfileView: View {
                     Text("Location")
                         .fontWeight(.semibold)
                         .padding(.bottom, 5)
-                    Text("location here")
+                    Text("\(authViewModel.currentUser?.location ?? "No location selected")")
                         .font(.subheadline)
                         .padding(.bottom, -5)
                     Divider()

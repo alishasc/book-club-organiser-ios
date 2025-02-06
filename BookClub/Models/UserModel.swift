@@ -13,5 +13,5 @@ struct User: Identifiable, Codable {
     let name: String
     let email: String
     let favouriteGenres: [String]
-    let location: GeoPoint?  // firebase datatype
+    let location: String
 }

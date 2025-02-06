@@ -102,7 +102,7 @@ struct OnboardingLocationView: View {
                         print("done button pressed")
                         
                         Task {
-                            if let selectedLocation = onboardingViewModel.selectedLocation {
+                            if let selectedLocation = onboardingViewModel.selectedLocation?.placemark.title {
                                 try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: selectedLocation)
                                 
                                 navigateToNavBar = true

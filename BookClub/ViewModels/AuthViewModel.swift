@@ -71,7 +71,7 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func saveOnboardingDetails(favouriteGenres: [String], location: MKMapItem) async throws {
+    func saveOnboardingDetails(favouriteGenres: [String], location: String) async throws {
         do {
             guard let id = Auth.auth().currentUser?.uid else {
                 print("couldn't get the uid to save onboarding details")
@@ -83,12 +83,9 @@ class AuthViewModel: ObservableObject {
             
             let userRef = db.collection("User").document(id)
             
-            // convert location to GeoPoint
-            let geoPoint = GeoPoint(latitude: location.placemark.coordinate.latitude, longitude: location.placemark.coordinate.longitude)
-            
             try await userRef.setData([
                 "favouriteGenres": favouriteGenres,
-                "location": geoPoint
+                "location": location
             ], merge: true)
             
             print("Successfully saved onboarding details to Firestore")
