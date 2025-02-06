@@ -8,11 +8,39 @@
 import SwiftUI
 
 struct EventDatesView: View {
+    var dateStr: String
+    var dateInt: Int
+    
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        ZStack {
+            RoundedRectangle(cornerRadius: 10)
+                .frame(width: 42, height: 75)
+                .foregroundStyle(.quinary)
+            
+            VStack {
+                Group {
+                    Text("\(dateStr)")
+                    Text("\(dateInt)")
+                }
+                .font(.subheadline)
+                .fontWeight(.medium)
+                
+                HStack(spacing: 3) {
+                    Circle()
+                        .frame(width: 10, height: 10)
+                        .foregroundStyle(.customYellow)
+                    Circle()
+                        .frame(width: 10, height: 10)
+                        .foregroundStyle(.customGreen)
+                    Circle()
+                        .frame(width: 10, height: 10)
+                        .foregroundStyle(.customPink)
+                }
+            }
+        }
     }
 }
 
 #Preview {
-    EventDatesView()
+    EventDatesView(dateStr: "Tue", dateInt: 2)
 }

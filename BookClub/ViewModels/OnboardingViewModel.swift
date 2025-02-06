@@ -13,16 +13,24 @@ import FirebaseAuth
 @MainActor
 class OnboardingViewModel: ObservableObject {
     @Published var selectedGenres: [String] = []
+    @Published var genreCount: Int = 0
     @Published var searchResults: [MKMapItem] = []
-    @Published var locationPrompt: String = ""  // error message if invalid input
+    @Published var locationErrorPrompt: String = ""  // error message if invalid input
     @Published var selectedLocation: MKMapItem?
+    
+    // tagview genres
+    let topGenres: [String] = ["Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
+    let fictionGenres: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry"]
+    let extraFiction: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry", "Science-Fiction", "Short Stories", "Young Adult"]
+    let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment"]
+    let extraNonFiction: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment", "Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
     
     func locationFieldValidation(query: String) async throws {
         // check whether search is valid before calling getSearchResults()
         if query.isEmpty {
             self.searchResults = []  // reset array
             print("empty string")
-            locationPrompt = ""
+            locationErrorPrompt = ""
             return
         } else {
             // remove trailing whitespace
@@ -40,7 +48,7 @@ class OnboardingViewModel: ObservableObject {
                 // change this
                 self.searchResults = []
                 print("invalid input")
-                locationPrompt = "No search results found. Please try again"
+                locationErrorPrompt = "No search results found. Please try again"
                 return
             }
         }
@@ -67,7 +75,22 @@ class OnboardingViewModel: ObservableObject {
         } else {
             print("invalid search")
             self.searchResults = []  // don't show any search results in list view
-            locationPrompt = "Location not found. Please try again."
+            locationErrorPrompt = "Location not found. Please try again."
+        }
+    }
+    
+    // select/deselect genres in tagviews
+    func selectGenre(genre: String, isSelected: Bool) {
+        if isSelected {
+            if genreCount < 5 {
+                selectedGenres.append(genre)
+                genreCount += 1
+            }
+        } else {
+            if let selectedGenre = selectedGenres.firstIndex(of: genre) {
+                selectedGenres.remove(at: selectedGenre)
+                genreCount -= 1
+            }
         }
     }
 }

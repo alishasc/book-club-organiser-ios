@@ -25,11 +25,11 @@ struct MessagesView: View {
             
             Spacer()
             
-//            ContentUnavailableView {
-//                /*@START_MENU_TOKEN@*/Label("No Mail", systemImage: "tray.fill")/*@END_MENU_TOKEN@*/
-//            } description: {
-//                /*@START_MENU_TOKEN@*/Text("New mails you receive will appear here.")/*@END_MENU_TOKEN@*/
-//            }
+            ContentUnavailableView {
+                Label("No Messages", systemImage: "bubble.fill")
+            } description: {
+                Text("New messages you receive will appear here.")
+            }
         }
         .padding()
     }

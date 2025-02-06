@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct NavBarView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
+//    @EnvironmentObject var authViewModel: AuthViewModel
     // when using nav links to switch to other navbar tabs
     @State private var selectedTab: Int = 0
 

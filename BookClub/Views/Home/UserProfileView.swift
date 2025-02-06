@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct UserProfileView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel
+    var authViewModel: AuthViewModel
     
     var body: some View {
         VStack(spacing: 30) {
@@ -21,13 +21,14 @@ struct UserProfileView: View {
             
             // personal details
             VStack {
+                // profile picture
                 Circle()
                     .frame(width: 100, height: 100)
                     .foregroundStyle(.quinary)
-                Text("Name")
+                Text(authViewModel.currentUser?.name ?? "")
                     .font(.title)
                     .fontWeight(.semibold)
-                Text("email@example.com")
+                Text(authViewModel.currentUser?.email ?? "")
                     .fontWeight(.medium)
             }
             
@@ -60,13 +61,14 @@ struct UserProfileView: View {
                 }
             }
             
-            // info from onboarding
+            // genres and location
             VStack(spacing: 15) {
                 VStack(alignment: .leading) {
                     Text("Favourite Genres")
                         .fontWeight(.semibold)
                         .padding(.bottom, 5)
-                    Text("Genres listed here")
+                    
+                    Text(authViewModel.currentUser?.favouriteGenres.joined(separator: ", ") ?? "No genres selected")
                         .font(.subheadline)
                         .padding(.bottom, -5)
                     Divider()
@@ -75,7 +77,7 @@ struct UserProfileView: View {
                     Text("Location")
                         .fontWeight(.semibold)
                         .padding(.bottom, 5)
-                    Text("Chosen location here")
+                    Text("location here")
                         .font(.subheadline)
                         .padding(.bottom, -5)
                     Divider()
@@ -108,5 +110,5 @@ struct UserProfileView: View {
 }
 
 #Preview {
-    UserProfileView()
+    UserProfileView(authViewModel: AuthViewModel())
 }

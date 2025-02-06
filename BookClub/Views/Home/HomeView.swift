@@ -8,17 +8,18 @@
 import SwiftUI
 
 struct HomeView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel  // to get user info?
     @Binding var selectedTab: Int  // from NavBarView()
 
     var body: some View {
         VStack(spacing: 20) {
             // header
             HStack(spacing: 15) {
-                Text("Hello User")
+                Text("Hello \(authViewModel.currentUser?.name ?? "")")
                     .font(.largeTitle).bold()
                 Spacer()
                 // profile page
-                NavigationLink(destination: UserProfileView()) {
+                NavigationLink(destination: UserProfileView(authViewModel: authViewModel)) {
                     Label("User Profile", systemImage: "person.fill")
                         .labelStyle(.iconOnly)
                         .font(.system(size: 24))
@@ -67,9 +68,7 @@ struct HomeView: View {
                 }
                 // list view
                 ScrollView(.vertical, showsIndicators: false) {
-                    YourEventsListView()
-                    YourEventsListView()
-                    YourEventsListView()
+                    YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Waterstones Piccadilly", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
                 }
             }
         }

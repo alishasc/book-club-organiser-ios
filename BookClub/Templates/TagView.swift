@@ -28,7 +28,6 @@ struct TagView: View {
     @State private var totalHeight = CGFloat.zero       // << variant for ScrollView/List //    = CGFloat.infinity   // << variant for VStack
     
     @StateObject var onboardingViewModel: OnboardingViewModel
-    @State private var genreCount: Int = 0
     
     var body: some View {
         VStack {
@@ -68,23 +67,17 @@ struct TagView: View {
                         return result
                     })
                     .onTapGesture {
-                        tags[index].isSelected.toggle()
-                        
-                        // if genre has been selected
-                        if tags[index].isSelected {
-                            // add selection to array - can select up to 5
-                            if self.genreCount < 5 {
-                                onboardingViewModel.selectedGenres.append(tags[index].title)
-                                self.genreCount += 1
-                            }
-                        } else {
-                            // if untap the genre - remove it
-                            if let selected = self.onboardingViewModel.selectedGenres.firstIndex(of: tags[index].title) {
-                                onboardingViewModel.selectedGenres.remove(at: selected)
-                                self.genreCount -= 1
-                            }
+                        // if unselected and count < 5
+                        if !tags[index].isSelected && onboardingViewModel.genreCount < 5 {
+                            tags[index].isSelected.toggle()
+                        } else if tags[index].isSelected {
+                            // unselect if already selected
+                            tags[index].isSelected.toggle()
                         }
+                        
+                        onboardingViewModel.selectGenre(genre: tags[index].title, isSelected: tags[index].isSelected)
                         print(onboardingViewModel.selectedGenres)
+                        print(onboardingViewModel.genreCount)
                     }
             }
         }
@@ -100,7 +93,6 @@ struct TagView: View {
             .background(isSelected ? .accent : .quaternaryHex)
             .frame(height: 30)
             .cornerRadius(10)
-        //            .overlay(Capsule().stroke(.accent, lineWidth: 1))
     }
     
     private func viewHeightReader(_ binding: Binding<CGFloat>) -> some View {

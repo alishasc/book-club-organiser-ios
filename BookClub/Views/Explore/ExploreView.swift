@@ -14,7 +14,7 @@ struct ExploreView: View {
     @State private var searchInput: String = ""
     
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Explore")
                     .font(.largeTitle).bold()

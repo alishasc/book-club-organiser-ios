@@ -15,6 +15,7 @@ struct OnboardingLocationView: View {
     @StateObject var signUpViewModel: SignUpViewModel
     @State private var searchInput: String = ""  // in textfield
     @State private var isLocationSelected: Bool = false  // changes when tap search result
+    @State private var navigateToNavBar: Bool = false
     
     var body: some View {
         NavigationStack {
@@ -54,7 +55,7 @@ struct OnboardingLocationView: View {
                             ForEach(onboardingViewModel.searchResults, id: \.self) { location in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        // highlight tapped option only
+                                    // highlight tapped option only
                                         .foregroundStyle(location == onboardingViewModel.selectedLocation ? .accent : .clear)
                                     VStack(alignment: .leading) {
                                         Text("\(location.placemark.title ?? "")")
@@ -83,7 +84,7 @@ struct OnboardingLocationView: View {
                         .listStyle(.plain)
                     } else {
                         // invalid/empty input
-                        Text(onboardingViewModel.locationPrompt)
+                        Text(onboardingViewModel.locationErrorPrompt)
                             .padding(.top, 20)
                             .foregroundStyle(.secondary)
                     }
@@ -93,28 +94,37 @@ struct OnboardingLocationView: View {
                 
                 // buttons
                 VStack(spacing: 15) {
+                    // call saveOnboardingDetails function here as well
                     NavigationLink("Skip for now", destination: NavBarView())
                         .font(.subheadline)
                     
-                    NavigationLink(destination: NavBarView()) {
-                        Button("Done") {
-                            // call function to save genres and location to firebase!
-                            //
+                    Button("Done") {
+                        print("done button pressed")
+                        
+                        Task {
+                            if let selectedLocation = onboardingViewModel.selectedLocation {
+                                try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: selectedLocation)
+                                
+                                navigateToNavBar = true
+                            }
                         }
-                        .onboardingButtonStyle()
                     }
+                    .onboardingButtonStyle()
                     .disabled(onboardingViewModel.selectedLocation == nil)
                     
                     Text("You can update your preferences from your profile")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+                
+                NavigationLink(destination: NavBarView(), isActive: $navigateToNavBar) {
+                    EmptyView()
+                }
             }
             .padding()
         }
     }
 }
-
 
 #Preview {
     OnboardingLocationView(onboardingViewModel: OnboardingViewModel(), signUpViewModel: SignUpViewModel())

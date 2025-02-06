@@ -9,13 +9,9 @@ import SwiftUI
 
 struct OnboardingGenresView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
-    
-    let topGenres: [String] = ["Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
-    let fictionGenres: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry"]
-    let extraFiction: [String] = ["Science-Fiction", "Short Stories", "Young Adult"]
-    let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment"]
-    let extraNonFiction: [String] = ["Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
-    
+    @State private var showFiction: Bool = false
+    @State private var showNonFiction: Bool = false
+
     var body: some View {
         NavigationStack {
             VStack(spacing: 15) {
@@ -29,41 +25,58 @@ struct OnboardingGenresView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Top Genres")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    TagView(tags: topGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
-                }
-                
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Fiction")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    TagView(tags: fictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
-                    Button("View more...") {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 10) {
+                        // top genres
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Top Genres")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                            TagView(tags: onboardingViewModel.topGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
+                        }
                         
-                    }
-                    .font(.subheadline)
-                    .foregroundStyle(.tint)
-                }
-                
-                VStack(alignment: .leading, spacing: 5) {
-                    Text("Non-Fiction")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    TagView(tags: nonFictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: OnboardingViewModel())
-                    Button("View more...") {
+                        // fiction
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Fiction")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+//                            if !showFiction {
+//                                TagView(tags: onboardingViewModel.fictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
+//                                Button("View more...") {
+//                                    withAnimation(.easeIn) {
+//                                        showFiction = true
+//                                    }
+//                                }
+//                                .font(.subheadline)
+//                                .foregroundStyle(.tint)
+//                            } else {
+                                TagView(tags: onboardingViewModel.extraFiction.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
+//                            }
+                        }
                         
+                        // non-fiction
+                        VStack(alignment: .leading, spacing: 5) {
+                            Text("Non-Fiction")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+//                            if !showNonFiction {
+//                                TagView(tags: onboardingViewModel.nonFictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
+//                                Button("View more...") {
+//                                    withAnimation(.easeIn) {
+//                                        showNonFiction = true
+//                                    }
+//                                }
+//                                .font(.subheadline)
+//                                .foregroundStyle(.tint)
+//                            } else {
+                                TagView(tags: onboardingViewModel.extraNonFiction.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
+//                            }
+                        }
                     }
-                    .font(.subheadline)
-                    .foregroundStyle(.tint)
                 }
-                
-                Spacer()
                 
                 VStack(spacing: 15) {
-                    NavigationLink(destination: OnboardingLocationView(onboardingViewModel: OnboardingViewModel(), signUpViewModel: SignUpViewModel())) {
+                    NavigationLink(destination: OnboardingLocationView(onboardingViewModel: onboardingViewModel, signUpViewModel: SignUpViewModel())) {
                         Text("Next")
                             .onboardingButtonStyle()
                     }
