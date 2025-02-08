@@ -151,6 +151,8 @@ class AuthViewModel: ObservableObject {
             userSession = nil
             currentUser = nil
             isNewUser = false
+            invalidEmailPrompt = ""
+            invalidCredentialPrompt = ""
             print("sign out successful")
         } catch let signOutError as NSError {
             print("Error signing out: %@", signOutError)

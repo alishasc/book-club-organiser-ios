@@ -32,9 +32,9 @@ struct EventDatesView: View {
                     Circle()
                         .frame(width: 10, height: 10)
                         .foregroundStyle(.customGreen)
-                    Circle()
-                        .frame(width: 10, height: 10)
-                        .foregroundStyle(.customPink)
+//                    Circle()
+//                        .frame(width: 10, height: 10)
+//                        .foregroundStyle(.customPink)
                 }
             }
         }

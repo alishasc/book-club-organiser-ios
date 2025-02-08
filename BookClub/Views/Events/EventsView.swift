@@ -32,19 +32,19 @@ struct EventsView: View {
                             selectedFilter = 1
                         }
                         .tag(1)
-                        .tint(selectedFilter == 1 ? .accent : .secondary)
+                        .tint(selectedFilter == 1 ? .customYellow : .secondary)
                         
                         Button("Online") {
                             selectedFilter = 2
                         }
                         .tag(2)
-                        .tint(selectedFilter == 2 ? .accent : .secondary)
+                        .tint(selectedFilter == 2 ? .customGreen : .secondary)
                         
                         Button("Created Events") {
                             selectedFilter = 3
                         }
                         .tag(3)
-                        .tint(selectedFilter == 3 ? .accent : .secondary)
+                        .tint(selectedFilter == 3 ? .customPink : .secondary)
                         
                         Button {
                             selectedFilter = 4

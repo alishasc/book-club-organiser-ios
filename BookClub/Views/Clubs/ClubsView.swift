@@ -23,7 +23,7 @@ struct ClubsView: View {
                         .font(.largeTitle).bold()
                     Spacer()
                     // make new club
-                    NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
+                    NavigationLink(destination: CreateClubView()) {
                         Label("Create new club", systemImage: "plus")
                             .labelStyle(.iconOnly)
                             .font(.system(size: 24))
