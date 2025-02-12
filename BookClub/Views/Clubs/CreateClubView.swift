@@ -8,11 +8,23 @@
 import SwiftUI
 
 struct CreateClubView: View {
-    @State private var clubName: String = ""
+    let genreChoices: [String] = ["Art & Design", "Biography", "Business", "Children's Fiction", "Classics", "Contemporary", "Education", "Fantasy", "Food", "Graphic Novels", "Historical Fiction", "History", "Horror", "Humour", "LGBTQ+", "Mystery", "Music", "Myths & Legends", "Nature & Environment", "Personal Growth", "Poetry", "Politics", "Psychology", "Religion & Spirituality", "Romance", "Science", "Science-Fiction", "Short Stories", "Sports", "Technology", "Thriller", "Travel", "True Crime", "Wellness", "Young Adult"]
+    let meetingTypeChoices: [String] = ["Online", "In-Person"]
+    
+    // textfields
+    enum Field: Hashable {
+        case clubName, description
+    }
+    
+    @StateObject var bookClubViewModel: BookClubViewModel
+    @FocusState private var focusedField: Field?  // to navigate between textfields
+    @State private var name: String = ""
     @State private var description: String = ""
-    @State private var genre: [String] = []
-    @State private var location: String = ""
-    @State private var isClubPublic: Bool = false
+    @State private var wordCount: Int = 0
+    @State private var genre: String = "Art & Design"
+    @State private var meetingType: String = "Online"
+    @State private var isPublic: Bool = false
+    let creationDate: Date = Date().addingTimeInterval(0)
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -34,22 +46,63 @@ struct CreateClubView: View {
                     }
                 }
                 
-                ViewTemplates.loginTextField(placeholder: "Club name", input: $clubName, isSecureField: false)
-                ViewTemplates.loginTextField(placeholder: "Description", input: $description, isSecureField: false)
+                ViewTemplates.textField(placeholder: "Club name", input: $name, isSecureField: false)
+                    .focused($focusedField, equals: .clubName)
+                    .onSubmit {
+                        focusedField = .description
+                    }
                 
-                Text("Genre")
-                    .fontWeight(.medium)
+                // change submit label do 'done'
+                ViewTemplates.textField(placeholder: "Description", input: $description, isSecureField: false)
+                    .focused($focusedField, equals: .description)
+                    .onSubmit {
+                        focusedField = nil
+                    }
+                    .onChange(of: description) {
+                        wordCount = getWordCount(str: description)
+                        
+                        if wordCount == 41 {
+                            // can't add more than 40 words
+                            description.removeLast()
+                        }
+                    }
                 
-                Text("Where will your club meet?")
-                    .fontWeight(.medium)
+                HStack {
+                    Spacer()
+                    Text("\(wordCount)/40")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                
+                HStack {
+                    Text("What genre best describes your club?")
+                        .fontWeight(.medium)
+                    Spacer()
+                    Picker("", selection: $genre) {
+                        ForEach(genreChoices, id: \.self) {
+                            Text($0)
+                        }
+                    }
+                    .pickerStyle(.navigationLink)
+                }
+                
+                HStack {
+                    Text("Where will your club meet?")
+                        .fontWeight(.medium)
+                    Spacer()
+                    Picker("Where will your club meet?", selection: $meetingType) {
+                        ForEach(meetingTypeChoices, id: \.self) {
+                            Text($0)
+                        }
+                    }
+                    .offset(x: 10)
+                }
             }
             .padding(.bottom, 15)
             
-            VStack(alignment: .leading) {
-                Toggle(isOn: $isClubPublic) {
-                    Text("Make club public")
-                        .fontWeight(.medium)
-                }
+            Toggle(isOn: $isPublic) {
+                Text("Make club public")
+                    .fontWeight(.medium)
                 Text("Making your club public allows anyone to join.")
                     .font(.subheadline)
             }
@@ -64,14 +117,24 @@ struct CreateClubView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
-                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    Task {
+                        try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: creationDate)
+                    }
                 }
-                .disabled(true)  // enable when form filled
+                .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
             }
         }
     }
 }
 
+// ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
+func getWordCount(str: String) -> Int {
+    let chararacterSet = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+    let components = str.components(separatedBy: chararacterSet)
+    let words = components.filter { !$0.isEmpty }
+    return words.count
+}
+
 #Preview {
-    CreateClubView()
+    CreateClubView(bookClubViewModel: BookClubViewModel())
 }

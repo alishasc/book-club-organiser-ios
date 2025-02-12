@@ -23,8 +23,12 @@ struct SignUpView: View {
             VStack {
                 // image and title
                 VStack(spacing: 20) {
-                    Rectangle()
-                        .foregroundColor(.gray)
+//                    Rectangle()
+//                        .foregroundColor(.gray)
+//                        .frame(width: 100, height: 100)
+//                        .cornerRadius(10)
+                    Image("logo")
+                        .resizable()
                         .frame(width: 100, height: 100)
                         .cornerRadius(10)
                     Text("Create Account")

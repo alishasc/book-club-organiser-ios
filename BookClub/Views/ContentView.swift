@@ -20,6 +20,8 @@ struct ContentView: View {
         } else {
             LoginView()
         }
+        
+//        CreateClubView(bookClubViewModel: BookClubViewModel())
     }
 }
 

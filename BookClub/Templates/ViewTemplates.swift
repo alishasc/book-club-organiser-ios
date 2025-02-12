@@ -10,7 +10,7 @@
 import SwiftUI
 
 class ViewTemplates {
-    static func loginTextField(placeholder: String, input: Binding<String>, isSecureField: Bool) -> some View {
+    static func textField(placeholder: String, input: Binding<String>, isSecureField: Bool) -> some View {
         VStack(alignment: .leading) {
             Text(placeholder)
                 .fontWeight(.medium)

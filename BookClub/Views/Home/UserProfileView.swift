@@ -77,9 +77,18 @@ struct UserProfileView: View {
                     Text("Location")
                         .fontWeight(.semibold)
                         .padding(.bottom, 5)
-                    Text("\(authViewModel.currentUser?.location ?? "No location selected")")
-                        .font(.subheadline)
-                        .padding(.bottom, -5)
+                    if let location = authViewModel.currentUser?.location {
+                        // if user didn't select a location when signed up
+                        if location == "" {
+                            Text("No location selected")
+                                .font(.subheadline)
+                                .padding(.bottom, -5)
+                        } else {
+                            Text(location)
+                                .font(.subheadline)
+                                .padding(.bottom, -5)
+                        }
+                    }
                     Divider()
                 }
             }
@@ -101,9 +110,12 @@ struct UserProfileView: View {
         .padding()
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button("Edit") {
-                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-                }
+//                Button("Edit") {
+//                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+//                }
+                
+                EditButton()
+                // check apple landmarks project for this
             }
         }
     }

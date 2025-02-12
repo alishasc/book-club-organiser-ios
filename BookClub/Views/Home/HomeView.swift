@@ -78,4 +78,5 @@ struct HomeView: View {
 
 #Preview {
     HomeView(selectedTab: .constant(0))
+        .environmentObject(AuthViewModel())
 }

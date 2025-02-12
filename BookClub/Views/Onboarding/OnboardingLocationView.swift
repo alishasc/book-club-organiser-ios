@@ -94,9 +94,17 @@ struct OnboardingLocationView: View {
                 
                 // buttons
                 VStack(spacing: 15) {
-                    // call saveOnboardingDetails function here as well
-                    NavigationLink("Skip for now", destination: NavBarView())
-                        .font(.subheadline)
+                    Button("Skip for now") {
+                        print("skip button pressed")
+
+                        Task {
+                            try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: "")
+                            
+                            await authViewModel.fetchUser()
+                        }
+                        navigateToNavBar = true
+                    }
+                    .font(.subheadline)
                     
                     Button("Done") {
                         print("done button pressed")
@@ -105,9 +113,10 @@ struct OnboardingLocationView: View {
                             if let selectedLocation = onboardingViewModel.selectedLocation?.placemark.title {
                                 try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: selectedLocation)
                                 
-                                navigateToNavBar = true
+                                await authViewModel.fetchUser()
                             }
                         }
+                        navigateToNavBar = true
                     }
                     .onboardingButtonStyle()
                     .disabled(onboardingViewModel.selectedLocation == nil)
@@ -116,9 +125,8 @@ struct OnboardingLocationView: View {
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
-                
-                NavigationLink(destination: NavBarView(), isActive: $navigateToNavBar) {
-                    EmptyView()
+                .navigationDestination(isPresented: $navigateToNavBar) {
+                    NavBarView()
                 }
             }
             .padding()

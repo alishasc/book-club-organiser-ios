@@ -23,8 +23,8 @@ struct LoginView: View {
             VStack {
                 // image and title
                 VStack(spacing: 20) {
-                    Rectangle()
-                        .foregroundColor(.gray)
+                    Image("logo")
+                        .resizable()
                         .frame(width: 100, height: 100)
                         .cornerRadius(10)
                     Text("Welcome Back!")
@@ -37,7 +37,7 @@ struct LoginView: View {
                 // textfields / forgot password
                 VStack(alignment: .leading, spacing: 5) {
                     // email
-                    ViewTemplates.loginTextField(placeholder: "Email", input: $email, isSecureField: false)
+                    ViewTemplates.textField(placeholder: "Email", input: $email, isSecureField: false)
                         .focused($focusedField, equals: .email)
                         .onSubmit {
                             focusedField = .password

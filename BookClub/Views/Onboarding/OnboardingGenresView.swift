@@ -11,7 +11,7 @@ struct OnboardingGenresView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
     @State private var showFiction: Bool = false
     @State private var showNonFiction: Bool = false
-
+    
     var body: some View {
         NavigationStack {
             VStack(spacing: 15) {
@@ -19,9 +19,13 @@ struct OnboardingGenresView: View {
                     Text("What are your favourite genres?")
                         .font(.title)
                         .fontWeight(.semibold)
-                    Text("You can select up to 5 genres")
-                        .fontWeight(.medium)
-                        .foregroundStyle(.secondary)
+                    HStack {
+                        Text("You can select up to 5 genres")
+                        Spacer()
+                        Text("\(onboardingViewModel.selectedGenres.count)/5")
+                    }
+                    .fontWeight(.medium)
+                    .foregroundStyle(.secondary)
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
@@ -40,18 +44,7 @@ struct OnboardingGenresView: View {
                             Text("Fiction")
                                 .font(.title2)
                                 .fontWeight(.semibold)
-//                            if !showFiction {
-//                                TagView(tags: onboardingViewModel.fictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
-//                                Button("View more...") {
-//                                    withAnimation(.easeIn) {
-//                                        showFiction = true
-//                                    }
-//                                }
-//                                .font(.subheadline)
-//                                .foregroundStyle(.tint)
-//                            } else {
-                                TagView(tags: onboardingViewModel.extraFiction.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
-//                            }
+                            TagView(tags: onboardingViewModel.fictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
                         }
                         
                         // non-fiction
@@ -59,18 +52,7 @@ struct OnboardingGenresView: View {
                             Text("Non-Fiction")
                                 .font(.title2)
                                 .fontWeight(.semibold)
-//                            if !showNonFiction {
-//                                TagView(tags: onboardingViewModel.nonFictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
-//                                Button("View more...") {
-//                                    withAnimation(.easeIn) {
-//                                        showNonFiction = true
-//                                    }
-//                                }
-//                                .font(.subheadline)
-//                                .foregroundStyle(.tint)
-//                            } else {
-                                TagView(tags: onboardingViewModel.extraNonFiction.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
-//                            }
+                            TagView(tags: onboardingViewModel.nonFictionGenres.map { TagViewItem(title: $0, isSelected: false) }, onboardingViewModel: onboardingViewModel)
                         }
                     }
                 }
