@@ -21,7 +21,7 @@ struct ContentView: View {
             LoginView()
         }
         
-//        CreateClubView(bookClubViewModel: BookClubViewModel())
+//        BookClubDetailsView()
     }
 }
 

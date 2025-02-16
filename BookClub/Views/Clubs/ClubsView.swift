@@ -71,12 +71,12 @@ struct ClubsView: View {
             // joined clubs = 0
             if selectedItem == 0 {
                 // joined clubs list
-                ScrollView(.vertical) {
-                    ClubsListView(clubName: "joined club name")  // hardcoded
+                ScrollView(.vertical, showsIndicators: false) {
+                    ClubsListView(clubName: "joined club name")  // hardcoded - change this
                 }
             } else {
                 // created clubs list
-                ScrollView(.vertical) {
+                ScrollView(.vertical, showsIndicators: false) {
                     ForEach(bookClubViewModel.createdClubs) { club in
                         ClubsListView(clubName: club.name)
                     }
@@ -86,6 +86,7 @@ struct ClubsView: View {
         .padding()
         .onAppear {
             Task {
+                // try fetching any created clubs if any
                 try await bookClubViewModel.fetchCreatedBookClubs()
             }
         }

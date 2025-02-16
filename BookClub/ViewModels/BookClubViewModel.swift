@@ -12,9 +12,9 @@ import FirebaseAuth
 
 @MainActor
 class BookClubViewModel: ObservableObject {
-    @Published var createdClubs: [BookClub] = []  // store clubs fetched from firestore
+    @Published var createdClubs: [BookClub] = []  // store any created clubs fetched from firestore
 
-    // when user creates a new book club
+    // when a user creates a new book club - save to firebase
     func saveNewClub(name: String, description: String, genre: String, meetingType: String, isPublic: Bool, creationDate: Date) async throws {
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get the id")
@@ -34,7 +34,7 @@ class BookClubViewModel: ObservableObject {
         }
     }
     
-    // fetch created book clubs from database
+    // fetch created book clubs from database - for 'created clubs' list
     func fetchCreatedBookClubs() async throws {
         print("fetch created club details")
         
@@ -53,7 +53,7 @@ class BookClubViewModel: ObservableObject {
             // fetch docs where moderatorId is the same as current userId
             let querySnapshot = try await db.collection("BookClub").whereField("moderatorId", isEqualTo: id).getDocuments()
             for document in querySnapshot.documents {
-                print("\(document.documentID) => \(document.data())")  // bookClubId => mapped data of that document
+//                print("\(document.documentID) => \(document.data())")  // bookClubId => mapped data of that document
                 
                 // make object using BookClub model from document data
                 let bookClub = try document.data(as: BookClub.self)
@@ -61,7 +61,7 @@ class BookClubViewModel: ObservableObject {
                 self.createdClubs.append(bookClub)
             }
             
-            print(createdClubs)
+//            print(createdClubs)
         } catch {
             print("error getting book club documents: \(error)")
         }

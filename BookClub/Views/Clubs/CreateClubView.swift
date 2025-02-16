@@ -24,7 +24,8 @@ struct CreateClubView: View {
     @State private var genre: String = "Art & Design"
     @State private var meetingType: String = "Online"
     @State private var isPublic: Bool = false
-    let creationDate: Date = Date().addingTimeInterval(0)
+    let creationDate: Date = Date().addingTimeInterval(0)  // current date and time
+    @State private var goToClubDetails: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -117,16 +118,23 @@ struct CreateClubView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
+                    // save new club details to firebase
                     Task {
                         try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: creationDate)
                     }
+                    
+                    goToClubDetails = true
                 }
                 .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
             }
         }
+        .navigationDestination(isPresented: $goToClubDetails) {
+            BookClubDetailsView()
+        }
     }
 }
 
+// move func to view model
 // ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
 func getWordCount(str: String) -> Int {
     let chararacterSet = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
