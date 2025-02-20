@@ -114,8 +114,7 @@ struct UserProfileView: View {
 //                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
 //                }
                 
-                EditButton()
-                // check apple landmarks project for this
+                EditButton() // check apple landmarks project for this
             }
         }
     }

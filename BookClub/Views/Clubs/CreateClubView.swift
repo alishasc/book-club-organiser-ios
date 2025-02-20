@@ -123,14 +123,15 @@ struct CreateClubView: View {
                         try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: creationDate)
                     }
                     
-                    goToClubDetails = true
+                    // show the club details for the new club after pressing confirm
+//                    goToClubDetails = true
                 }
                 .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
             }
         }
-        .navigationDestination(isPresented: $goToClubDetails) {
-            BookClubDetailsView()
-        }
+//        .navigationDestination(isPresented: $goToClubDetails) {
+//            BookClubDetailsView(bookClubViewModel: bookClubViewModel)
+//        }
     }
 }
 

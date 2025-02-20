@@ -10,8 +10,8 @@ import SwiftUI
 // moderator and members info
 
 struct ClubDetailsMembersView: View {
+    var moderatorName: String
 //    var moderatorPic: Image
-//    var moderatorName: String
 //    var memberPics: [Image]
     
     var body: some View {
@@ -30,7 +30,7 @@ struct ClubDetailsMembersView: View {
                     Text("Created by")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    Text("Moderator Name")
+                    Text(moderatorName)
                         .font(.subheadline)
                         .fontWeight(.medium)
                 }
@@ -72,6 +72,6 @@ struct ClubDetailsMembersView: View {
     }
 }
 
-#Preview {
-    ClubDetailsMembersView()
-}
+//#Preview {
+//    ClubDetailsMembersView()
+//}

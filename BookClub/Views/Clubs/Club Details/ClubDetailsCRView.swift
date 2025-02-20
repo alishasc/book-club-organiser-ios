@@ -15,13 +15,26 @@ struct ClubDetailsCRView: View {
     var author: String
     var genre: String
     var synopsis: String
+    var isModerator: Bool
     
     var body: some View {
 //        NavigationStack {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Currently Reading")
-                    .font(.title3)
-                    .fontWeight(.semibold)
+                HStack {
+                    // title
+                    Text("Currently Reading")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                    Spacer()
+                    
+                    if isModerator {
+                        // go to screen to search for book
+                        NavigationLink(destination: BookSearchView(bookViewModel: BookViewModel())) {
+                            Text("New book")
+                                .foregroundStyle(.customBlue)
+                        }
+                    }
+                }
                 
 //                NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
                     HStack(spacing: 15) {
@@ -31,6 +44,7 @@ struct ClubDetailsCRView: View {
                             .frame(width: 80, height: 120)
                             .background(.customPink)
                         
+                        // book info
                         VStack(alignment: .leading) {
                             Text(title)
                                 .fontWeight(.semibold)
@@ -61,5 +75,5 @@ struct ClubDetailsCRView: View {
 }
 
 #Preview {
-    ClubDetailsCRView(title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.")
+    ClubDetailsCRView(title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: true)
 }

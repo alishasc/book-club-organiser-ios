@@ -20,8 +20,6 @@ struct ContentView: View {
         } else {
             LoginView()
         }
-        
-//        BookClubDetailsView()
     }
 }
 

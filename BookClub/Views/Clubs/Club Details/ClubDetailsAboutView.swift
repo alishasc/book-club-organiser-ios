@@ -19,6 +19,7 @@ struct ClubDetailsAboutView: View {
             Text(description)
                 .font(.subheadline)
                 .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .background(
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.quaternaryHex.opacity(0.6))
@@ -28,5 +29,6 @@ struct ClubDetailsAboutView: View {
 }
 
 #Preview {
+    ClubDetailsAboutView(description: "book club description")
     ClubDetailsAboutView(description: "A book club for fantasy lovers who enjoy exploring captivating worlds, complex characters, and thought provoking stories. Join us for engaging discussions and discover new adventures in every book!")
 }

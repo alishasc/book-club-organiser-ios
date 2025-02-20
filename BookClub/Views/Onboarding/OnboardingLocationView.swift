@@ -55,7 +55,7 @@ struct OnboardingLocationView: View {
                             ForEach(onboardingViewModel.searchResults, id: \.self) { location in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    // highlight tapped option only
+                                        // highlight tapped option only
                                         .foregroundStyle(location == onboardingViewModel.selectedLocation ? .accent : .clear)
                                     VStack(alignment: .leading) {
                                         Text("\(location.placemark.title ?? "")")
@@ -72,7 +72,6 @@ struct OnboardingLocationView: View {
                                     }
                                     print(onboardingViewModel.selectedLocation ?? "no location")
                                 }
-                                // keep?
                                 .onChange(of: searchInput) {
                                     // reset properties when change search query
                                     isLocationSelected = false
@@ -82,6 +81,7 @@ struct OnboardingLocationView: View {
                             }
                         }
                         .listStyle(.plain)
+                        .scrollIndicators(.hidden)
                     } else {
                         // invalid/empty input
                         Text(onboardingViewModel.locationErrorPrompt)
