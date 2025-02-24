@@ -99,32 +99,17 @@ class AuthViewModel: ObservableObject {
     }
     
     func logIn(email: String, password: String) async throws {
-        // reset prompts when press log in button
-        self.invalidEmailPrompt = ""
-        self.invalidCredentialPrompt = ""
         print("sign in...")
         
         do {
-            // try sign in
+            // try log in
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.userSession = result.user
             print("log in successful")
             
             await fetchUser()
-        } catch let error as NSError {
-            // check possible error codes returned
-            if let errorCode = AuthErrorCode(rawValue: error.code) {
-                switch errorCode {
-                case .invalidEmail:  // checks if input is a string
-                    self.invalidEmailPrompt = "Invalid email"
-                    print("Invalid email")
-                case .invalidCredential:  // email or password is wrong
-                    self.invalidCredentialPrompt = "Email or password is incorrect. Please try again"
-                    print("Email or password is incorrect")
-                default:
-                    print("Failed to sign in user: \(error.code) - \(error.localizedDescription)")
-                }
-            }
+        } catch {
+            print("Could not log in user: \(error.localizedDescription)")
         }
     }
     

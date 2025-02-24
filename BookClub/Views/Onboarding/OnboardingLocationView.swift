@@ -12,7 +12,7 @@ import Firebase
 struct OnboardingLocationView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject var onboardingViewModel: OnboardingViewModel
-    @StateObject var signUpViewModel: SignUpViewModel
+//    @StateObject var signUpViewModel: SignUpViewModel
     @State private var searchInput: String = ""  // in textfield
     @State private var isLocationSelected: Bool = false  // changes when tap search result
     @State private var navigateToNavBar: Bool = false
@@ -135,5 +135,5 @@ struct OnboardingLocationView: View {
 }
 
 #Preview {
-    OnboardingLocationView(onboardingViewModel: OnboardingViewModel(), signUpViewModel: SignUpViewModel())
+    OnboardingLocationView(onboardingViewModel: OnboardingViewModel()/*, signUpViewModel: SignUpViewModel()*/)
 }

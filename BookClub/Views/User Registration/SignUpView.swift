@@ -9,7 +9,7 @@ import SwiftUI
 
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @StateObject var signUpViewModel: SignUpViewModel
+    @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var showPassword: Bool = false
     
@@ -36,13 +36,13 @@ struct SignUpView: View {
                 VStack {
                     // textfields
                     VStack(alignment: .leading, spacing: 5) {
-                        ViewTemplates.signupTextField(placeholder: "Name", input: $signUpViewModel.name, isSecureField: false, prompt: signUpViewModel.namePrompt)
+                        ViewTemplates.signupTextField(placeholder: "Name", input: $authValidationViewModel.name, isSecureField: false, prompt: authValidationViewModel.namePrompt)
                             .focused($focusedField, equals: .name)
                             .onSubmit {
                                 focusedField = .email
                             }
                         
-                        ViewTemplates.signupTextField(placeholder: "Email", input: $signUpViewModel.email, isSecureField: false, prompt: signUpViewModel.emailPrompt)
+                        ViewTemplates.signupTextField(placeholder: "Email", input: $authValidationViewModel.email, isSecureField: false, prompt: authValidationViewModel.emailPrompt)
                             .focused($focusedField, equals: .email)
                             .onSubmit {
                                 focusedField = .password
@@ -50,18 +50,18 @@ struct SignUpView: View {
                         
                         // password
                         HStack {
-                            ViewTemplates.passwordSecureField(placeholder: "Password", input: $signUpViewModel.password, showPassword: $showPassword)
+                            ViewTemplates.passwordSecureField(placeholder: "Password", input: $authValidationViewModel.password, showPassword: $showPassword)
                                 .focused($focusedField, equals: .password)
                                 .onSubmit {
                                     focusedField = nil
                                 }
-                                .onChange(of: signUpViewModel.password) {
-                                    // show password info when start typing
-                                    signUpViewModel.showPasswordPrompt = true
+                                .onChange(of: authValidationViewModel.password) {
+                                    // show password message when start typing
+                                    authValidationViewModel.showPasswordPrompt = true
                                 }
                             
                             // show password entered
-                            if !signUpViewModel.password.isEmpty {
+                            if !authValidationViewModel.password.isEmpty {
                                 Button("SHOW") {
                                     showPassword.toggle()
                                     print("show button pressed")
@@ -70,26 +70,28 @@ struct SignUpView: View {
                                 .font(.subheadline)
                             }
                         }
-
-                        if signUpViewModel.showPasswordPrompt {
+                        
+                        if authValidationViewModel.showPasswordPrompt {
                             Text("Password must be at least 6 characters and include an uppercase letter, number, and special character.")
-                                .foregroundStyle(signUpViewModel.passwordPromptColor)  // turns red if invalid
+                                .foregroundStyle(authValidationViewModel.passwordPromptColor)  // turns red if invalid
                                 .font(.footnote)
                                 .padding(.bottom, 5)
+                        } else {
+                            Text("")
                         }
                     }  // vstack
                     
                     // sign up button
                     Button {
-                        if signUpViewModel.isFormValid() {
+                        if authValidationViewModel.isSignUpFormValid() {
                             Task {
-                                // try create new user with Firebase Auth
-                                try await authViewModel.signUp(name: signUpViewModel.name, email: signUpViewModel.email, password: signUpViewModel.password)
+                                // if form's valid try create new user with Firebase Auth
+                                try await authViewModel.signUp(name: authValidationViewModel.name, email: authValidationViewModel.email, password: authValidationViewModel.password)
                             }
                         } else {
-                            // show any errors for invalid field inputs
-                            signUpViewModel.showValidationErrors = true
-                            signUpViewModel.showPasswordPrompt = true
+                            // show any error prompts for invalid field inputs
+                            authValidationViewModel.showValidationErrors = true
+                            authValidationViewModel.showPasswordPrompt = true
                         }
                     } label: {
                         Text("Sign up with email")
@@ -140,6 +142,6 @@ struct SignUpView: View {
 }
 
 #Preview {
-    SignUpView(signUpViewModel: SignUpViewModel())
+    SignUpView()
         .environmentObject(AuthViewModel())
 }

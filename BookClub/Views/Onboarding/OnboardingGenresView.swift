@@ -58,7 +58,7 @@ struct OnboardingGenresView: View {
                 }
                 
                 VStack(spacing: 15) {
-                    NavigationLink(destination: OnboardingLocationView(onboardingViewModel: onboardingViewModel, signUpViewModel: SignUpViewModel())) {
+                    NavigationLink(destination: OnboardingLocationView(onboardingViewModel: onboardingViewModel)) {
                         Text("Next")
                             .onboardingButtonStyle()
                     }

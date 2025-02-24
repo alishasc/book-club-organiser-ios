@@ -9,9 +9,8 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
-    @State private var email: String = ""
-    @State private var password: String = ""
     @State private var showPassword: Bool = false
     
     // textfields
@@ -37,27 +36,22 @@ struct LoginView: View {
                 // textfields & forgot password
                 VStack(alignment: .leading, spacing: 5) {
                     // email
-                    ViewTemplates.textField(placeholder: "Email", input: $email, isSecureField: false)
+                    ViewTemplates.signupTextField(placeholder: "Email", input: $authValidationViewModel.email, isSecureField: false, prompt: "")
                         .focused($focusedField, equals: .email)
                         .onSubmit {
                             focusedField = .password
                         }
-                    
-                    // invalid email message
-                    Text(authViewModel.invalidEmailPrompt)
-                        .foregroundStyle(.red)
-                        .font(.footnote)
-                    
+
                     //password
                     HStack {
-                        ViewTemplates.passwordSecureField(placeholder: "Password", input: $password, showPassword: $showPassword)
+                        ViewTemplates.passwordSecureField(placeholder: "Password", input: $authValidationViewModel.password, showPassword: $showPassword)
                             .focused($focusedField, equals: .password)
                             .onSubmit {
                                 focusedField = nil
                             }
                         
                         // show password input
-                        if !password.isEmpty {
+                        if !authValidationViewModel.password.isEmpty {
                             Button("SHOW") {
                                 showPassword.toggle()
                             }
@@ -65,33 +59,32 @@ struct LoginView: View {
                             .font(.footnote)
                         }
                     }
-                    
-                    // either email or password is incorrect - error message
-                    if authViewModel.invalidCredentialPrompt != "" {
-                        Text(authViewModel.invalidCredentialPrompt)
-                            .foregroundStyle(.red)
-                            .font(.footnote)
-                    }
-                    
+
                     Button("Forgot password?") {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.accent)
+                    
+                    // show message if login fails - 'invalid email or password'
+                    Text(authValidationViewModel.invalidLoginPrompt)
+                        .foregroundStyle(.red)
+                        .font(.footnote)
                 }
-                .padding(.bottom, 20)
+                .padding(.bottom, 10)
                 
                 // login buttons
                 VStack {
                     Button {
-                        print("login button tapped")
-                        
                         // only try login if form is complete
-                        if !email.isEmpty && !password.isEmpty {
+                        if authValidationViewModel.isLoginFormValid() {
                             Task {
-                                try await authViewModel.logIn(email: email, password: password)
+                                try await authViewModel.logIn(email: authValidationViewModel.email, password: authValidationViewModel.password)
                             }
+                        } else {
+                            // show any error prompts for invalid field inputs
+                            authValidationViewModel.showValidationErrors = true
                         }
                     } label: {
                         Text("Log in with email")
@@ -120,7 +113,7 @@ struct LoginView: View {
                     // link to sign up page
                     HStack(spacing: 5) {
                         Text("Don't have an account?")
-                        NavigationLink(destination: SignUpView(signUpViewModel: SignUpViewModel())) {
+                        NavigationLink(destination: SignUpView()) {
                             Text("Sign up")
                                 .fontWeight(.medium)
                                 .foregroundStyle(.tint)
