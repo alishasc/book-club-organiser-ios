@@ -8,25 +8,21 @@
 import SwiftUI
 
 struct SignUpView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject var signUpViewModel: SignUpViewModel
+    @FocusState private var focusedField: Field?  // to go between textfields when submit
+    @State private var showPassword: Bool = false
+    
+    // textfields
     enum Field: Hashable {
         case name, email, password
     }
-    
-    @EnvironmentObject var authViewModel: AuthViewModel
-    @StateObject var signUpViewModel: SignUpViewModel
-    @FocusState private var focusedField: Field?  // to go between textfields
-    @State private var showPassword: Bool = false
-//    @State private var showPasswordPrompt: Bool = false
     
     var body: some View {
         NavigationStack {
             VStack {
                 // image and title
                 VStack(spacing: 20) {
-//                    Rectangle()
-//                        .foregroundColor(.gray)
-//                        .frame(width: 100, height: 100)
-//                        .cornerRadius(10)
                     Image("logo")
                         .resizable()
                         .frame(width: 100, height: 100)
@@ -40,7 +36,6 @@ struct SignUpView: View {
                 VStack {
                     // textfields
                     VStack(alignment: .leading, spacing: 5) {
-                        // textfields
                         ViewTemplates.signupTextField(placeholder: "Name", input: $signUpViewModel.name, isSecureField: false, prompt: signUpViewModel.namePrompt)
                             .focused($focusedField, equals: .name)
                             .onSubmit {
@@ -65,9 +60,9 @@ struct SignUpView: View {
                                     signUpViewModel.showPasswordPrompt = true
                                 }
                             
+                            // show password entered
                             if !signUpViewModel.password.isEmpty {
                                 Button("SHOW") {
-                                    // tap to show input entered
                                     showPassword.toggle()
                                     print("show button pressed")
                                 }
@@ -80,14 +75,15 @@ struct SignUpView: View {
                             Text("Password must be at least 6 characters and include an uppercase letter, number, and special character.")
                                 .foregroundStyle(signUpViewModel.passwordPromptColor)  // turns red if invalid
                                 .font(.footnote)
+                                .padding(.bottom, 5)
                         }
                     }  // vstack
                     
+                    // sign up button
                     Button {
                         if signUpViewModel.isFormValid() {
-                            print("All fields valid")
                             Task {
-                                // try create new user in Firebase
+                                // try create new user with Firebase Auth
                                 try await authViewModel.signUp(name: signUpViewModel.name, email: signUpViewModel.email, password: signUpViewModel.password)
                             }
                         } else {

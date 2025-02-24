@@ -16,8 +16,10 @@ class AuthViewModel: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
     @Published var userIsLoggedIn = false
+    // for login
     @Published var invalidEmailPrompt = ""
     @Published var invalidCredentialPrompt = ""
+    // for sign up
     @Published var isEmailInUse = false  // return if email already in use when sign up
     @Published var isNewUser: Bool = false  // go to onboarding if just signed up
     
@@ -49,8 +51,10 @@ class AuthViewModel: ObservableObject {
                 print("couldn't get the uid to add new user")
                 return
             }
+            
             // create instance of Firestore
             let db = Firestore.firestore()
+            
             // try save sign up details to new document
             do {
                 try await db.collection("User").document(id).setData([
@@ -95,12 +99,17 @@ class AuthViewModel: ObservableObject {
     }
     
     func logIn(email: String, password: String) async throws {
+        // reset prompts when press log in button
+        self.invalidEmailPrompt = ""
+        self.invalidCredentialPrompt = ""
         print("sign in...")
         
         do {
+            // try sign in
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.userSession = result.user
             print("log in successful")
+            
             await fetchUser()
         } catch let error as NSError {
             // check possible error codes returned

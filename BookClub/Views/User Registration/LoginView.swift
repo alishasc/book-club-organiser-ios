@@ -8,15 +8,16 @@
 import SwiftUI
 
 struct LoginView: View {
-    enum Field: Hashable {
-        case email, password
-    }
-    
     @EnvironmentObject var authViewModel: AuthViewModel
-    @FocusState private var focusedField: Field?  // to go between textfields
+    @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var showPassword: Bool = false
+    
+    // textfields
+    enum Field: Hashable {
+        case email, password
+    }
     
     var body: some View {
         NavigationStack {
@@ -30,11 +31,10 @@ struct LoginView: View {
                     Text("Welcome Back!")
                         .font(.title)
                         .fontWeight(.semibold)
-                    //                    .padding(.bottom, 20)
                 }
                 .padding(.bottom, 20)
                 
-                // textfields / forgot password
+                // textfields & forgot password
                 VStack(alignment: .leading, spacing: 5) {
                     // email
                     ViewTemplates.textField(placeholder: "Email", input: $email, isSecureField: false)
@@ -43,6 +43,7 @@ struct LoginView: View {
                             focusedField = .password
                         }
                     
+                    // invalid email message
                     Text(authViewModel.invalidEmailPrompt)
                         .foregroundStyle(.red)
                         .font(.footnote)
@@ -55,9 +56,9 @@ struct LoginView: View {
                                 focusedField = nil
                             }
                         
+                        // show password input
                         if !password.isEmpty {
                             Button("SHOW") {
-                                // tap to show input entered
                                 showPassword.toggle()
                             }
                             .foregroundStyle(.secondary)
@@ -77,16 +78,16 @@ struct LoginView: View {
                     }
                     .font(.subheadline)
                     .fontWeight(.medium)
-                    .foregroundStyle(.tint)
-                    .padding(.bottom, 10)
+                    .foregroundStyle(.accent)
                 }
-                .padding(.bottom, 10)
+                .padding(.bottom, 20)
                 
                 // login buttons
                 VStack {
                     Button {
                         print("login button tapped")
                         
+                        // only try login if form is complete
                         if !email.isEmpty && !password.isEmpty {
                             Task {
                                 try await authViewModel.logIn(email: email, password: password)
@@ -99,6 +100,7 @@ struct LoginView: View {
                     
                     Spacer()
                     
+                    // login with apple
                     Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     } label: {
@@ -106,6 +108,7 @@ struct LoginView: View {
                             .loginSignupButtonStyle()
                     }
                     
+                    // login with google
                     Button {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     } label: {
@@ -114,6 +117,7 @@ struct LoginView: View {
                     }
                     .padding(.bottom, 20)
                     
+                    // link to sign up page
                     HStack(spacing: 5) {
                         Text("Don't have an account?")
                         NavigationLink(destination: SignUpView(signUpViewModel: SignUpViewModel())) {

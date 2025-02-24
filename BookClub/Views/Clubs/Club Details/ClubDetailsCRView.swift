@@ -10,7 +10,7 @@ import SwiftUI
 // this will be filled with book API information
 
 struct ClubDetailsCRView: View {
-//    var cover: Image
+    //    var cover: Image
     var title: String
     var author: String
     var genre: String
@@ -18,59 +18,57 @@ struct ClubDetailsCRView: View {
     var isModerator: Bool
     
     var body: some View {
-//        NavigationStack {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    // title
-                    Text("Currently Reading")
-                        .font(.title3)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    
-                    if isModerator {
-                        // go to screen to search for book
-                        NavigationLink(destination: BookSearchView(bookViewModel: BookViewModel())) {
-                            Text("New book")
-                                .foregroundStyle(.customBlue)
-                        }
+        VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                // title
+                Text("Currently Reading")
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                Spacer()
+                
+                if isModerator {
+                    // go to screen to search for book
+                    NavigationLink(destination: BookSearchView(bookViewModel: BookViewModel())) {
+                        Text("New book")
+                            .foregroundStyle(.customBlue)
                     }
                 }
-                
-//                NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
-                    HStack(spacing: 15) {
-                        // book cover
-                        Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image?
-                            .resizable()
-                            .frame(width: 80, height: 120)
-                            .background(.customPink)
-                        
-                        // book info
-                        VStack(alignment: .leading) {
-                            Text(title)
-                                .fontWeight(.semibold)
-                            Text(author)
-                                .font(.subheadline)
-                            Text(genre)
-                                .font(.subheadline)
-                                .padding(.bottom, 4)
-                            Text(synopsis)
-                                .font(.footnote)
-                                .lineLimit(2)
-                                .multilineTextAlignment(.leading)
-                        }
-                        .foregroundStyle(.black)
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 24))
-                    }
-                    .padding(12)
-                    .background(
-                        RoundedRectangle(cornerRadius: 10)
-                            .fill(Color.quaternaryHex.opacity(0.3))
-                    )
-//                }
             }
-//        }
+            
+            //                NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
+            HStack(spacing: 15) {
+                // book cover
+                Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image?
+                    .resizable()
+                    .frame(width: 80, height: 120)
+                    .background(.customPink)
+                
+                // book info
+                VStack(alignment: .leading) {
+                    Text(title)
+                        .fontWeight(.semibold)
+                    Text(author)
+                        .font(.subheadline)
+                    Text(genre)
+                        .font(.subheadline)
+                        .padding(.bottom, 4)
+                    Text(synopsis)
+                        .font(.footnote)
+                        .lineLimit(2)
+                        .multilineTextAlignment(.leading)
+                }
+                .foregroundStyle(.black)
+                
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 24))
+            }
+            .padding(12)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(Color.quaternaryHex.opacity(0.3))
+            )
+            //                }
+        }
     }
 }
 

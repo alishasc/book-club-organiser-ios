@@ -5,11 +5,12 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
+// pages the navigation bar tabs are linked to
+
 import SwiftUI
 
 struct NavBarView: View {
-//    @EnvironmentObject var authViewModel: AuthViewModel
-    // when using nav links to switch to other navbar tabs
+    // when using nav links to switch to other navbar tabs on home screen
     @State private var selectedTab: Int = 0
 
     var body: some View {
