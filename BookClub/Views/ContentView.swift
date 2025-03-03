@@ -21,7 +21,7 @@ struct ContentView: View {
             NavBarView()
         } else {
             LoginView()
-        }
+        }        
     }
 }
 

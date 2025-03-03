@@ -41,6 +41,10 @@ struct LoginView: View {
                         .onSubmit {
                             focusedField = .password
                         }
+                        .onChange(of: authValidationViewModel.email) {
+                            // hide error message if its showing
+                            authValidationViewModel.showValidationErrors = false
+                        }
 
                     //password
                     HStack {
@@ -48,6 +52,10 @@ struct LoginView: View {
                             .focused($focusedField, equals: .password)
                             .onSubmit {
                                 focusedField = nil
+                            }
+                            .onChange(of: authValidationViewModel.password) {
+                                // hide error message if its showing
+                                authValidationViewModel.showValidationErrors = false
                             }
                         
                         // show password input

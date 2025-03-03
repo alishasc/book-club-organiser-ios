@@ -6,6 +6,7 @@
 //
 
 // ref: https://github.com/happyiosdeveloper/swiftui-tagview
+// for onboarding genre tags
 
 import SwiftUI
 
@@ -25,7 +26,7 @@ struct TagViewItem: Hashable {
 
 struct TagView: View {
     @State var tags: [TagViewItem]
-    @State private var totalHeight = CGFloat.zero       // << variant for ScrollView/List //    = CGFloat.infinity   // << variant for VStack
+    @State private var totalHeight = CGFloat.zero
     
     @StateObject var onboardingViewModel: OnboardingViewModel
     
@@ -35,13 +36,13 @@ struct TagView: View {
                 self.generateContent(in: geometry)
             }
         }
-        .frame(height: totalHeight)// << variant for ScrollView/List
-        //.frame(maxHeight: totalHeight) // << variant for VStack
+        .frame(height: totalHeight)
     }
     
     private func generateContent(in g: GeometryProxy) -> some View {
         var width = CGFloat.zero
         var height = CGFloat.zero
+        
         return ZStack(alignment: .topLeading) {
             ForEach(tags.indices, id: \.self) { index in
                 item(for: tags[index].title, isSelected: tags[index].isSelected)
@@ -68,22 +69,22 @@ struct TagView: View {
                     })
                     .onTapGesture {
                         // if unselected and count < 5
-                        if !tags[index].isSelected && onboardingViewModel.genreCount < 5 {
+                        if !tags[index].isSelected && onboardingViewModel.selectedGenres.count < 5 {
                             tags[index].isSelected.toggle()
                         } else if tags[index].isSelected {
                             // unselect if already selected
                             tags[index].isSelected.toggle()
                         }
                         
+                        // function to add tapped genre to array
                         onboardingViewModel.selectGenre(genre: tags[index].title, isSelected: tags[index].isSelected)
-                        print(onboardingViewModel.selectedGenres)
-                        print(onboardingViewModel.genreCount)
                     }
             }
         }
         .background(viewHeightReader($totalHeight))
     }
     
+    // tag styling
     private func item(for text: String, isSelected: Bool) -> some View {
         Text(text)
             .font(.subheadline)

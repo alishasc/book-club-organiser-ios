@@ -7,21 +7,20 @@
 
 import SwiftUI
 
-struct YourEventsListView: View {
-    var clubName: String
-    var clubRead: String
+struct ClubDetailsUpcomingEventsView: View {
+    @StateObject var eventViewModel: EventViewModel
+    var bookClub: BookClub
+    var eventTitle: String
     var location: String
-    var date: String
-    var time: String
+    var dateAndTime: Date
     var spacesLeft: Int
-    //    var eventType: String  // whether event is online/in-person/created
-    //    var isEventsPage: Bool  // ???
+    var isModerator: Bool
     
     var body: some View {
         ZStack {
             // for line along bottom - in background
             RoundedRectangle(cornerRadius: 10)
-                .foregroundStyle(.customGreen)
+                .foregroundStyle(eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType))
                 .frame(height: 120)
                 .offset(y: 5)
                 .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
@@ -35,10 +34,10 @@ struct YourEventsListView: View {
                 
                 // text event info
                 VStack(alignment: .leading) {
-                    Text(clubName)
+                    Text(bookClub.name)
                         .fontWeight(.semibold)
                         .lineLimit(1)
-                    Text(clubRead)
+                    Text(eventTitle)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .lineLimit(1)
@@ -46,7 +45,7 @@ struct YourEventsListView: View {
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    Text("\(date) - \(time)")
+                    Text(ViewTemplates.dateFormatter(dateAndTime: dateAndTime))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                     Text("\(spacesLeft) spaces left")
@@ -56,20 +55,25 @@ struct YourEventsListView: View {
                 
                 Spacer()
                 
+                // checkmark and event type tag
                 VStack {
                     Spacer()
                     Spacer()
                     // icon - make it toggle to checkmark.circle
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(.accent)
+                    // only show if user isn't the moderator
+                    if !isModerator {
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 24))
+                            .foregroundStyle(.accent)
+                    }
                     Spacer()
-                    Text("Online")
+                    
+                    Text(eventViewModel.eventTagText(isModerator: isModerator, meetingType: bookClub.meetingType))
                         .font(.caption2)
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(
-                            .customGreen
+                            eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType)
                                 .opacity(0.2)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 20))
@@ -83,6 +87,6 @@ struct YourEventsListView: View {
     }
 }
 
-#Preview {
-    YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Waterstones Piccadilly", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
-}
+//#Preview {
+//    YourEventsListView(bookClubName: "Romance Book Club", eventTitle: "Starting new book!", location: "Waterstones Piccadilly", dateAndTime: Date(), spacesLeft: 5, isModerator: true, meetingType: "Online")
+//}

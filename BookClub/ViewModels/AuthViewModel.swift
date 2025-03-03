@@ -141,7 +141,7 @@ class AuthViewModel: ObservableObject {
         let firebaseAuth = Auth.auth()
         do {
             try firebaseAuth.signOut()
-            // reset vars
+            // reset properties
             userSession = nil
             currentUser = nil
             isNewUser = false
@@ -149,7 +149,7 @@ class AuthViewModel: ObservableObject {
             invalidCredentialPrompt = ""
             print("sign out successful")
         } catch let signOutError as NSError {
-            print("Error signing out: %@", signOutError)
+            print("Error signing out:", signOutError)
         }
     }
 }

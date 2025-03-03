@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ClubDetailsEventsView: View {
+    @StateObject var eventViewModel: EventViewModel
+    var bookClub: BookClub
     var isModerator: Bool
-    var isOnline: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -22,19 +23,27 @@ struct ClubDetailsEventsView: View {
                 
                 if isModerator {
                     // go to screen to create new event
-                    NavigationLink(destination: CreateEventView(isOnline: isOnline)) {
+                    NavigationLink(destination: CreateEventView(eventViewModel: EventViewModel(), meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
                         Text(Image(systemName: "plus"))
                     }
                 }
             }
-            
-//            ScrollView(.horizontal, showsIndicators: false) {
-                YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Online", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
-//            }
+
+            // only show events for shown book club
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    ForEach(eventViewModel.fetchedEvents) { event in
+                        if event.bookClubId == bookClub.id {
+                            ClubDetailsUpcomingEventsView(eventViewModel: EventViewModel(), bookClub: bookClub, eventTitle: event.eventTitle, location: event.location ?? "Online", dateAndTime: event.dateAndTime, spacesLeft: event.maxCapacity - event.attendeesCount, isModerator: isModerator)
+                        }
+                    }
+                    .padding(.bottom)
+                }
+            }
         }
     }
 }
 
-#Preview {
-    ClubDetailsEventsView(isModerator: true, isOnline: true)
-}
+//#Preview {
+//    ClubDetailsEventsView(bookClubId: "id", isModerator: true, isOnline: true)
+//}

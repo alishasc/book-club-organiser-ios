@@ -63,7 +63,7 @@ struct BookSearchView: View {
                                         .padding(.bottom, 4)
                                         .lineLimit(1)
                                 }
-                                .foregroundStyle(book.id == bookViewModel.selectedBook?.id ? .white : .black)
+                                .foregroundStyle(book.id == bookViewModel.selectedBook?.id ? .white : .primary)
                             }
                             .padding(.horizontal)
                         }
@@ -106,7 +106,6 @@ struct BookSearchView: View {
                     Text("Cancel")
                 }
             }
-            
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
                     /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/

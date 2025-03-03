@@ -5,16 +5,17 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
+// pick favourite genres when sign up
+
 import SwiftUI
 
 struct OnboardingGenresView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
-    @State private var showFiction: Bool = false
-    @State private var showNonFiction: Bool = false
     
     var body: some View {
         NavigationStack {
             VStack(spacing: 15) {
+                // titles and genre count
                 VStack(alignment: .leading, spacing: 5) {
                     Text("What are your favourite genres?")
                         .font(.title)
@@ -29,6 +30,7 @@ struct OnboardingGenresView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 
+                // genres
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 10) {
                         // top genres
@@ -57,12 +59,13 @@ struct OnboardingGenresView: View {
                     }
                 }
                 
+                // next button
                 VStack(spacing: 15) {
                     NavigationLink(destination: OnboardingLocationView(onboardingViewModel: onboardingViewModel)) {
                         Text("Next")
                             .onboardingButtonStyle()
                     }
-                    // button disabled until choose genre
+                    // button disabled if no genres chosen
                     .disabled(onboardingViewModel.selectedGenres.isEmpty)
                     
                     Text("You can update your preferences from your profile")

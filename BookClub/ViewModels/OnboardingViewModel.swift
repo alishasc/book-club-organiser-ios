@@ -7,46 +7,40 @@
 
 import Foundation
 import MapKit
-import FirebaseFirestore
-import FirebaseAuth
 
 @MainActor
 class OnboardingViewModel: ObservableObject {
     @Published var selectedGenres: [String] = []
-    @Published var genreCount: Int = 0
     @Published var searchResults: [MKMapItem] = []
-    @Published var locationErrorPrompt: String = ""  // error message if invalid input
-    @Published var selectedLocation: MKMapItem?
+    @Published var locationErrorPrompt: String = ""  // error message if invalid search query
+    @Published var selectedLocation: MKMapItem?  // when tap location from search result list
     
     // tagview genres
     let topGenres: [String] = ["Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
     let fictionGenres: [String] = ["Children's Fiction", "Classics", "Graphic Novels", "Historical Fiction", "Horror", "LGBTQ+", "Myths & Legends", "Poetry", "Science-Fiction", "Short Stories", "Young Adult"]
     let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment", "Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
     
+    // check whether location search query is valid before calling getSearchResults()
     func locationFieldValidation(query: String) async throws {
-        // check whether search is valid before calling getSearchResults()
+        self.searchResults = []
+
         if query.isEmpty {
-            self.searchResults = []  // reset array
-            print("empty string")
+            // reset results and error message
             locationErrorPrompt = ""
             return
         } else {
             // remove trailing whitespace
             let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // check for invalid characters
-            let queryRegex = "^[a-zA-Z0-9\\-\\'\\’\\s]+$"
-            let queryTest = NSPredicate(format: "SELF MATCHES %@", queryRegex)
-            print(queryTest.evaluate(with: trimmedQuery))
+            // use to check string only has letters, numbers, hyphens, apostrophes and spaces
+            let queryTest = NSPredicate(format: "SELF MATCHES %@", "^[a-zA-Z0-9\\-\\'\\’\\s]+$")
             
-            // is NSPredicate test passes then get search results for the query with whitespace removed
+            // check the now trimmed query matches the regex pattern
             if queryTest.evaluate(with: trimmedQuery) {
                 try await getSearchResults(query: trimmedQuery)
             } else {
-                // change this
-                self.searchResults = []
-                print("invalid input")
-                locationErrorPrompt = "No search results found. Please try again"
+                // invalid search query
+                locationErrorPrompt = "No search results found. Please try again."
                 return
             }
         }
@@ -60,34 +54,32 @@ class OnboardingViewModel: ObservableObject {
         
         if let response = try? await search.start() {
             let items = response.mapItems
-            // reset results array each search
+            // reset search results each search
             self.searchResults = []
             
+            // add up to 15 locations to results array
             for item in items {
-                if searchResults.count < 10 {
+                if self.searchResults.count < 15 {
                     self.searchResults.append(item)
                 } else {
                     break
                 }
             }
         } else {
-            print("invalid search")
             self.searchResults = []  // don't show any search results in list view
-            locationErrorPrompt = "Location not found. Please try again."
+            locationErrorPrompt = "No search results found. Please try again."
         }
     }
     
-    // select/deselect genres in tagviews
+    // select/deselect genre tags
     func selectGenre(genre: String, isSelected: Bool) {
         if isSelected {
-            if genreCount < 5 {
+            if selectedGenres.count < 5 {
                 selectedGenres.append(genre)
-                genreCount += 1
             }
         } else {
             if let selectedGenre = selectedGenres.firstIndex(of: genre) {
                 selectedGenres.remove(at: selectedGenre)
-                genreCount -= 1
             }
         }
     }

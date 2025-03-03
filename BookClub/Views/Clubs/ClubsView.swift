@@ -17,19 +17,16 @@ struct ClubsView: View {
     @State private var selectedFilter: Int = 0  // for club type filters
     @State private var selectedClub: BookClub?  // when tap on a club in list
     @State private var showClubDetails: Bool = false
-    @State private var isModerator: Bool = false
-    @State private var isOnline: Bool = false
+//    @State private var isOnline: Bool = false
     
     var body: some View {
         VStack(alignment: .leading) {
-            // header
-            if selectedItem == 0 {
-                Text("Clubs")
+            // title
+            HStack {
+                Text("Your Clubs")
                     .font(.largeTitle).bold()
-            } else {
-                HStack {
-                    Text("Clubs")
-                        .font(.largeTitle).bold()
+                
+                if selectedItem == 1 {
                     Spacer()
                     // make new club
                     NavigationLink(destination: CreateClubView(bookClubViewModel: bookClubViewModel)) {
@@ -119,7 +116,7 @@ struct ClubsView: View {
         // fix this!!
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: bookClubViewModel.moderatorName == authViewModel.currentUser?.name ? true : false, isOnline: isOnline)
+                BookClubDetailsView(bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: bookClubViewModel.moderatorName == authViewModel.currentUser?.name ? true : false)
             }
         }
     }

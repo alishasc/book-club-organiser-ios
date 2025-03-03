@@ -92,6 +92,12 @@ class ViewTemplates {
                 .clipShape(Capsule())
         }
     }
+    
+    static func dateFormatter(dateAndTime: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "E dd MMM - hh:mm"  // e.g. Mon 03 Mar - 05:00
+        return formatter.string(from: dateAndTime)
+    }
 }
 
 extension View {

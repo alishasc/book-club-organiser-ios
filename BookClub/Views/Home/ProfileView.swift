@@ -7,18 +7,11 @@
 
 import SwiftUI
 
-struct UserProfileView: View {
+struct ProfileView: View {
     var authViewModel: AuthViewModel
     
     var body: some View {
         VStack(spacing: 30) {
-            // title
-            HStack {
-                Text("My Profile")
-                    .font(.largeTitle).bold()
-                Spacer()
-            }
-            
             // personal details
             VStack {
                 // profile picture
@@ -108,6 +101,7 @@ struct UserProfileView: View {
             }
         }
         .padding()
+        .navigationTitle("My Profile")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
 //                Button("Edit") {
@@ -121,5 +115,5 @@ struct UserProfileView: View {
 }
 
 #Preview {
-    UserProfileView(authViewModel: AuthViewModel())
+    ProfileView(authViewModel: AuthViewModel())
 }

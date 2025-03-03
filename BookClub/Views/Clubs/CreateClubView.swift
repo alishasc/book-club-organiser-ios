@@ -24,7 +24,7 @@ struct CreateClubView: View {
     @State private var genre: String = "Art & Design"
     @State private var meetingType: String = "Online"
     @State private var isPublic: Bool = false
-    let creationDate: Date = Date().addingTimeInterval(0)  // current date and time
+    let creationDate: Date = Date.now  // current date and time
     @State private var goToClubDetails: Bool = false
     
     var body: some View {

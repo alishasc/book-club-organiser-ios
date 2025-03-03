@@ -5,17 +5,18 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
+// choose location when sign up
+
 import SwiftUI
-import MapKit
 import Firebase
+import MapKit
 
 struct OnboardingLocationView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject var onboardingViewModel: OnboardingViewModel
-//    @StateObject var signUpViewModel: SignUpViewModel
     @State private var searchInput: String = ""  // in textfield
-    @State private var isLocationSelected: Bool = false  // changes when tap search result
-    @State private var navigateToNavBar: Bool = false
+    @State private var isLocationSelected: Bool = false  // when tap search result
+    @State private var navigateToNavBar: Bool = false  // show NavBarView() if true
     
     var body: some View {
         NavigationStack {
@@ -41,7 +42,7 @@ struct OnboardingLocationView: View {
                             .padding([.top, .bottom, .trailing], 10)  // inside textfield
                             .onSubmit {
                                 Task {
-                                    // check input is valid
+                                    // check input is valid and get search results
                                     try await onboardingViewModel.locationFieldValidation(query: searchInput)
                                 }
                             }
@@ -55,35 +56,31 @@ struct OnboardingLocationView: View {
                             ForEach(onboardingViewModel.searchResults, id: \.self) { location in
                                 ZStack(alignment: .leading) {
                                     RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                        // highlight tapped option only
+                                        // highlight tapped location
                                         .foregroundStyle(location == onboardingViewModel.selectedLocation ? .accent : .clear)
                                     VStack(alignment: .leading) {
                                         Text("\(location.placemark.title ?? "")")
-                                            .foregroundStyle(location == onboardingViewModel.selectedLocation ? .white : .black)
+                                            // change text colour if selected
+                                            .foregroundStyle(location == onboardingViewModel.selectedLocation ? .white : .primary)
                                             .lineLimit(2)
                                     }
                                     .padding()
                                 }
                                 .onTapGesture {
-                                    if isLocationSelected == false {
-                                        onboardingViewModel.selectedLocation = location
-                                    } else {
-                                        onboardingViewModel.selectedLocation = nil
-                                    }
-                                    print(onboardingViewModel.selectedLocation ?? "no location")
+                                    isLocationSelected = true
+                                    onboardingViewModel.selectedLocation = location
                                 }
                                 .onChange(of: searchInput) {
-                                    // reset properties when change search query
-                                    isLocationSelected = false
+                                    // unselect location
                                     onboardingViewModel.selectedLocation = nil
-                                    print(onboardingViewModel.selectedLocation ?? "no location")
                                 }
                             }
                         }
                         .listStyle(.plain)
+                        .padding(EdgeInsets(top: 0, leading: -20, bottom: 0, trailing: -20))  // extend list rows to edges of screen
                         .scrollIndicators(.hidden)
                     } else {
-                        // invalid/empty input
+                        // show error message is invalid input
                         Text(onboardingViewModel.locationErrorPrompt)
                             .padding(.top, 20)
                             .foregroundStyle(.secondary)
@@ -95,20 +92,17 @@ struct OnboardingLocationView: View {
                 // buttons
                 VStack(spacing: 15) {
                     Button("Skip for now") {
-                        print("skip button pressed")
-
                         Task {
                             try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: "")
                             
                             await authViewModel.fetchUser()
                         }
+                        // show NavBarView() when press button
                         navigateToNavBar = true
                     }
                     .font(.subheadline)
                     
                     Button("Done") {
-                        print("done button pressed")
-                        
                         Task {
                             if let selectedLocation = onboardingViewModel.selectedLocation?.placemark.title {
                                 try await authViewModel.saveOnboardingDetails(favouriteGenres: onboardingViewModel.selectedGenres, location: selectedLocation)
@@ -119,12 +113,15 @@ struct OnboardingLocationView: View {
                         navigateToNavBar = true
                     }
                     .onboardingButtonStyle()
+                    // can't press button if haven't selected a location
                     .disabled(onboardingViewModel.selectedLocation == nil)
                     
                     Text("You can update your preferences from your profile")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
+                .padding(.top, 5)
+                // triggers when press buttons
                 .navigationDestination(isPresented: $navigateToNavBar) {
                     NavBarView()
                 }

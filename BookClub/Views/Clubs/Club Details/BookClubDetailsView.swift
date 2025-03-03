@@ -11,7 +11,6 @@ struct BookClubDetailsView: View {
     var bookClub: BookClub
     var moderatorName: String
     var isModerator: Bool
-    var isOnline: Bool  // is book club online?
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -52,7 +51,7 @@ struct BookClubDetailsView: View {
                     
                 // upcoming events scheduled
                 VStack {
-                    ClubDetailsEventsView(isModerator: isModerator, isOnline: isOnline)
+                    ClubDetailsEventsView(eventViewModel: EventViewModel(), bookClub: bookClub, isModerator: isModerator)
                 }
                 .padding([.horizontal, .bottom])
             }
@@ -62,5 +61,5 @@ struct BookClubDetailsView: View {
 }
 
 #Preview {
-    BookClubDetailsView(bookClub: BookClub(name: "romance", moderatorId: "123", description: "we read romance here!", genre: "romance", meetingType: "online", isPublic: true, creationDate: Date(timeIntervalSinceNow: 0)), moderatorName: "moderator name", isModerator: true, isOnline: true)
+    BookClubDetailsView(bookClub: BookClub(name: "romance", moderatorId: "123", description: "we read romance here!", genre: "romance", meetingType: "online", isPublic: true, creationDate: Date(timeIntervalSinceNow: 0)), moderatorName: "moderator name", isModerator: true)
 }

@@ -71,6 +71,7 @@ struct SignUpView: View {
                             }
                         }
                         
+                        // visible when start typing password in gray
                         if authValidationViewModel.showPasswordPrompt {
                             Text("Password must be at least 6 characters and include an uppercase letter, number, and special character.")
                                 .foregroundStyle(authValidationViewModel.passwordPromptColor)  // turns red if invalid

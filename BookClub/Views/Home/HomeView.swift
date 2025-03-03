@@ -8,8 +8,8 @@
 import SwiftUI
 
 struct HomeView: View {
-    @EnvironmentObject var authViewModel: AuthViewModel  // to get user info?
-    @Binding var selectedTab: Int  // from NavBarView()
+    @EnvironmentObject var authViewModel: AuthViewModel  // to get user info
+    @Binding var selectedNavBarTab: Int  // from NavBarView()
 
     var body: some View {
         VStack(spacing: 20) {
@@ -19,22 +19,22 @@ struct HomeView: View {
                     .font(.largeTitle).bold()
                 Spacer()
                 // profile page
-                NavigationLink(destination: UserProfileView(authViewModel: authViewModel)) {
+                NavigationLink(destination: ProfileView(authViewModel: authViewModel)) {
                     Label("User Profile", systemImage: "person.fill")
                         .labelStyle(.iconOnly)
                         .font(.system(size: 24))
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.accent)
                 }
                 // notifications
                 NavigationLink(destination: NotificationsView()) {
                     Label("Notifications", systemImage: "bell.fill")
                         .labelStyle(.iconOnly)
                         .font(.system(size: 24))
-                        .foregroundStyle(.tint)
+                        .foregroundStyle(.accent)
                 }
             }
             
-            // clubs
+            // your clubs
             VStack(spacing: 10) {
                 HStack {
                     Text("Your Clubs")
@@ -42,10 +42,9 @@ struct HomeView: View {
                         .fontWeight(.semibold)
                     Spacer()
                     Button("View all") {
-                        selectedTab = 1  // clubs tab
+                        selectedNavBarTab = 1  // clubs tab
                     }
                 }
-                // make row view
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ViewTemplates.bookClubRow(clubName: "Book Club Name")
@@ -55,7 +54,7 @@ struct HomeView: View {
                 }
             }
             
-            // events
+            // upcoming events
             VStack(spacing: 10) {
                 HStack {
                     Text("Your Upcoming Events")
@@ -63,13 +62,11 @@ struct HomeView: View {
                         .fontWeight(.semibold)
                     Spacer()
                     Button("View all") {
-                        selectedTab = 2  // events tab
+                        selectedNavBarTab = 2  // events tab
                     }
                 }
-                // list view
-                ScrollView(.vertical, showsIndicators: false) {
-                    YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Waterstones Piccadilly", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
-                }
+                // list view of events
+                
             }
         }
         .padding()
@@ -77,6 +74,6 @@ struct HomeView: View {
 }
 
 #Preview {
-    HomeView(selectedTab: .constant(0))
+    HomeView(selectedNavBarTab: .constant(0))
         .environmentObject(AuthViewModel())
 }

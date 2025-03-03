@@ -11,12 +11,12 @@ import SwiftUI
 
 struct NavBarView: View {
     // when using nav links to switch to other navbar tabs on home screen
-    @State private var selectedTab: Int = 0
+    @State private var selectedNavBarTab: Int = 0
 
     var body: some View {
         NavigationStack {
-            TabView(selection: $selectedTab) {
-                HomeView(selectedTab: $selectedTab)
+            TabView(selection: $selectedNavBarTab) {
+                HomeView(selectedNavBarTab: $selectedNavBarTab)
                     .tabItem {
                         Label("Home", systemImage: "house")
                     }
@@ -41,6 +41,11 @@ struct NavBarView: View {
                         Label("Messages", systemImage: "bubble")
                     }
                     .tag(4)
+                
+                fetchEvent(eventViewModel: EventViewModel())
+                    .tabItem {
+                        Label("Test", systemImage: "face.smiling")
+                    }
             }
         }
         .navigationBarBackButtonHidden(true)

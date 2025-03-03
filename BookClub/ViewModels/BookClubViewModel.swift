@@ -32,7 +32,7 @@ class BookClubViewModel: ObservableObject {
             
             print("saved new club details successfully")
         } catch {
-            print("failed to save new club details")
+            print("failed to save new club details: \(error.localizedDescription)")
         }
     }
     

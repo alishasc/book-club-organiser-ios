@@ -91,7 +91,7 @@ struct EventsView: View {
                     .fontWeight(.semibold)
                     
                     if showUpcomingEvents {
-                        YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Waterstones Piccadilly", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
+                        // events list
                     }
                 }
                 
@@ -113,7 +113,7 @@ struct EventsView: View {
                     .padding(.top, 15)
                     
                     if showDiscoverEvents {
-                        YourEventsListView(clubName: "Fantasy Book Club", clubRead: "Onyx Storm", location: "Waterstones Piccadilly", date: "Mon 01 Jan", time: "12:00", spacesLeft: 5)
+                        // events list
                     }
                 }
             }

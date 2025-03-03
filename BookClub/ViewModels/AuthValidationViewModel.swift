@@ -12,7 +12,7 @@ import SwiftUI
 
 @MainActor
 class AuthValidationViewModel: ObservableObject  {
-    @Published var name: String = ""
+    @Published var name: String = ""  // only on sign up
     @Published var email: String = ""
     @Published var password: String = ""
     // changes to true after pressing login/sign up
