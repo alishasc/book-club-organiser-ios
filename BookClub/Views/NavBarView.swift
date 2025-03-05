@@ -41,11 +41,6 @@ struct NavBarView: View {
                         Label("Messages", systemImage: "bubble")
                     }
                     .tag(4)
-                
-                fetchEvent(eventViewModel: EventViewModel())
-                    .tabItem {
-                        Label("Test", systemImage: "face.smiling")
-                    }
             }
         }
         .navigationBarBackButtonHidden(true)

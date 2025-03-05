@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct CreateClubView: View {
     let genreChoices: [String] = ["Art & Design", "Biography", "Business", "Children's Fiction", "Classics", "Contemporary", "Education", "Fantasy", "Food", "Graphic Novels", "Historical Fiction", "History", "Horror", "Humour", "LGBTQ+", "Mystery", "Music", "Myths & Legends", "Nature & Environment", "Personal Growth", "Poetry", "Politics", "Psychology", "Religion & Spirituality", "Romance", "Science", "Science-Fiction", "Short Stories", "Sports", "Technology", "Thriller", "Travel", "True Crime", "Wellness", "Young Adult"]
@@ -25,27 +26,60 @@ struct CreateClubView: View {
     @State private var meetingType: String = "Online"
     @State private var isPublic: Bool = false
     let creationDate: Date = Date.now  // current date and time
-    @State private var goToClubDetails: Bool = false
+    @State private var showClubDetails: Bool = false
+    
+    // for selecting photo
+    @State private var pickerItem: PhotosPickerItem?
+    @State private var selectedImage: Image?
     
     var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 10) {
-                Text("Cover image")
-                    .fontWeight(.medium)
+                // so cover image title and edit picture are on top of selected image
                 ZStack {
-                    RoundedRectangle(cornerRadius: 10)
-                        .frame(height: 180)
-                        .foregroundColor(.quaternaryHex)
-                    Button {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-                    } label: {
-                        Label("Add cover image", systemImage: "plus")
-                            .labelStyle(.iconOnly)
-                            .font(.system(size: 60))
-                            .bold()
-                            .foregroundStyle(.white)
-                    }
-                }
+                    VStack(alignment: .leading, spacing: 10) {
+                        // cover image
+                        HStack {
+                            Text("Cover image")
+                                .fontWeight(.medium)
+                            // edit picture once selected
+                            if selectedImage != nil {
+                                Spacer()
+                                PhotosPicker(selection: $pickerItem, matching: .images) {
+                                    Text("Edit picture")
+                                        .foregroundStyle(.customBlue)
+                                        .fontWeight(.medium)
+                                }
+                            }
+                        }
+                        .zIndex(1)  // put hstack at top of zstack
+                        
+                        // pick cover image
+                        if selectedImage == nil {
+                            ZStack {
+                                RoundedRectangle(cornerRadius: 10)
+                                    .frame(height: 180)
+                                    .foregroundColor(.quaternaryHex)
+                                
+                                PhotosPicker(selection: $pickerItem, matching: .images) {
+                                    Label("Add cover image", systemImage: "plus")
+                                        .labelStyle(.iconOnly)
+                                        .font(.system(size: 60)).bold()
+                                        .foregroundStyle(.white)
+                                }
+                            }
+                        } else {
+                            selectedImage?
+                                .resizable()
+                                .scaledToFill()
+                                .frame(height: 180)
+                                .cornerRadius(10)
+                                .onTapGesture {
+                                    print("tapped edit")
+                                }
+                        }
+                    } // vstack
+                } // zstack
                 
                 ViewTemplates.textField(placeholder: "Club name", input: $name, isSecureField: false)
                     .focused($focusedField, equals: .clubName)
@@ -60,10 +94,10 @@ struct CreateClubView: View {
                         focusedField = nil
                     }
                     .onChange(of: description) {
-                        wordCount = getWordCount(str: description)
+                        wordCount = bookClubViewModel.getWordCount(str: description)
                         
+                        // can't add more than 40 words
                         if wordCount == 41 {
-                            // can't add more than 40 words
                             description.removeLast()
                         }
                     }
@@ -75,6 +109,7 @@ struct CreateClubView: View {
                         .foregroundStyle(.secondary)
                 }
                 
+                // choose club genre
                 HStack {
                     Text("What genre best describes your club?")
                         .fontWeight(.medium)
@@ -87,6 +122,7 @@ struct CreateClubView: View {
                     .pickerStyle(.navigationLink)
                 }
                 
+                // club online or in-person?
                 HStack {
                     Text("Where will your club meet?")
                         .fontWeight(.medium)
@@ -101,6 +137,7 @@ struct CreateClubView: View {
             }
             .padding(.bottom, 15)
             
+            // make club public to everyone?
             Toggle(isOn: $isPublic) {
                 Text("Make club public")
                     .fontWeight(.medium)
@@ -124,24 +161,22 @@ struct CreateClubView: View {
                     }
                     
                     // show the club details for the new club after pressing confirm
-//                    goToClubDetails = true
+                    showClubDetails = true
                 }
                 .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
             }
         }
-//        .navigationDestination(isPresented: $goToClubDetails) {
-//            BookClubDetailsView(bookClubViewModel: bookClubViewModel)
-//        }
+        .onChange(of: pickerItem) {
+            Task {
+                selectedImage = try await pickerItem?.loadTransferable(type: Image.self)
+            }
+        }
+        .navigationDestination(isPresented: $showClubDetails) {
+            if let bookClub = bookClubViewModel.bookClub {
+                BookClubDetailsView(eventViewModel: EventViewModel(), bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
+            }
+        }
     }
-}
-
-// move func to view model
-// ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
-func getWordCount(str: String) -> Int {
-    let chararacterSet = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
-    let components = str.components(separatedBy: chararacterSet)
-    let words = components.filter { !$0.isEmpty }
-    return words.count
 }
 
 #Preview {

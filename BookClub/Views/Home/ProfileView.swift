@@ -6,10 +6,11 @@
 //
 
 import SwiftUI
+import PhotosUI
 
 struct ProfileView: View {
     var authViewModel: AuthViewModel
-    
+
     var body: some View {
         VStack(spacing: 30) {
             // personal details

@@ -65,8 +65,8 @@ struct HomeView: View {
                         selectedNavBarTab = 2  // events tab
                     }
                 }
-                // list view of events
-                
+                // scrollview of events the user is ATTENDING - replace spacer
+                Spacer()
             }
         }
         .padding()

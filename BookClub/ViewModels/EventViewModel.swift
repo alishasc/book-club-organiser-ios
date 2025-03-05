@@ -15,12 +15,13 @@ import FirebaseAuth
 class EventViewModel: ObservableObject {
     @Published var fetchedEvents: [Event] = []
     
-    init() {
-        Task {
-            try await fetchEvents()
-        }
-    }
+//    init() {
+//        Task {
+//            try await fetchEvents()
+//        }
+//    }
     
+    // add event to database
     func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: String) async throws {
         // id of current user will be moderator
         guard let moderatorId = Auth.auth().currentUser?.uid else {
@@ -40,6 +41,7 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    // fetches all events from database
     func fetchEvents() async throws {
         print("fetch events")
         self.fetchedEvents.removeAll()  // empty array when try fetch information again - so doesn't duplicate

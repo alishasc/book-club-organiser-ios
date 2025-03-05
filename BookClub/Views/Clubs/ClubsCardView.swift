@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct ClubsListView: View {
+struct ClubsCardView: View {
     //    var coverImage...
     var clubName: String
     
@@ -28,5 +28,5 @@ struct ClubsListView: View {
 }
 
 #Preview {
-    ClubsListView(clubName: "Romance Book Club")
+    ClubsCardView(clubName: "Romance Book Club")
 }

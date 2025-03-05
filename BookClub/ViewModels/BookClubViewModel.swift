@@ -15,6 +15,14 @@ class BookClubViewModel: ObservableObject {
     @Published var createdClubs: [BookClub] = []  // store any created clubs fetched from firestore
     @Published var bookClub: BookClub?  // updated when tap club in clubs list - when fetch one book club
     @Published var moderatorName: String = ""
+    
+    // ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
+    func getWordCount(str: String) -> Int {
+        let chararacterSet = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+        let components = str.components(separatedBy: chararacterSet)
+        let words = components.filter { !$0.isEmpty }
+        return words.count
+    }
 
     // when a user creates a new book club - save to firebase
     func saveNewClub(name: String, description: String, genre: String, meetingType: String, isPublic: Bool, creationDate: Date) async throws {
@@ -29,8 +37,11 @@ class BookClubViewModel: ObservableObject {
         do {
             // make new document with info from bookClub object
             try db.collection("BookClub").document(bookClub.id.uuidString).setData(from: bookClub)
-            
             print("saved new club details successfully")
+            
+            // when make new book club, show details of club straight away - set them
+            self.bookClub = bookClub
+            try await fetchModeratorDetails(moderatorId: userId)
         } catch {
             print("failed to save new club details: \(error.localizedDescription)")
         }

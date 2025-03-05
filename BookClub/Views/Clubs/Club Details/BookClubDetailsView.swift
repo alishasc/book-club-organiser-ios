@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BookClubDetailsView: View {
+    @StateObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var moderatorName: String
     var isModerator: Bool
@@ -51,15 +52,20 @@ struct BookClubDetailsView: View {
                     
                 // upcoming events scheduled
                 VStack {
-                    ClubDetailsEventsView(eventViewModel: EventViewModel(), bookClub: bookClub, isModerator: isModerator)
+                    ClubDetailsEventsView(eventViewModel: eventViewModel, bookClub: bookClub, isModerator: isModerator)
                 }
                 .padding([.horizontal, .bottom])
             }
         }
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
+        .onAppear {
+            Task {
+                try await eventViewModel.fetchEvents()
+            }
+        }
     }
 }
 
 #Preview {
-    BookClubDetailsView(bookClub: BookClub(name: "romance", moderatorId: "123", description: "we read romance here!", genre: "romance", meetingType: "online", isPublic: true, creationDate: Date(timeIntervalSinceNow: 0)), moderatorName: "moderator name", isModerator: true)
+    BookClubDetailsView(eventViewModel: EventViewModel(), bookClub: BookClub(name: "romance", moderatorId: "123", description: "we read romance here!", genre: "romance", meetingType: "online", isPublic: true, creationDate: Date(timeIntervalSinceNow: 0)), moderatorName: "moderator name", isModerator: true)
 }
