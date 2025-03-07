@@ -72,7 +72,7 @@ struct CreateEventView: View {
                     ViewTemplates.textField(placeholder: "Virtual meeting link", input: $meetingLink, isSecureField: false)
                         .focused($focusedField, equals: .location)
                         .onSubmit {
-                            focusedField = nil
+                            focusedField = nil 
                         }
                 } else {
                     // use mapkit for this to search location?

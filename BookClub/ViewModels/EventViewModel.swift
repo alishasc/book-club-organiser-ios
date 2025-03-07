@@ -13,7 +13,8 @@ import FirebaseAuth
 
 @MainActor
 class EventViewModel: ObservableObject {
-    @Published var fetchedEvents: [Event] = []
+    @Published var fetchedEvents: [Event] = []  // rename to allFetchedEvents?
+    @Published var selectedClubEvents: [Event] = []  // when view club details
     
 //    init() {
 //        Task {
@@ -58,6 +59,26 @@ class EventViewModel: ObservableObject {
             print("success getting event documents")
         } catch {
             print("error getting event documents: \(error.localizedDescription)")
+        }
+    }
+    
+    // fetch events only for selected club
+    func fetchSelectedClubEvents(bookClubId: UUID) async throws {
+        print("fetch selected club events")
+        self.selectedClubEvents.removeAll()
+        
+        let db = Firestore.firestore()
+        
+        do {
+            let querySnapshot = try await db.collection("Event").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+            for document in querySnapshot.documents {
+                let event = try document.data(as: Event.self)
+                self.selectedClubEvents.append(event)
+            }
+            
+            print("success getting events")
+        } catch {
+            print("error getting events: \(error.localizedDescription)")
         }
     }
 

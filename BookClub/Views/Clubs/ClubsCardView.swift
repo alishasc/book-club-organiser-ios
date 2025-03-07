@@ -15,7 +15,7 @@ struct ClubsCardView: View {
         ZStack(alignment: .bottomLeading) {
             Rectangle()  // replace with cover image
                 .foregroundStyle(.quaternary)
-                .frame(height: 150)
+                .frame(height: 180)  // change?
                 .cornerRadius(10)
                 .shadow(color: .gray, radius: 5, x: 0, y: 5)
             Text(clubName)

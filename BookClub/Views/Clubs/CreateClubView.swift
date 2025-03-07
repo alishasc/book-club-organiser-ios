@@ -18,6 +18,7 @@ struct CreateClubView: View {
     }
     
     @StateObject var bookClubViewModel: BookClubViewModel
+    @StateObject var photosPickerViewModel = PhotosPickerViewModel()
     @FocusState private var focusedField: Field?  // to navigate between textfields
     @State private var name: String = ""
     @State private var description: String = ""
@@ -25,13 +26,8 @@ struct CreateClubView: View {
     @State private var genre: String = "Art & Design"
     @State private var meetingType: String = "Online"
     @State private var isPublic: Bool = false
-    let creationDate: Date = Date.now  // current date and time
     @State private var showClubDetails: Bool = false
-    
-    // for selecting photo
-    @State private var pickerItem: PhotosPickerItem?
-    @State private var selectedImage: Image?
-    
+
     var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 10) {
@@ -43,25 +39,32 @@ struct CreateClubView: View {
                             Text("Cover image")
                                 .fontWeight(.medium)
                             // edit picture once selected
-                            if selectedImage != nil {
+                            if photosPickerViewModel.selectedImage != nil {
                                 Spacer()
-                                PhotosPicker(selection: $pickerItem, matching: .images) {
-                                    Text("Edit picture")
+                                PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
+                                    Text("Edit")
                                         .foregroundStyle(.customBlue)
                                         .fontWeight(.medium)
                                 }
+                                
+                                Button("Remove") {
+                                    photosPickerViewModel.pickerItem = nil
+                                    photosPickerViewModel.selectedImage = nil
+                                }
+                                .foregroundStyle(.red)
+                                .fontWeight(.medium)
                             }
                         }
                         .zIndex(1)  // put hstack at top of zstack
                         
                         // pick cover image
-                        if selectedImage == nil {
+                        if photosPickerViewModel.selectedImage == nil {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
                                     .frame(height: 180)
                                     .foregroundColor(.quaternaryHex)
                                 
-                                PhotosPicker(selection: $pickerItem, matching: .images) {
+                                PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
                                     Label("Add cover image", systemImage: "plus")
                                         .labelStyle(.iconOnly)
                                         .font(.system(size: 60)).bold()
@@ -69,14 +72,16 @@ struct CreateClubView: View {
                                 }
                             }
                         } else {
-                            selectedImage?
-                                .resizable()
-                                .scaledToFill()
-                                .frame(height: 180)
-                                .cornerRadius(10)
-                                .onTapGesture {
-                                    print("tapped edit")
+                            if let image = photosPickerViewModel.selectedImage {
+                                GeometryReader { geometry in
+                                    Image(uiImage: image)
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: geometry.size.width, height: 180)  // of image
+                                        .cornerRadius(10)
                                 }
+                                .frame(height: 180)  // constrict GeometryReader height
+                            }
                         }
                     } // vstack
                 } // zstack
@@ -149,6 +154,20 @@ struct CreateClubView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             
             Spacer()
+            
+            // delete this
+            Button("Upload photo") {
+                Task {
+                    try await photosPickerViewModel.uploadPhoto(bookClubId: bookClubViewModel.bookClub?.id ?? UUID())
+                }
+            }
+            
+            Button("Retrieve Image Doc") {
+                Task {
+                    try await photosPickerViewModel.retrieveCoverImage(bookClubId: bookClubViewModel.bookClub?.id ?? UUID())
+                }
+            }
+            // delete this
         }
         .padding()
         .navigationTitle("Create a New Club")
@@ -157,7 +176,7 @@ struct CreateClubView: View {
                 Button("Confirm") {
                     // save new club details to firebase
                     Task {
-                        try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: creationDate)
+                        try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: Date.now)
                     }
                     
                     // show the club details for the new club after pressing confirm
@@ -166,14 +185,9 @@ struct CreateClubView: View {
                 .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
             }
         }
-        .onChange(of: pickerItem) {
-            Task {
-                selectedImage = try await pickerItem?.loadTransferable(type: Image.self)
-            }
-        }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(eventViewModel: EventViewModel(), bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
+                BookClubDetailsView(eventViewModel: EventViewModel(), photosPickerViewModel: photosPickerViewModel, bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
             }
         }
     }

@@ -21,7 +21,7 @@ struct NavBarView: View {
                         Label("Home", systemImage: "house")
                     }
                     .tag(0)
-                ClubsView(bookClubViewModel: BookClubViewModel())
+                ClubsView(eventViewModel: EventViewModel(), bookClubViewModel: BookClubViewModel())
                     .tabItem {
                         Label("Clubs", systemImage: "book")
                     }

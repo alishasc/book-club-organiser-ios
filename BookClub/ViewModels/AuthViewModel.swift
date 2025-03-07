@@ -15,12 +15,9 @@ import MapKit
 class AuthViewModel: ObservableObject {
     @Published var userSession: FirebaseAuth.User?
     @Published var currentUser: User?
-    @Published var userIsLoggedIn = false
-    // for login
-    @Published var invalidEmailPrompt = ""
-    @Published var invalidCredentialPrompt = ""
+    @Published var userIsLoggedIn: Bool = false
     // for sign up
-    @Published var isEmailInUse = false  // return if email already in use when sign up
+    @Published var isEmailInUse: Bool = false  // return if email already in use when sign up
     @Published var isNewUser: Bool = false  // go to onboarding if just signed up
     
     init() {
@@ -145,8 +142,6 @@ class AuthViewModel: ObservableObject {
             userSession = nil
             currentUser = nil
             isNewUser = false
-            invalidEmailPrompt = ""
-            invalidCredentialPrompt = ""
             print("sign out successful")
         } catch let signOutError as NSError {
             print("Error signing out:", signOutError)

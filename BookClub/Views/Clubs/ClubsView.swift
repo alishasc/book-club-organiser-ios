@@ -12,6 +12,7 @@ import FirebaseAuth
 
 struct ClubsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @StateObject var eventViewModel: EventViewModel
     @StateObject var bookClubViewModel: BookClubViewModel
     @State private var selectedItem: Int = 0  // for Picker
     @State private var selectedFilter: Int = 0  // for club type filters
@@ -84,15 +85,16 @@ struct ClubsView: View {
                     ForEach(bookClubViewModel.createdClubs) { club in
                         ClubsCardView(clubName: club.name)
                             .onTapGesture {
-                                // get the details of the selected club
+                                // to get the details of the selected club
                                 selectedClub = club
                                 
                                 // if the selected club has an id
                                 if let selectedClubId = selectedClub?.id {
                                     Task {
-                                        // fetch tapped book clubs details from firestore
-                                        try await bookClubViewModel.fetchOneBookClub(bookClubId: selectedClubId)
-                                        try await bookClubViewModel.fetchModeratorDetails(moderatorId: bookClubViewModel.bookClub?.moderatorId ?? "")
+                                        // fetch selected club and moderator details from firestore
+                                        try await bookClubViewModel.fetchBookClubDetails(bookClubId: selectedClubId)
+                                        try await eventViewModel.fetchSelectedClubEvents(bookClubId: selectedClubId)
+                                        
                                         // trigger club details screen to show
                                         showClubDetails = true
                                     }
@@ -103,6 +105,7 @@ struct ClubsView: View {
                     .listRowSeparator(.hidden)
                 }
                 .listStyle(.plain)
+                .scrollIndicators(.hidden)
             }
         }
         .padding()
@@ -112,7 +115,7 @@ struct ClubsView: View {
                 try await bookClubViewModel.fetchCreatedBookClubs()
             }
         }
-        // fix this!!
+        // show book club details page for new club
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
                 BookClubDetailsView(eventViewModel: EventViewModel(), bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: bookClubViewModel.moderatorName == authViewModel.currentUser?.name ? true : false)
@@ -122,5 +125,5 @@ struct ClubsView: View {
 }
 
 #Preview {
-    ClubsView(bookClubViewModel: BookClubViewModel())
+    ClubsView(eventViewModel: EventViewModel(), bookClubViewModel: BookClubViewModel())
 }

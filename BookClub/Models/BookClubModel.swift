@@ -12,6 +12,7 @@ struct BookClub: Identifiable, Codable {
     var id: UUID = UUID()
     let name: String
     let moderatorId: String  // userId string
+    let coverImage: String?
 //    let members: [String]  // array of userId string - or map??
     let description: String
     let genre: String
