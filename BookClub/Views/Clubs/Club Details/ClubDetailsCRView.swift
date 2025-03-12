@@ -10,7 +10,7 @@ import SwiftUI
 // this will be filled with book API information
 
 struct ClubDetailsCRView: View {
-    //    var cover: Image
+    var cover: String
     var title: String
     var author: String
     var genre: String
@@ -38,11 +38,15 @@ struct ClubDetailsCRView: View {
             //                NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
             HStack(spacing: 15) {
                 // book cover
-                Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image?
-                    .resizable()
-                    .frame(width: 80, height: 120)
-                    .background(.customPink)
-                
+                AsyncImage(url: URL(string: cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: ""))) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                } placeholder: {
+                    ProgressView()
+                }
+                .frame(width: 80, height: 120)
+
                 // book info
                 VStack(alignment: .leading) {
                     Text(title)
@@ -73,5 +77,5 @@ struct ClubDetailsCRView: View {
 }
 
 #Preview {
-    ClubDetailsCRView(title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: true)
+    ClubDetailsCRView(cover: "http://books.google.com/books/content?id=H-v8EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: true)
 }

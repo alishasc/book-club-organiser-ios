@@ -21,7 +21,7 @@ struct NavBarView: View {
                         Label("Home", systemImage: "house")
                     }
                     .tag(0)
-                ClubsView(eventViewModel: EventViewModel(), bookClubViewModel: BookClubViewModel())
+                ClubsView()
                     .tabItem {
                         Label("Clubs", systemImage: "book")
                     }
@@ -41,6 +41,11 @@ struct NavBarView: View {
                         Label("Messages", systemImage: "bubble")
                     }
                     .tag(4)
+                
+                testBook(viewModel: BookViewModel())
+                    .tabItem {
+                        Label("Book", systemImage: "face.smiling")
+                    }
             }
         }
         .navigationBarBackButtonHidden(true)

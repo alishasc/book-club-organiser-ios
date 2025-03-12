@@ -33,6 +33,7 @@ struct HomeView: View {
                         .foregroundStyle(.accent)
                 }
             }
+            .padding([.top, .horizontal])
             
             // your clubs
             VStack(spacing: 10) {
@@ -45,12 +46,14 @@ struct HomeView: View {
                         selectedNavBarTab = 1  // clubs tab
                     }
                 }
+                .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ViewTemplates.bookClubRow(clubName: "Book Club Name")
                         ViewTemplates.bookClubRow(clubName: "Book Club Name")
                         ViewTemplates.bookClubRow(clubName: "Book Club Name")
                     }
+                    .padding(.horizontal)
                 }
             }
             
@@ -65,11 +68,12 @@ struct HomeView: View {
                         selectedNavBarTab = 2  // events tab
                     }
                 }
+                
                 // scrollview of events the user is ATTENDING - replace spacer
                 Spacer()
             }
+            .padding([.horizontal, .bottom])
         }
-        .padding()
     }
 }
 

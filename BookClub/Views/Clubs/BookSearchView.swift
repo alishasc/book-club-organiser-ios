@@ -9,6 +9,7 @@ import SwiftUI
 
 struct BookSearchView: View {
     @Environment(\.dismiss) private var dismiss  // change back button
+    @EnvironmentObject private var bookClubViewModel: BookClubViewModel
     @StateObject var bookViewModel: BookViewModel
     @State private var searchQuery: String = ""
     @State private var isBookSelected: Bool = false
@@ -35,38 +36,7 @@ struct BookSearchView: View {
             if !bookViewModel.booksList.isEmpty {
                 List() {
                     ForEach(bookViewModel.booksList) { book in
-                        ZStack(alignment: .leading) {
-                            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                            // highlight tapped option
-                                .foregroundStyle(book.id == bookViewModel.selectedBook?.id ? .accent : .clear)
-                            
-                            HStack(spacing: 15) {
-                                AsyncImage(url: URL(string: book.cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: ""))) { image in
-                                    image
-                                        .resizable()
-                                        .scaledToFit()
-                                } placeholder: {
-                                    ProgressView()
-                                }
-                                .frame(width: 80, height: 122)
-                                
-                                // book info
-                                VStack(alignment: .leading) {
-                                    Text(book.title)
-                                        .fontWeight(.semibold)
-                                        .lineLimit(2)
-                                    Text(book.author)
-                                        .font(.subheadline)
-                                        .lineLimit(1)
-                                    Text(book.genre)
-                                        .font(.subheadline)
-                                        .padding(.bottom, 4)
-                                        .lineLimit(1)
-                                }
-                                .foregroundStyle(book.id == bookViewModel.selectedBook?.id ? .white : .primary)
-                            }
-                            .padding(.horizontal)
-                        }
+                        BookSearchResultView(book: book, selectedBook: bookViewModel.selectedBook)
                         .onTapGesture {
                             isBookSelected = true  // toggle foreground/background colour change
                             bookViewModel.selectedBook = book
@@ -108,7 +78,15 @@ struct BookSearchView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
-                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    // save chosen book to db
+                    Task {
+                        if let bookClub = bookClubViewModel.bookClub,
+                           let selectedBook = bookViewModel.selectedBook {
+                            try await bookViewModel.saveBook(bookClubId: bookClub.id, book: selectedBook)
+                        }
+                    }
+                    
+                    dismiss()
                 }
                 .disabled(bookViewModel.selectedBook == nil)
             }
