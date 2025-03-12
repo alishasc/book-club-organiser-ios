@@ -17,6 +17,7 @@ struct EventsView: View {
             // title
             Text("Events")
                 .font(.largeTitle).bold()
+                .padding([.top, .horizontal])
             
             // event type filters
             ScrollView(.horizontal, showsIndicators: false) {
@@ -61,20 +62,22 @@ struct EventsView: View {
                     .buttonStyle(.bordered)
                     .buttonBorderShape(.capsule)
                 }
+                .padding(.horizontal)
             }
             
-            // date scrollview
+            // dates
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(1..<8) { index in
                         EventDatesView(dateStr: "Mon", dateInt: index)
                     }
                 }
+                .padding(.horizontal)
             }
             .padding(.bottom, 5)
             
             ScrollView(.vertical, showsIndicators: false) {
-                // your upcoming events title
+                // your upcoming events
                 VStack(spacing: 10) {
                     HStack {
                         Text("Your Upcoming Events")
@@ -95,7 +98,7 @@ struct EventsView: View {
                     }
                 }
                 
-                // discover events title
+                // discover events
                 VStack(spacing: 10) {
                     HStack {
                         Text("Discover Events")
@@ -117,10 +120,10 @@ struct EventsView: View {
                     }
                 }
             }
+            .padding([.bottom, .horizontal])
             
             Spacer()
         }
-        .padding()
     }
 }
 

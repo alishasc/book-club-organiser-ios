@@ -16,7 +16,7 @@ struct Event: Identifiable, Codable {
     var dateAndTime: Date
     var duration: Int
     var maxCapacity: Int
-    var attendeesCount: Int = 0  // default value
+    var attendeesCount: Int = 0
     var eventStatus: String = "upcoming"
     var meetingLink: String?
     var location: String?

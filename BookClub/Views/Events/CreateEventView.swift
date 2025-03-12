@@ -10,6 +10,7 @@ import SwiftUI
 // form to create a new event
 
 struct CreateEventView: View {
+    @Environment(\.dismiss) private var dismiss
     @StateObject var eventViewModel: EventViewModel
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     
@@ -28,6 +29,7 @@ struct CreateEventView: View {
     @State private var maxCapacity: Int = 14  // add one to this later because of Picker
     @State private var meetingLink: String = ""
     @State private var location: String = ""
+    @State private var showClubDetails: Bool = false
     
     var body: some View {
         VStack {
@@ -109,8 +111,14 @@ struct CreateEventView: View {
                     // call function to save new event
                     Task {
                         try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: location)
+                        
+                        dismiss()  // go back to previous screen
                     }
                 }
+                .disabled(
+                    (meetingType == "Online" && (title.isEmpty || meetingLink.isEmpty)) ||
+                    (meetingType == "In-Person" && (title.isEmpty || location.isEmpty))
+                )
             }
         }
     }

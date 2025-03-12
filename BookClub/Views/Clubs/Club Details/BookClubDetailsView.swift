@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct BookClubDetailsView: View {
-    @StateObject var eventViewModel: EventViewModel
-    @StateObject var photosPickerViewModel = PhotosPickerViewModel()
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
+    @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
     var bookClub: BookClub
     var moderatorName: String
     var isModerator: Bool
@@ -20,7 +21,7 @@ struct BookClubDetailsView: View {
                 // cover image and title
                 ZStack(alignment: .bottomLeading) {
                     // cover image
-                    if let coverImage = photosPickerViewModel.coverImage {
+                    if let coverImage = bookClubViewModel.coverImages[bookClub.id] {
                         GeometryReader { geometry in
                             Image(uiImage: coverImage)
                                 .resizable()
@@ -42,6 +43,7 @@ struct BookClubDetailsView: View {
                         .padding([.leading, .bottom], 15)
                 }
                 
+                // moderator/member info and current read
                 VStack(alignment: .leading, spacing: 20) {
                     // moderator and members info
                     ClubDetailsMembersView(moderatorName: moderatorName)
@@ -49,7 +51,7 @@ struct BookClubDetailsView: View {
                     ClubDetailsAboutView(description: bookClub.description)
                     
                     // get book details for this!
-                    ClubDetailsCRView(title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: isModerator)
+                    ClubDetailsCRView(cover: "http://books.google.com/books/content?id=H-v8EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: isModerator)
                 }
                 .padding(.horizontal)
                 
@@ -67,14 +69,11 @@ struct BookClubDetailsView: View {
         .onAppear {
             Task {
                 try await eventViewModel.fetchEvents()  // get latest events
-                if let coverImage = bookClub.coverImage {
-                    try await photosPickerViewModel.retrieveCoverImage2(coverImage: coverImage)  // get image for specified string saved for current BookClub showing
-                }
             }
         }
     }
 }
 
 //#Preview {
-//    BookClubDetailsView(eventViewModel: EventViewModel(), bookClub: BookClub(name: "romance", moderatorId: "123", coverImage: "", description: "we read romance here!", genre: "romance", meetingType: "online", isPublic: true, creationDate: Date(timeIntervalSinceNow: 0)), moderatorName: "moderator name", isModerator: true)
+//    BookClubDetailsView()
 //}

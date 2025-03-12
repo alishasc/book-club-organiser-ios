@@ -25,6 +25,8 @@ struct ClubDetailsEventsView: View {
                     // go to screen to create new event
                     NavigationLink(destination: CreateEventView(eventViewModel: EventViewModel(), meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
                         Text(Image(systemName: "plus"))
+                            .font(.system(size: 24))
+                            .foregroundStyle(.customBlue)
                     }
                 }
             }

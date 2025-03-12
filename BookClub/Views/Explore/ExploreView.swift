@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-import SwiftUI
-
 struct ExploreView: View {
     let genreFilter: [String] = ["All", "Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
     @State private var searchInput: String = ""
@@ -18,7 +16,9 @@ struct ExploreView: View {
             VStack(alignment: .leading, spacing: 20) {
                 Text("Explore")
                     .font(.largeTitle).bold()
+                    .padding([.top, .horizontal])
                 
+                // search bar
                 HStack {
                     Image(systemName: "magnifyingglass")
                         .padding(.leading, 10)  // inside textfield
@@ -27,6 +27,7 @@ struct ExploreView: View {
                 }
                 .background(.quinary)
                 .cornerRadius(10)
+                .padding(.horizontal)
                 
                 // circle genre filters
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -41,6 +42,7 @@ struct ExploreView: View {
                             }
                         }
                     }
+                    .padding(.horizontal)
                 }
                 
                 // popular clubs
@@ -48,6 +50,7 @@ struct ExploreView: View {
                     Text("Popular Clubs")
                         .font(.title2)
                         .fontWeight(.semibold)
+                        .padding(.horizontal)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -55,6 +58,7 @@ struct ExploreView: View {
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                         }
+                        .padding(.horizontal)
                     }
                 }
                 
@@ -69,6 +73,7 @@ struct ExploreView: View {
                             Text("View all")
                         }
                     }
+                    .padding(.horizontal)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -76,6 +81,7 @@ struct ExploreView: View {
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                         }
+                        .padding(.horizontal)
                     }
                 }
                 
@@ -90,6 +96,7 @@ struct ExploreView: View {
                             Text("View all")
                         }
                     }
+                    .padding(.horizontal)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
@@ -97,10 +104,11 @@ struct ExploreView: View {
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                             ViewTemplates.bookClubRow(clubName: "Book Club Name")
                         }
+                        .padding(.horizontal)
                     }
                 }
             }
-            .padding()
+            .padding(.bottom)
         }
     }
 }

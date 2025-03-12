@@ -8,11 +8,11 @@
 import Foundation
 import FirebaseFirestore
 
-struct BookResponse: Decodable {
+struct BookResponse: Codable {
     let items: [Book]
 }
 
-struct Book: Identifiable, Decodable {
+struct Book: Identifiable, Codable {
     let id: String  // actual id from json response
     let title: String
     let author: String
@@ -20,6 +20,7 @@ struct Book: Identifiable, Decodable {
     let pageCount: Int
     let genre: String
     let cover: String
+    let dateRead: Date?
     
     // forKey: ...
     enum CodingKeys: String, CodingKey {
@@ -34,6 +35,7 @@ struct Book: Identifiable, Decodable {
         case thumbnail
     }
     
+    // decode from API
     init(from decoder: any Decoder) throws {
         // outer container
         let container = try decoder.container(keyedBy: CodingKeys.self)
@@ -57,7 +59,28 @@ struct Book: Identifiable, Decodable {
         if let imageLinksContainer = try? volumeInfoContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .imageLinks) {
             cover = try imageLinksContainer.decodeIfPresent(String.self, forKey: .thumbnail) ?? ""
         } else {
-            cover = "image not found"
+            cover = "Image not found"
         }
+        
+        // not coming from the API
+        dateRead = nil
+    }
+    
+    // to conform to Encodable - do opposite of decoding
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(id, forKey: .id)
+        
+        var volumeInfoContainer = container.nestedContainer(keyedBy: CodingKeys.self, forKey: .volumeInfo)
+        try volumeInfoContainer.encode(title, forKey: .title)
+        try volumeInfoContainer.encode(description, forKey: .description)
+        try volumeInfoContainer.encode(pageCount, forKey: .pageCount)
+        
+        // split string into separate authors and then save as array
+        try volumeInfoContainer.encode(author.split(separator: ", ").map { String($0) }, forKey: .authors)
+        try volumeInfoContainer.encode([genre], forKey: .categories)  // decoded from array so encode back to array
+        
+        var imageLinksContainer = volumeInfoContainer.nestedContainer(keyedBy: CodingKeys.self, forKey: .imageLinks)
+        try imageLinksContainer.encode(cover, forKey: .thumbnail)
     }
 }

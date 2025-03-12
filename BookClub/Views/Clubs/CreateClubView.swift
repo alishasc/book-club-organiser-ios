@@ -9,7 +9,6 @@ import SwiftUI
 import PhotosUI
 
 struct CreateClubView: View {
-    let genreChoices: [String] = ["Art & Design", "Biography", "Business", "Children's Fiction", "Classics", "Contemporary", "Education", "Fantasy", "Food", "Graphic Novels", "Historical Fiction", "History", "Horror", "Humour", "LGBTQ+", "Mystery", "Music", "Myths & Legends", "Nature & Environment", "Personal Growth", "Poetry", "Politics", "Psychology", "Religion & Spirituality", "Romance", "Science", "Science-Fiction", "Short Stories", "Sports", "Technology", "Thriller", "Travel", "True Crime", "Wellness", "Young Adult"]
     let meetingTypeChoices: [String] = ["Online", "In-Person"]
     
     // textfields
@@ -17,17 +16,17 @@ struct CreateClubView: View {
         case clubName, description
     }
     
-    @StateObject var bookClubViewModel: BookClubViewModel
-    @StateObject var photosPickerViewModel = PhotosPickerViewModel()
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
     @FocusState private var focusedField: Field?  // to navigate between textfields
     @State private var name: String = ""
     @State private var description: String = ""
     @State private var wordCount: Int = 0
     @State private var genre: String = "Art & Design"
     @State private var meetingType: String = "Online"
-    @State private var isPublic: Bool = false
+    @State private var isPublic: Bool = true
     @State private var showClubDetails: Bool = false
-
+    
     var body: some View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 10) {
@@ -38,7 +37,7 @@ struct CreateClubView: View {
                         HStack {
                             Text("Cover image")
                                 .fontWeight(.medium)
-                            // edit picture once selected
+                            // edit or remove picture after selected
                             if photosPickerViewModel.selectedImage != nil {
                                 Spacer()
                                 PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
@@ -57,7 +56,7 @@ struct CreateClubView: View {
                         }
                         .zIndex(1)  // put hstack at top of zstack
                         
-                        // pick cover image
+                        // show photo picker or the selected image
                         if photosPickerViewModel.selectedImage == nil {
                             ZStack {
                                 RoundedRectangle(cornerRadius: 10)
@@ -92,7 +91,6 @@ struct CreateClubView: View {
                         focusedField = .description
                     }
                 
-                // change submit label do 'done'
                 ViewTemplates.textField(placeholder: "Description", input: $description, isSecureField: false)
                     .focused($focusedField, equals: .description)
                     .onSubmit {
@@ -100,7 +98,6 @@ struct CreateClubView: View {
                     }
                     .onChange(of: description) {
                         wordCount = bookClubViewModel.getWordCount(str: description)
-                        
                         // can't add more than 40 words
                         if wordCount == 41 {
                             description.removeLast()
@@ -120,14 +117,14 @@ struct CreateClubView: View {
                         .fontWeight(.medium)
                     Spacer()
                     Picker("", selection: $genre) {
-                        ForEach(genreChoices, id: \.self) {
+                        ForEach(bookClubViewModel.genreChoices, id: \.self) {
                             Text($0)
                         }
                     }
                     .pickerStyle(.navigationLink)
                 }
                 
-                // club online or in-person?
+                // is the club online or in-person?
                 HStack {
                     Text("Where will your club meet?")
                         .fontWeight(.medium)
@@ -142,7 +139,7 @@ struct CreateClubView: View {
             }
             .padding(.bottom, 15)
             
-            // make club public to everyone?
+            // make the club public to everyone?
             Toggle(isOn: $isPublic) {
                 Text("Make club public")
                     .fontWeight(.medium)
@@ -154,20 +151,6 @@ struct CreateClubView: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             
             Spacer()
-            
-            // delete this
-            Button("Upload photo") {
-                Task {
-                    try await photosPickerViewModel.uploadPhoto(bookClubId: bookClubViewModel.bookClub?.id ?? UUID())
-                }
-            }
-            
-            Button("Retrieve Image Doc") {
-                Task {
-                    try await photosPickerViewModel.retrieveCoverImage(bookClubId: bookClubViewModel.bookClub?.id ?? UUID())
-                }
-            }
-            // delete this
         }
         .padding()
         .navigationTitle("Create a New Club")
@@ -176,23 +159,27 @@ struct CreateClubView: View {
                 Button("Confirm") {
                     // save new club details to firebase
                     Task {
-                        try await bookClubViewModel.saveNewClub(name: name, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: Date.now)
+                        print("selectedImage: \(photosPickerViewModel.selectedImage != nil ? "not nil" : "nil")")  // nil atm
+                        
+                        try await bookClubViewModel.saveNewClub(name: name, coverImage: photosPickerViewModel.selectedImage ?? UIImage(named: "banner") ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
                     }
                     
-                    // show the club details for the new club after pressing confirm
+                    // show details of new club after press confirm
                     showClubDetails = true
+                    photosPickerViewModel.selectedImage = nil  // reset image selection
                 }
-                .disabled(name.isEmpty || description.isEmpty)  // can't press if form not filled
+                .disabled(name.isEmpty || description.isEmpty)  // complete form to submit
             }
         }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(eventViewModel: EventViewModel(), photosPickerViewModel: photosPickerViewModel, bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
+                BookClubDetailsView(bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
             }
         }
     }
 }
 
 #Preview {
-    CreateClubView(bookClubViewModel: BookClubViewModel())
+    CreateClubView()
+        .environmentObject(BookClubViewModel())
 }

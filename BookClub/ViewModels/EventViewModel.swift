@@ -13,7 +13,7 @@ import FirebaseAuth
 
 @MainActor
 class EventViewModel: ObservableObject {
-    @Published var fetchedEvents: [Event] = []  // rename to allFetchedEvents?
+    @Published var fetchedEvents: [Event] = []
     @Published var selectedClubEvents: [Event] = []  // when view club details
     
 //    init() {
@@ -55,8 +55,6 @@ class EventViewModel: ObservableObject {
                 let event = try document.data(as: Event.self)
                 self.fetchedEvents.append(event)
             }
-            
-            print("success getting event documents")
         } catch {
             print("error getting event documents: \(error.localizedDescription)")
         }
@@ -75,8 +73,6 @@ class EventViewModel: ObservableObject {
                 let event = try document.data(as: Event.self)
                 self.selectedClubEvents.append(event)
             }
-            
-            print("success getting events")
         } catch {
             print("error getting events: \(error.localizedDescription)")
         }

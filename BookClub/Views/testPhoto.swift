@@ -8,20 +8,25 @@
 import SwiftUI
 
 struct testPhoto: View {
-    @StateObject var viewModel = PhotosPickerViewModel()
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
     
     var body: some View {
+//        let coverImage = bookClubViewModel.coverImages[]
+
         VStack {
-            if let coverImage = viewModel.coverImage {
-                GeometryReader { geometry in
-                    Image(uiImage: coverImage)
+            List {
+                ForEach(Array(bookClubViewModel.coverImages), id: \.key) { bookClubId, image in
+                    Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: geometry.size.width, height: 180)  // of image
-                        .cornerRadius(10)
+                        .frame(width: 300, height: 200)
                 }
-                .frame(height: 180)  // constrict GeometryReader height
             }
+            
+//            Image(uiImage: coverImage)
+//                .resizable()
+//                .scaledToFill()
+//                .frame(width: 300, height: 200)
         }
         .padding()
     }
