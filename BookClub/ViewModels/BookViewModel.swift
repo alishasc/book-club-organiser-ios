@@ -37,10 +37,22 @@ class BookViewModel: ObservableObject {
     // add book to db
     func saveBook(bookClubId: UUID, book: Book) async throws {
         print("save book to db")
-                
+
         do {
             let db = Firestore.firestore()
-            try db.collection("Book").document(bookClubId.uuidString).setData(from: book)
+            try db.collection("Book").document(book.id).setData(from: book)
+            
+//            let dateRead = Date.now
+//            try await db.collection("Book").document(bookClubId.uuidString).setData([
+//                "id": book.id,
+//                "title": book.title,
+//                "author": book.author,
+//                "description": book.description,
+//                "pageCount": book.pageCount,
+//                "genre": book.genre,
+//                "cover": book.cover,
+//                "dateRead": dateRead
+//            ], merge: true)
             
             print("saved book to db :)")
         } catch {
@@ -48,14 +60,14 @@ class BookViewModel: ObservableObject {
         }
     }
 
-    // get book from db
-    func fetchBookDetails(bookClubId: String) async throws {
+    // get book from db - use the book's id
+    func fetchBookDetails(bookId: String) async throws {
         print("fetch book details")
         
         let db = Firestore.firestore()
         
         do {
-            let snapshot = try? await db.collection("Book").document(bookClubId).getDocument()
+            let snapshot = try? await db.collection("Book").document(bookId).getDocument()
             self.fetchedBook = try snapshot?.data(as: Book.self)
             
             print("fetched book from db :)")

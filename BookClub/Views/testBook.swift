@@ -38,7 +38,7 @@ struct testBook: View {
         }
         .onAppear {
             Task {
-                try await viewModel.fetchBookDetails(bookClubId: "09139FDD-4A7A-47CB-BAF5-40347FD3C91E")
+                try await viewModel.fetchBookDetails(bookId: "E-OLEAAAQBAJ")
             }
         }
     }

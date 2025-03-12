@@ -20,7 +20,6 @@ struct Book: Identifiable, Codable {
     let pageCount: Int
     let genre: String
     let cover: String
-    let dateRead: Date?
     
     // forKey: ...
     enum CodingKeys: String, CodingKey {
@@ -61,9 +60,6 @@ struct Book: Identifiable, Codable {
         } else {
             cover = "Image not found"
         }
-        
-        // not coming from the API
-        dateRead = nil
     }
     
     // to conform to Encodable - do opposite of decoding
