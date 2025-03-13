@@ -5,8 +5,6 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
-// ref: https://github.com/happyiosdeveloper/swiftui-tagview?tab=readme-ov-file
-
 import SwiftUI
 
 class ViewTemplates {
@@ -56,18 +54,19 @@ class ViewTemplates {
     }
     
     // on home and explore pages
-    static func bookClubRow(clubName: String) -> some View {
+    static func bookClubRow(coverImage: UIImage, clubName: String) -> some View {
         ZStack(alignment: .bottomLeading) {
-            Rectangle()
-                .foregroundStyle(.quaternary)
+            Image(uiImage: coverImage)
+                .resizable()
+                .scaledToFill()
                 .frame(width: 240, height: 150)
                 .cornerRadius(10)
                 .shadow(color: .gray, radius: 5, x: 0, y: 5)
-            Text("Book Club Name")
+            Text(clubName)
                 .font(.title3)
                 .fontWeight(.semibold)
-                .padding(.leading, 15)
-                .padding(.bottom, 10)
+                .foregroundStyle(.white)
+                .padding([.leading, .bottom], 15)
         }
     }
     

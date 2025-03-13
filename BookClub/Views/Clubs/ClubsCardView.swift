@@ -13,11 +13,16 @@ struct ClubsCardView: View {
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
-            Image(uiImage: coverImage)
-                .resizable()
-                .frame(height: 160)
-                .cornerRadius(10)
-                .shadow(color: .gray, radius: 5, x: 0, y: 5)
+            GeometryReader { geometry in
+                Image(uiImage: coverImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geometry.size.width, height: 160)  // of image
+                    .cornerRadius(10)
+                    .clipped()
+            }
+            .frame(height: 160)  // constrict GeometryReader height
+            
             Text(clubName)
                 .font(.title)
                 .fontWeight(.semibold)

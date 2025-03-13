@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct LoginView: View {
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
     @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
@@ -89,6 +90,7 @@ struct LoginView: View {
                         if authValidationViewModel.isLoginFormValid() {
                             Task {
                                 try await authViewModel.logIn(email: authValidationViewModel.email, password: authValidationViewModel.password)
+                                try await bookClubViewModel.fetchBookClubs()
                             }
                         } else {
                             // show any error prompts for invalid field inputs

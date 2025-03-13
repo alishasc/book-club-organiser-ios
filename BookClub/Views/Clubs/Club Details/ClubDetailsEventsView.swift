@@ -8,8 +8,9 @@
 import SwiftUI
 
 struct ClubDetailsEventsView: View {
-    @StateObject var eventViewModel: EventViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
+    var coverImage: UIImage
     var isModerator: Bool
 
     var body: some View {
@@ -23,7 +24,7 @@ struct ClubDetailsEventsView: View {
                 
                 if isModerator {
                     // go to screen to create new event
-                    NavigationLink(destination: CreateEventView(eventViewModel: EventViewModel(), meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
+                    NavigationLink(destination: CreateEventView(meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
                         Text(Image(systemName: "plus"))
                             .font(.system(size: 24))
                             .foregroundStyle(.customBlue)
@@ -34,9 +35,9 @@ struct ClubDetailsEventsView: View {
             // only show events for shown book club
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
-                    ForEach(eventViewModel.fetchedEvents) { event in
+                    ForEach(eventViewModel.allEvents) { event in
                         if event.bookClubId == bookClub.id {
-                            ClubDetailsUpcomingEventsView(eventViewModel: EventViewModel(), bookClub: bookClub, eventTitle: event.eventTitle, location: event.location ?? "Online", dateAndTime: event.dateAndTime, spacesLeft: event.maxCapacity - event.attendeesCount, isModerator: isModerator)
+                            EventsRowView(bookClub: bookClub, coverImage: coverImage, event: event, isModerator: isModerator)
                         }
                     }
                     .padding(.bottom)

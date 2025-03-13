@@ -11,7 +11,7 @@ import SwiftUI
 
 struct CreateEventView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject var eventViewModel: EventViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     
     // textfields
@@ -125,5 +125,5 @@ struct CreateEventView: View {
 }
 
 #Preview {
-    CreateEventView(eventViewModel: EventViewModel(), meetingType: "Online", bookClubId: UUID())
+    CreateEventView(meetingType: "Online", bookClubId: UUID())
 }

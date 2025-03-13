@@ -19,11 +19,9 @@ struct ClubDetailsMembersView: View {
             // mooderator info
             HStack(spacing: 15) {
                 // moderator profile pic
-                Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)
-                    .resizable()
+                Circle()
                     .frame(width: 50, height: 50)
-                    .background(.customYellow)
-                    .clipShape(Circle())
+                    .foregroundStyle(.customYellow)
                 
                 // moderator name
                 VStack(alignment: .leading) {
@@ -46,26 +44,18 @@ struct ClubDetailsMembersView: View {
                 // member profile pics
                 HStack(spacing: -5) {
                     // add ForEach loop here for club members? max 4 pics
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)
-                        .resizable()
+                    Circle()
                         .frame(width: 30, height: 30)
-                        .background(.customYellow)
-                        .clipShape(Circle())
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)
-                        .resizable()
+                        .foregroundStyle(.customYellow)
+                    Circle()
                         .frame(width: 30, height: 30)
-                        .background(.customGreen)
-                        .clipShape(Circle())
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)
-                        .resizable()
+                        .foregroundStyle(.customGreen)
+                    Circle()
                         .frame(width: 30, height: 30)
-                        .background(.customPink)
-                        .clipShape(Circle())
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)
-                        .resizable()
+                        .foregroundStyle(.customPink)
+                    Circle()
                         .frame(width: 30, height: 30)
-                        .background(.customBlue)
-                        .clipShape(Circle())
+                        .foregroundStyle(.customBlue)
                 }
             }
         }

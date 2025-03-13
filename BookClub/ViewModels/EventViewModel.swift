@@ -13,7 +13,7 @@ import FirebaseAuth
 
 @MainActor
 class EventViewModel: ObservableObject {
-    @Published var fetchedEvents: [Event] = []
+    @Published var allEvents: [Event] = []
     @Published var selectedClubEvents: [Event] = []  // when view club details
     
 //    init() {
@@ -44,8 +44,7 @@ class EventViewModel: ObservableObject {
     
     // fetches all events from database
     func fetchEvents() async throws {
-        print("fetch events")
-        self.fetchedEvents.removeAll()  // empty array when try fetch information again - so doesn't duplicate
+        self.allEvents.removeAll()  // empty array when try fetch information again - so doesn't duplicate
         
         let db = Firestore.firestore()
         
@@ -53,7 +52,7 @@ class EventViewModel: ObservableObject {
             let querySnapshot = try await db.collection("Event").getDocuments()
             for document in querySnapshot.documents {
                 let event = try document.data(as: Event.self)
-                self.fetchedEvents.append(event)
+                self.allEvents.append(event)
             }
         } catch {
             print("error getting event documents: \(error.localizedDescription)")

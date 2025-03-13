@@ -9,6 +9,7 @@ import SwiftUI
 import PhotosUI
 
 struct ProfileView: View {
+    var bookClubViewModel: BookClubViewModel
     var authViewModel: AuthViewModel
 
     var body: some View {
@@ -44,7 +45,7 @@ struct ProfileView: View {
                     }
                     Spacer()
                     VStack {
-                        Text("0")
+                        Text("\(bookClubViewModel.createdClubs.count)")
                             .font(.title2).bold()
                         Text("clubs created")
                             .font(.subheadline)
@@ -116,5 +117,5 @@ struct ProfileView: View {
 }
 
 #Preview {
-    ProfileView(authViewModel: AuthViewModel())
+    ProfileView(bookClubViewModel: BookClubViewModel(), authViewModel: AuthViewModel())
 }

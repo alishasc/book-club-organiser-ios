@@ -14,6 +14,7 @@ struct ClubsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var bookViewModel: BookViewModel
     @State private var selectedItem: Int = 0  // for Picker
     @State private var selectedFilter: Int = 0  // for club type filters
     @State private var selectedClub: BookClub?  // when tap on a club in list
@@ -88,21 +89,11 @@ struct ClubsView: View {
                         // check what club filter is selected
                         if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
-                                .onTapGesture {
-                                    // to get the details of the selected club
-                                    selectedClub = club
-                                    
-                                    // if the selected club has an id
-                                    if let selectedClubId = selectedClub?.id {
-                                        Task {
-                                            // fetch selected club and moderator details
-                                            try await bookClubViewModel.fetchBookClubDetails(bookClubId: selectedClubId)
-                                            
-                                            // trigger club details screen to show
-                                            showClubDetails = true
-                                        }
-                                    }
-                                }
+                                .background(
+                                    // hide navigation link arrows
+                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false))
+                                        .opacity(0)
+                                )
                         }
                     }
                     .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))  // set padding of each row
@@ -113,19 +104,6 @@ struct ClubsView: View {
             }
         }
         .padding()
-        .onAppear {
-            Task {
-                // try fetching any created clubs if any
-                try await bookClubViewModel.fetchCreatedBookClubs()
-            }
-        }
-        // show book club details page for new club
-        .navigationDestination(isPresented: $showClubDetails) {
-            // if book club has been selected
-            if let selectedClub {
-                BookClubDetailsView(bookClub: selectedClub, moderatorName: bookClubViewModel.moderatorName, isModerator: bookClubViewModel.moderatorName == authViewModel.currentUser?.name ? true : false)
-            }
-        }
     }
 }
 

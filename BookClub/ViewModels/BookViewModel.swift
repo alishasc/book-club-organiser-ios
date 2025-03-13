@@ -10,7 +10,7 @@ import FirebaseFirestore
 
 @MainActor
 class BookViewModel: ObservableObject {
-    @Published var fetchedBook: Book?  // loaded from db
+//    @Published var currentRead: Book?  // loaded from db
     @Published var booksList: [Book] = []  // when search for books
     @Published var selectedBook: Book?  // when search for books
     
@@ -40,19 +40,12 @@ class BookViewModel: ObservableObject {
 
         do {
             let db = Firestore.firestore()
-            try db.collection("Book").document(book.id).setData(from: book)
-            
-//            let dateRead = Date.now
-//            try await db.collection("Book").document(bookClubId.uuidString).setData([
-//                "id": book.id,
-//                "title": book.title,
-//                "author": book.author,
-//                "description": book.description,
-//                "pageCount": book.pageCount,
-//                "genre": book.genre,
-//                "cover": book.cover,
-//                "dateRead": dateRead
-//            ], merge: true)
+            try db.collection("Book").document(book.id).setData(from: book)  // add to Book collection
+
+            // save as current read in BookClub collection
+            try await db.collection("BookClub").document(bookClubId.uuidString).setData([
+                "currentBookId": book.id
+            ], merge: true)
             
             print("saved book to db :)")
         } catch {
@@ -61,19 +54,22 @@ class BookViewModel: ObservableObject {
     }
 
     // get book from db - use the book's id
-    func fetchBookDetails(bookId: String) async throws {
+    func fetchBookDetails(bookId: String) async throws -> Book? {
         print("fetch book details")
         
         let db = Firestore.firestore()
-        
+        var currentRead: Book?
+                
         do {
             let snapshot = try? await db.collection("Book").document(bookId).getDocument()
-            self.fetchedBook = try snapshot?.data(as: Book.self)
-            
+            currentRead = try snapshot?.data(as: Book.self)
+                        
             print("fetched book from db :)")
         } catch {
             print("error fetching book from db: \(error.localizedDescription)")
         }
+        
+        return currentRead
     }
     
     
@@ -81,7 +77,10 @@ class BookViewModel: ObservableObject {
     
     
     
-    // delete??
+    
+    
+    
+
 //    func fetchOneBook(searchQuery: String) async throws {
 //        // replace J4QUEAAAQBAJ with book id var
 //        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/J4QUEAAAQBAJ?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"  // love hypothesis

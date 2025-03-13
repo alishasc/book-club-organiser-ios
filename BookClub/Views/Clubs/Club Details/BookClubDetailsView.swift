@@ -10,9 +10,9 @@ import SwiftUI
 struct BookClubDetailsView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
-    @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
+    @EnvironmentObject var bookViewModel: BookViewModel
+    @State private var currentRead: Book?
     var bookClub: BookClub
-    var moderatorName: String
     var isModerator: Bool
     
     var body: some View {
@@ -27,6 +27,7 @@ struct BookClubDetailsView: View {
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: geometry.size.width, height: 200)  // of image
+                                .clipped()
                         }
                         .frame(height: 200)  // constrict GeometryReader height
                     } else {
@@ -46,12 +47,12 @@ struct BookClubDetailsView: View {
                 // moderator/member info and current read
                 VStack(alignment: .leading, spacing: 20) {
                     // moderator and members info
-                    ClubDetailsMembersView(moderatorName: moderatorName)
+                    ClubDetailsMembersView(moderatorName: bookClub.moderatorName)
                     
                     ClubDetailsAboutView(description: bookClub.description)
                     
-                    // get book details for this!
-                    ClubDetailsCRView(cover: "http://books.google.com/books/content?id=H-v8EAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&source=gbs_api", title: "Onyx Storm", author: "Rebecca Yarros", genre: "Fantasy", synopsis: "After nearly eighteen months at Basgiath War College, Violet Sorrengail knows there's no more time for lessons. No more time for uncertainty. Because the battle has truly begun, and with enemies closing in from outside their walls and within their ranks, it's impossible to know who to trust.", isModerator: isModerator)
+                    // current read
+                    ClubDetailsCRView(bookClub: bookClub, currentRead: currentRead, isModerator: isModerator)
                 }
                 .padding(.horizontal)
                 
@@ -60,15 +61,42 @@ struct BookClubDetailsView: View {
                 
                 // upcoming events scheduled
                 VStack {
-                    ClubDetailsEventsView(eventViewModel: eventViewModel, bookClub: bookClub, isModerator: isModerator)
+                    ClubDetailsEventsView(bookClub: bookClub, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: isModerator)
                 }
                 .padding([.horizontal, .bottom])
+                
+                Spacer()
+                
+                Button("Delete") {
+                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                }
             }
         }
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .onAppear {
             Task {
                 try await eventViewModel.fetchEvents()  // get latest events
+                
+                if bookClub.currentBookId != nil {
+                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")  // to show current read info
+                }
+            }
+        }
+        .toolbar {
+            if isModerator {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Edit") {
+                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    }
+                    .foregroundStyle(.customPink)
+                }
+            } else {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Join") {
+                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                    }
+                    .foregroundStyle(.customPink)
+                }
             }
         }
     }

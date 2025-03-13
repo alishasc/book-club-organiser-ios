@@ -16,9 +16,10 @@ struct CreateClubView: View {
         case clubName, description
     }
     
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
-    @FocusState private var focusedField: Field?  // to navigate between textfields
+    @FocusState private var focusedField: Field?  // navigate between textfields
     @State private var name: String = ""
     @State private var description: String = ""
     @State private var wordCount: Int = 0
@@ -26,6 +27,8 @@ struct CreateClubView: View {
     @State private var meetingType: String = "Online"
     @State private var isPublic: Bool = true
     @State private var showClubDetails: Bool = false
+    
+    @State private var selectedImage: UIImage?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -157,11 +160,17 @@ struct CreateClubView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
-                    // save new club details to firebase
-                    Task {
-                        print("selectedImage: \(photosPickerViewModel.selectedImage != nil ? "not nil" : "nil")")  // nil atm
-                        
-                        try await bookClubViewModel.saveNewClub(name: name, coverImage: photosPickerViewModel.selectedImage ?? UIImage(named: "banner") ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
+                    // save new club to db
+                    if let selectedImage = photosPickerViewModel.selectedImage {
+                        // if user chose a cover image
+                        Task {
+                            try await bookClubViewModel.saveNewClub(name: name, moderatorName: authViewModel.currentUser?.name ?? "", coverImage: selectedImage, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
+                        }
+                    } else {
+                        // if use didn't choose image - set one as default
+                        Task {
+                            try await bookClubViewModel.saveNewClub(name: name, moderatorName: authViewModel.currentUser?.name ?? "", coverImage: UIImage(named: "banner") ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
+                        }
                     }
                     
                     // show details of new club after press confirm
@@ -173,7 +182,7 @@ struct CreateClubView: View {
         }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
+                BookClubDetailsView(bookClub: bookClub, isModerator: true)
             }
         }
     }

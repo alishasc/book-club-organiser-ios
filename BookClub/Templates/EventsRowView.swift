@@ -7,13 +7,11 @@
 
 import SwiftUI
 
-struct ClubDetailsUpcomingEventsView: View {
-    @StateObject var eventViewModel: EventViewModel
+struct EventsRowView: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
-    var eventTitle: String
-    var location: String
-    var dateAndTime: Date
-    var spacesLeft: Int
+    var coverImage: UIImage
+    var event: Event
     var isModerator: Bool
     
     var body: some View {
@@ -27,9 +25,9 @@ struct ClubDetailsUpcomingEventsView: View {
             
             HStack {
                 // image
-                UnevenRoundedRectangle(topLeadingRadius: 10, bottomLeadingRadius: 10, bottomTrailingRadius: 0, topTrailingRadius: 0)
-                    .foregroundStyle(.gray)
-                    .frame(width: 110)
+                Image(uiImage: coverImage)
+                    .resizable()
+                    .frame(width: 110, height: 120)
                     .padding(.trailing, 5)
                 
                 // text event info
@@ -37,18 +35,18 @@ struct ClubDetailsUpcomingEventsView: View {
                     Text(bookClub.name)
                         .fontWeight(.semibold)
                         .lineLimit(1)
-                    Text(eventTitle)
+                    Text(event.eventTitle)
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .lineLimit(1)
-                    Text(location)
+                    Text(event.location ?? "Online")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
-                    Text(ViewTemplates.dateFormatter(dateAndTime: dateAndTime))
+                    Text(ViewTemplates.dateFormatter(dateAndTime: event.dateAndTime))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text("\(spacesLeft) spaces left")
+                    Text("\(event.maxCapacity - event.attendeesCount) spaces left")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }

@@ -42,10 +42,10 @@ struct NavBarView: View {
                     }
                     .tag(4)
                 
-                testBook(viewModel: BookViewModel())
-                    .tabItem {
-                        Label("Book", systemImage: "face.smiling")
-                    }
+//                testBook(viewModel: BookViewModel())
+//                    .tabItem {
+//                        Label("Book", systemImage: "face.smiling")
+//                    }
             }
         }
         .navigationBarBackButtonHidden(true)

@@ -81,7 +81,6 @@ class AuthViewModel: ObservableObject {
             
             // create instance of Firestore
             let db = Firestore.firestore()
-            
             let userRef = db.collection("User").document(id)
             
             try await userRef.setData([
