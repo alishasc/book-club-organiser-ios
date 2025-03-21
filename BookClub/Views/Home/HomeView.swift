@@ -11,7 +11,7 @@ struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthViewModel  // to get user info
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @Binding var selectedNavBarTab: Int  // from NavBarView()
-
+    
     var body: some View {
         VStack(spacing: 20) {
             // header
@@ -49,12 +49,10 @@ struct HomeView: View {
                 }
                 .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
-//                    HStack {
-//                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                    }
-//                    .padding(.horizontal)
+                    //                    HStack {
+                    //                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
+                    //                    }
+                    //                    .padding(.horizontal)
                 }
             }
             

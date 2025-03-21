@@ -20,6 +20,7 @@ struct ClubsCardView: View {
                     .frame(width: geometry.size.width, height: 160)  // of image
                     .cornerRadius(10)
                     .clipped()
+                    .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)  // drop shadow
             }
             .frame(height: 160)  // constrict GeometryReader height
             

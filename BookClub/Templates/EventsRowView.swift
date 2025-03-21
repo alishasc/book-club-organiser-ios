@@ -10,9 +10,10 @@ import SwiftUI
 struct EventsRowView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
-    var coverImage: UIImage
     var event: Event
+    var coverImage: UIImage
     var isModerator: Bool
+    @State private var isEventSheetPresented: Bool = false
     
     var body: some View {
         ZStack {
@@ -27,8 +28,10 @@ struct EventsRowView: View {
                 // image
                 Image(uiImage: coverImage)
                     .resizable()
+                    .scaledToFill()
                     .frame(width: 110, height: 120)
                     .padding(.trailing, 5)
+                    .clipped()
                 
                 // text event info
                 VStack(alignment: .leading) {
@@ -82,6 +85,15 @@ struct EventsRowView: View {
             .cornerRadius(10)
         }
         .padding(.horizontal, 2)  // to show drop shadow on edges
+        .onTapGesture {
+            isEventSheetPresented = true
+        }
+        .sheet(isPresented: $isEventSheetPresented) {
+            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
+                .onTapGesture {
+                    print("tapped")
+                }
+        }
     }
 }
 

@@ -15,18 +15,12 @@ import FirebaseAuth
 class EventViewModel: ObservableObject {
     @Published var allEvents: [Event] = []
     @Published var selectedClubEvents: [Event] = []  // when view club details
-    
-//    init() {
-//        Task {
-//            try await fetchEvents()
-//        }
-//    }
-    
+
     // add event to database
     func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: String) async throws {
         // id of current user will be moderator
         guard let moderatorId = Auth.auth().currentUser?.uid else {
-            print("couldn't get the id to fetch details")
+            print("couldn't get user ID to fetch details")
             return
         }
         
@@ -36,7 +30,6 @@ class EventViewModel: ObservableObject {
 
         do {
             try db.collection("Event").document(event.id.uuidString).setData(from: event)
-            print("saved new event details successfully")
         } catch {
             print("failed to save new event details: \(error.localizedDescription)")
         }

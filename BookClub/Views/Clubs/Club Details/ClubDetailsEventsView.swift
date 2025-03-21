@@ -15,6 +15,7 @@ struct ClubDetailsEventsView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // heading
             HStack {
                 Text("Upcoming Events")
                     .font(.title3)
@@ -31,16 +32,17 @@ struct ClubDetailsEventsView: View {
                     }
                 }
             }
+            .padding(.horizontal)
 
             // only show events for shown book club
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
+                HStack(spacing: -20) {
                     ForEach(eventViewModel.allEvents) { event in
                         if event.bookClubId == bookClub.id {
-                            EventsRowView(bookClub: bookClub, coverImage: coverImage, event: event, isModerator: isModerator)
+                            EventsRowView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
                         }
                     }
-                    .padding(.bottom)
+                    .padding([.horizontal, .bottom])
                 }
             }
         }

@@ -21,20 +21,17 @@ struct BookClubDetailsView: View {
                 // cover image and title
                 ZStack(alignment: .bottomLeading) {
                     // cover image
-                    if let coverImage = bookClubViewModel.coverImages[bookClub.id] {
-                        GeometryReader { geometry in
+                    GeometryReader { geometry in
+                        // image from db
+                        if let coverImage = bookClubViewModel.coverImages[bookClub.id] {
                             Image(uiImage: coverImage)
                                 .resizable()
                                 .scaledToFill()
                                 .frame(width: geometry.size.width, height: 200)  // of image
                                 .clipped()
                         }
-                        .frame(height: 200)  // constrict GeometryReader height
-                    } else {
-                        Rectangle()
-                            .frame(height: 200)
-                            .foregroundStyle(.customGreen)
                     }
+                    .frame(height: 200)  // constrict GeometryReader height
                     
                     // title
                     Text(bookClub.name)
@@ -63,13 +60,8 @@ struct BookClubDetailsView: View {
                 VStack {
                     ClubDetailsEventsView(bookClub: bookClub, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: isModerator)
                 }
-                .padding([.horizontal, .bottom])
                 
                 Spacer()
-                
-                Button("Delete") {
-                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-                }
             }
         }
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
@@ -88,14 +80,12 @@ struct BookClubDetailsView: View {
                     Button("Edit") {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
-                    .foregroundStyle(.customPink)
                 }
             } else {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Join") {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
-                    .foregroundStyle(.customPink)
                 }
             }
         }

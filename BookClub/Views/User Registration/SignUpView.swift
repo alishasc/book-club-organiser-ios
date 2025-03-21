@@ -137,6 +137,7 @@ struct SignUpView: View {
                 }
             }
             .padding()
+            .ignoresSafeArea(.keyboard)
         }
         .navigationBarBackButtonHidden(true)
     }

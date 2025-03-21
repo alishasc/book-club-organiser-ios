@@ -133,6 +133,7 @@ struct LoginView: View {
                 }
             }
             .padding()
+            .ignoresSafeArea(.keyboard)
         }
         .navigationBarBackButtonHidden(true)
     }

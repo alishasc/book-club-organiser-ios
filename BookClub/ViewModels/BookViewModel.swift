@@ -36,8 +36,6 @@ class BookViewModel: ObservableObject {
     
     // add book to db
     func saveBook(bookClubId: UUID, book: Book) async throws {
-        print("save book to db")
-
         do {
             let db = Firestore.firestore()
             try db.collection("Book").document(book.id).setData(from: book)  // add to Book collection
@@ -46,8 +44,6 @@ class BookViewModel: ObservableObject {
             try await db.collection("BookClub").document(bookClubId.uuidString).setData([
                 "currentBookId": book.id
             ], merge: true)
-            
-            print("saved book to db :)")
         } catch {
             print("error saving book to db: \(error.localizedDescription)")
         }
@@ -55,16 +51,12 @@ class BookViewModel: ObservableObject {
 
     // get book from db - use the book's id
     func fetchBookDetails(bookId: String) async throws -> Book? {
-        print("fetch book details")
-        
         let db = Firestore.firestore()
         var currentRead: Book?
                 
         do {
             let snapshot = try? await db.collection("Book").document(bookId).getDocument()
             currentRead = try snapshot?.data(as: Book.self)
-                        
-            print("fetched book from db :)")
         } catch {
             print("error fetching book from db: \(error.localizedDescription)")
         }

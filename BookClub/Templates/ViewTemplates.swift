@@ -94,7 +94,19 @@ class ViewTemplates {
     
     static func dateFormatter(dateAndTime: Date) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "E dd MMM - hh:mm"  // e.g. Mon 03 Mar - 05:00
+        formatter.dateFormat = "E dd MMM - hh:mm"  // Mon 03 Mar - 05:00
+        return formatter.string(from: dateAndTime)
+    }
+    
+    static func eventSheetDateFormatter(dateAndTime: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE dd MMMM"  // Friday 21 March
+        return formatter.string(from: dateAndTime)
+    }
+    
+    static func eventSheetTimeFormatter(dateAndTime: Date) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh:mm a"  // 03:44 pm
         return formatter.string(from: dateAndTime)
     }
 }
