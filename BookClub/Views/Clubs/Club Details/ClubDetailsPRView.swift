@@ -17,28 +17,25 @@ struct ClubDetailsPRView: View {
             
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image??
-                        .resizable()
+                    Rectangle()
                         .frame(width: 100, height: 142)
-                        .background(.customBlue)
+                        .foregroundStyle(.customBlue)
                         .padding(15)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color.customBlue.opacity(0.3))
                         )
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image??
-                        .resizable()
+                    Rectangle()
                         .frame(width: 100, height: 142)
-                        .background(.customYellow)
+                        .foregroundStyle(.customYellow)
                         .padding(15)
                         .background(
                             RoundedRectangle(cornerRadius: 10)
                                 .fill(Color.customYellow.opacity(0.3))
                         )
-                    Image(/*@START_MENU_TOKEN@*/"Image Name"/*@END_MENU_TOKEN@*/)  // or async image??
-                        .resizable()
+                    Rectangle()
                         .frame(width: 100, height: 142)
-                        .background(.customPink)
+                        .foregroundStyle(.customPink)
                         .padding(15)
                         .background(
                             RoundedRectangle(cornerRadius: 10)

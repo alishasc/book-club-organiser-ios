@@ -9,23 +9,23 @@ import SwiftUI
 import PhotosUI
 
 struct CreateClubView: View {
-    let meetingTypeChoices: [String] = ["Online", "In-Person"]
-    
-    // textfields
-    enum Field: Hashable {
-        case clubName, description
-    }
-    
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
-    @FocusState private var focusedField: Field?  // to navigate between textfields
+    @FocusState private var focusedField: Field?  // navigate between textfields
+    // form fields
     @State private var name: String = ""
     @State private var description: String = ""
     @State private var wordCount: Int = 0
     @State private var genre: String = "Art & Design"
     @State private var meetingType: String = "Online"
-    @State private var isPublic: Bool = true
-    @State private var showClubDetails: Bool = false
+    @State private var isPublic: Bool = false
+    @State private var showClubDetails: Bool = false  // show club details after confirm
+    
+    // textfields
+    enum Field: Hashable {
+        case clubName, description
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -104,6 +104,7 @@ struct CreateClubView: View {
                         }
                     }
                 
+                // word count
                 HStack {
                     Spacer()
                     Text("\(wordCount)/40")
@@ -130,7 +131,7 @@ struct CreateClubView: View {
                         .fontWeight(.medium)
                     Spacer()
                     Picker("Where will your club meet?", selection: $meetingType) {
-                        ForEach(meetingTypeChoices, id: \.self) {
+                        ForEach(bookClubViewModel.meetingTypeChoices, id: \.self) {
                             Text($0)
                         }
                     }
@@ -153,17 +154,23 @@ struct CreateClubView: View {
             Spacer()
         }
         .padding()
+        .ignoresSafeArea(.keyboard)
         .navigationTitle("Create a New Club")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
-                    // save new club details to firebase
-                    Task {
-                        print("selectedImage: \(photosPickerViewModel.selectedImage != nil ? "not nil" : "nil")")  // nil atm
-                        
-                        try await bookClubViewModel.saveNewClub(name: name, coverImage: photosPickerViewModel.selectedImage ?? UIImage(named: "banner") ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
+                    let coverImage: UIImage?
+                    if let selectedImage = photosPickerViewModel.selectedImage {
+                        coverImage = selectedImage
+                    } else {
+                        coverImage = UIImage(named: "banner") ?? UIImage()
                     }
                     
+                    Task {
+                        // add new club to db
+                        try await bookClubViewModel.saveNewClub(name: name, moderatorName: authViewModel.currentUser?.name ?? "", coverImage: coverImage ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
+                    }
+
                     // show details of new club after press confirm
                     showClubDetails = true
                     photosPickerViewModel.selectedImage = nil  // reset image selection
@@ -173,7 +180,7 @@ struct CreateClubView: View {
         }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(bookClub: bookClub, moderatorName: bookClubViewModel.moderatorName, isModerator: true)
+                BookClubDetailsView(bookClub: bookClub, isModerator: true)
             }
         }
     }

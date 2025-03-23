@@ -9,8 +9,9 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthViewModel  // to get user info
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @Binding var selectedNavBarTab: Int  // from NavBarView()
-
+    
     var body: some View {
         VStack(spacing: 20) {
             // header
@@ -19,7 +20,7 @@ struct HomeView: View {
                     .font(.largeTitle).bold()
                 Spacer()
                 // profile page
-                NavigationLink(destination: ProfileView(authViewModel: authViewModel)) {
+                NavigationLink(destination: ProfileView(bookClubViewModel: bookClubViewModel, authViewModel: authViewModel)) {
                     Label("User Profile", systemImage: "person.fill")
                         .labelStyle(.iconOnly)
                         .font(.system(size: 24))
@@ -48,12 +49,10 @@ struct HomeView: View {
                 }
                 .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
-                    HStack {
-                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                    }
-                    .padding(.horizontal)
+                    //                    HStack {
+                    //                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
+                    //                    }
+                    //                    .padding(.horizontal)
                 }
             }
             

@@ -14,6 +14,7 @@ struct BookClubApp: App {
     @StateObject var bookClubViewModel = BookClubViewModel()
     @StateObject var eventViewModel = EventViewModel()
     @StateObject var photosPickerViewModel = PhotosPickerViewModel()
+    @StateObject var bookViewModel = BookViewModel()
     
     init() {
         FirebaseApp.configure()
@@ -26,6 +27,7 @@ struct BookClubApp: App {
                 .environmentObject(bookClubViewModel)
                 .environmentObject(eventViewModel)
                 .environmentObject(photosPickerViewModel)
+                .environmentObject(bookViewModel)
         }
     }
 }

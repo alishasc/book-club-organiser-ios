@@ -8,12 +8,14 @@
 import SwiftUI
 
 struct ClubDetailsEventsView: View {
-    @StateObject var eventViewModel: EventViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
+    var coverImage: UIImage
     var isModerator: Bool
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
+            // heading
             HStack {
                 Text("Upcoming Events")
                     .font(.title3)
@@ -23,23 +25,24 @@ struct ClubDetailsEventsView: View {
                 
                 if isModerator {
                     // go to screen to create new event
-                    NavigationLink(destination: CreateEventView(eventViewModel: EventViewModel(), meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
+                    NavigationLink(destination: CreateEventView(meetingType: bookClub.meetingType, bookClubId: bookClub.id)) {
                         Text(Image(systemName: "plus"))
                             .font(.system(size: 24))
                             .foregroundStyle(.customBlue)
                     }
                 }
             }
+            .padding(.horizontal)
 
             // only show events for shown book club
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(eventViewModel.fetchedEvents) { event in
+                HStack(spacing: -20) {
+                    ForEach(eventViewModel.allEvents) { event in
                         if event.bookClubId == bookClub.id {
-                            ClubDetailsUpcomingEventsView(eventViewModel: EventViewModel(), bookClub: bookClub, eventTitle: event.eventTitle, location: event.location ?? "Online", dateAndTime: event.dateAndTime, spacesLeft: event.maxCapacity - event.attendeesCount, isModerator: isModerator)
+                            EventsRowView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
                         }
                     }
-                    .padding(.bottom)
+                    .padding([.horizontal, .bottom])
                 }
             }
         }

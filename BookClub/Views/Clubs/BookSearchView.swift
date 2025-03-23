@@ -13,6 +13,7 @@ struct BookSearchView: View {
     @StateObject var bookViewModel: BookViewModel
     @State private var searchQuery: String = ""
     @State private var isBookSelected: Bool = false
+    var bookClub: BookClub
     
     var body: some View {
         VStack {
@@ -40,8 +41,6 @@ struct BookSearchView: View {
                         .onTapGesture {
                             isBookSelected = true  // toggle foreground/background colour change
                             bookViewModel.selectedBook = book
-                            
-                            print(bookViewModel.selectedBook ?? "no book selected")
                         }
                         .onChange(of: searchQuery) {
                             // unselect book
@@ -80,8 +79,7 @@ struct BookSearchView: View {
                 Button("Confirm") {
                     // save chosen book to db
                     Task {
-                        if let bookClub = bookClubViewModel.bookClub,
-                           let selectedBook = bookViewModel.selectedBook {
+                        if let selectedBook = bookViewModel.selectedBook {
                             try await bookViewModel.saveBook(bookClubId: bookClub.id, book: selectedBook)
                         }
                     }
@@ -94,6 +92,6 @@ struct BookSearchView: View {
     }
 }
 
-#Preview {
-    BookSearchView(bookViewModel: BookViewModel())
-}
+//#Preview {
+//    BookSearchView(bookViewModel: BookViewModel())
+//}

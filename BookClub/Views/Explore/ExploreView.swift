@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
     let genreFilter: [String] = ["All", "Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
     @State private var searchInput: String = ""
     
@@ -53,12 +54,12 @@ struct ExploreView: View {
                         .padding(.horizontal)
                     
                     ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                        }
-                        .padding(.horizontal)
+//                        HStack {
+//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+//                        }
+//                        .padding(.horizontal)
                     }
                 }
                 
@@ -77,9 +78,11 @@ struct ExploreView: View {
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+                            ForEach(bookClubViewModel.allClubs) { club in
+                                if club.meetingType == "Online" {
+                                    ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                }
+                            }
                         }
                         .padding(.horizontal)
                     }
@@ -100,9 +103,11 @@ struct ExploreView: View {
                     
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+                            ForEach(bookClubViewModel.allClubs) { club in
+                                if club.meetingType == "In-Person" {
+                                    ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                }
+                            }
                         }
                         .padding(.horizontal)
                     }
