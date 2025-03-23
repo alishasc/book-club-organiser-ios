@@ -87,6 +87,7 @@ struct MembersAttending: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Host:")
                     .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundStyle(.gray)
                 // host profile pic
                 Circle()  // replace with image
@@ -98,6 +99,7 @@ struct MembersAttending: View {
             VStack(alignment: .leading, spacing: 4) {
                 Text("Attending members:")
                     .font(.subheadline)
+                    .fontWeight(.medium)
                     .foregroundStyle(.secondary)
                 // member profile pics
                 HStack(spacing: -5) {

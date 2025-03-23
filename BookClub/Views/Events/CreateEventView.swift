@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 // form to create a new event
 
@@ -13,6 +14,9 @@ struct CreateEventView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var eventViewModel: EventViewModel
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
+    @State private var searchInput: String = ""  // in textfield
+    
+    @State private var isLocationSelected: Bool = false  // when tap search result
     
     // textfields
     enum Field: Hashable {
@@ -70,19 +74,69 @@ struct CreateEventView: View {
                 }
                 
                 if meetingType == "Online" {
-                    // ask for meeting link if online book club
+                    // tfield for meeting link
                     ViewTemplates.textField(placeholder: "Virtual meeting link", input: $meetingLink, isSecureField: false)
-                        .focused($focusedField, equals: .location)
-                        .onSubmit {
-                            focusedField = nil 
-                        }
-                } else {
-                    // use mapkit for this to search location?
-                    ViewTemplates.textField(placeholder: "Event address", input: $location, isSecureField: false)
                         .focused($focusedField, equals: .location)
                         .onSubmit {
                             focusedField = nil
                         }
+                } else {
+                    // tfield to search event address
+                    VStack(alignment: .leading) {
+                        Text("Event Address")
+                            .fontWeight(.medium)
+                        
+                        // textfield
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .padding(.leading, 10)  // inside textfield
+                            TextField("Search event address", text: $searchInput)
+                                .padding([.top, .bottom, .trailing], 10)  // inside textfield
+                                .onSubmit {
+                                    Task {
+                                        // check input is valid and get search results
+                                        try await eventViewModel.locationFieldValidation(query: searchInput)
+                                    }
+                                }
+                        }
+                        .background(.quinary)
+                        .cornerRadius(10)
+                        
+                        if !eventViewModel.searchResults.isEmpty {
+                            List {
+                                ForEach(eventViewModel.searchResults, id: \.self) { location in
+                                    ZStack(alignment: .leading) {
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        // highlight tapped location
+                                            .foregroundStyle(location == eventViewModel.selectedLocation ? .accent : .clear)
+                                        VStack(alignment: .leading) {
+                                            Text("\(location.placemark.name ?? "")\n\(location.placemark.title ?? "")")
+                                            // change text colour if selected
+                                                .foregroundStyle(location == eventViewModel.selectedLocation ? .white : .primary)
+                                                .lineLimit(3)
+                                        }
+                                        .padding()
+                                    }
+                                    .onTapGesture {
+                                        isLocationSelected = true
+                                        eventViewModel.selectedLocation = location
+                                    }
+                                    .onChange(of: searchInput) {
+                                        // unselect location
+                                        eventViewModel.selectedLocation = nil
+                                    }
+                                }
+                            }
+                            .listStyle(.plain)
+                            .padding(EdgeInsets(top: 0, leading: -20, bottom: 0, trailing: -20))  // extend list rows to edges of screen
+                            .scrollIndicators(.hidden)
+                        } else {
+                            // show error message is invalid input
+                            Text(eventViewModel.locationErrorPrompt)
+                                .padding(.top, 20)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
                 }
             }
             
@@ -110,14 +164,15 @@ struct CreateEventView: View {
                     
                     // call function to save new event
                     Task {
-                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: location)
-                        
+                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: eventViewModel.selectedLocation?.placemark.title ?? "")
+                                                
+                        eventViewModel.searchResults = []
                         dismiss()  // go back to previous screen
                     }
                 }
                 .disabled(
                     (meetingType == "Online" && (title.isEmpty || meetingLink.isEmpty)) ||
-                    (meetingType == "In-Person" && (title.isEmpty || location.isEmpty))
+                    (meetingType == "In-Person" && (title.isEmpty || eventViewModel.selectedLocation == nil))
                 )
             }
         }
