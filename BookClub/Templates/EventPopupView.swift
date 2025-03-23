@@ -136,8 +136,8 @@ struct MeetingLocation: View {
                 Text(event.meetingLink ?? "")
                     .foregroundStyle(.accent)
             } else {
-                Text(event.location ?? "")
-                    .fontWeight(.semibold)
+//                Text(event.location ?? "")
+//                    .fontWeight(.semibold)
                 // map view here
             }
         }

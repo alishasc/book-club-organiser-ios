@@ -161,11 +161,12 @@ struct CreateEventView: View {
                     default:
                         durationInt = 0
                     }
-                    
+
                     // call function to save new event
                     Task {
-                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: eventViewModel.selectedLocation?.placemark.title ?? "")
+                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: eventViewModel.selectedLocation?.placemark.coordinate ?? CLLocationCoordinate2D())
                                                 
+                        eventViewModel.selectedLocation = nil
                         eventViewModel.searchResults = []
                         dismiss()  // go back to previous screen
                     }

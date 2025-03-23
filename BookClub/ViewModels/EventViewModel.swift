@@ -22,7 +22,7 @@ class EventViewModel: ObservableObject {
     @Published var selectedLocation: MKMapItem?  // when tap location from search result list
 
     // add event to database
-    func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: String) async throws {
+    func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: CLLocationCoordinate2D) async throws {
         // id of current user will be moderator
         guard let moderatorId = Auth.auth().currentUser?.uid else {
             print("couldn't get user ID to fetch details")
@@ -30,8 +30,10 @@ class EventViewModel: ObservableObject {
         }
         
         let db = Firestore.firestore()
+        // convert swift coords to Firebase GeoPoint
+        let geopoint = GeoPoint(latitude: location.latitude, longitude: location.longitude)
 
-        let event = Event(moderatorId: moderatorId, bookClubId: bookClubId, eventTitle: eventTitle, dateAndTime: dateAndTime, duration: duration, maxCapacity: maxCapacity, meetingLink: !meetingLink.isEmpty ? meetingLink : nil, location: !location.isEmpty ? location : nil)
+        let event = Event(moderatorId: moderatorId, bookClubId: bookClubId, eventTitle: eventTitle, dateAndTime: dateAndTime, duration: duration, maxCapacity: maxCapacity, meetingLink: !meetingLink.isEmpty ? meetingLink : nil, location: geopoint)
 
         do {
             try db.collection("Event").document(event.id.uuidString).setData(from: event)
@@ -105,7 +107,6 @@ class EventViewModel: ObservableObject {
         return text
     }
     
-    
     // check whether location search query is valid before calling getSearchResults()
     func locationFieldValidation(query: String) async throws {
         self.searchResults = []
@@ -155,5 +156,18 @@ class EventViewModel: ObservableObject {
             self.searchResults = []  // don't show any search results in list view
             locationErrorPrompt = "No search results found. Please try again."
         }
+    }
+    
+    // maybe remove
+    func eventLocation(location: GeoPoint) async throws -> String {
+        let cllocation: CLLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        let geocoder = CLGeocoder()
+        
+        if let placemark = try? await geocoder.reverseGeocodeLocation(cllocation),
+           let location = placemark.first?.name {
+            return location
+        }
+        
+        return ""
     }
 }
