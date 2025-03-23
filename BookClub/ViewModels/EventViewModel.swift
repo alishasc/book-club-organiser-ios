@@ -158,16 +158,26 @@ class EventViewModel: ObservableObject {
         }
     }
     
-    // maybe remove
-    func eventLocation(location: GeoPoint) async throws -> String {
-        let cllocation: CLLocation = CLLocation(latitude: location.latitude, longitude: location.longitude)
+    func getLocationName(location: GeoPoint) -> String {
         let geocoder = CLGeocoder()
-        
-        if let placemark = try? await geocoder.reverseGeocodeLocation(cllocation),
-           let location = placemark.first?.name {
-            return location
+        // convert geopoint to CLLocation
+        let location = CLLocation(latitude: location.latitude, longitude: location.longitude)
+        var locationName = ""
+
+        if location.coordinate.latitude != 0 && location.coordinate.longitude != 0 {
+            // get placemark name from CLLocation
+            geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
+                if let placemark = placemarks?.first?.name {
+                    locationName = placemark
+                    print(locationName)
+                } else {
+                    locationName = "Location unavailable"
+                }
+            }
+        } else {
+            locationName = "Online"
         }
         
-        return ""
+        return locationName
     }
 }

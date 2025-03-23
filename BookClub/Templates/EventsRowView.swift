@@ -15,6 +15,8 @@ struct EventsRowView: View {
     var isModerator: Bool
     @State private var isEventSheetPresented: Bool = false
     
+    @State private var locationName: String = ""
+    
     var body: some View {
         ZStack {
             // for line along bottom - in background
@@ -42,10 +44,10 @@ struct EventsRowView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .lineLimit(1)
-//                    Text(event.location ?? "Online")
-//                        .font(.subheadline)
-//                        .foregroundStyle(.secondary)
-//                        .lineLimit(1)
+                    Text(locationName)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .lineLimit(1)
                     Text(ViewTemplates.dateFormatter(dateAndTime: event.dateAndTime))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
@@ -85,6 +87,17 @@ struct EventsRowView: View {
             .cornerRadius(10)
         }
         .padding(.horizontal, 2)  // to show drop shadow on edges
+        .onAppear {
+            // convert geopoint into placemark name
+            if event.meetingLink != nil {
+                locationName = "Online"
+            } else {
+                if let geoPoint = event.location {
+                    locationName = eventViewModel.getLocationName(location: geoPoint)
+                    print("locationName: \(locationName)")
+                }
+            }
+        }
         .onTapGesture {
             isEventSheetPresented = true
         }
