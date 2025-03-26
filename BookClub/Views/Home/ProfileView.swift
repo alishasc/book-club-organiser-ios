@@ -37,7 +37,7 @@ struct ProfileView: View {
                     Spacer()
                     Spacer()
                     VStack {
-                        Text("0")
+                        Text("\(bookClubViewModel.joinedClubs.count)")
                             .font(.title2).bold()
                         Text("clubs joined")
                             .font(.subheadline)

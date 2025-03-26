@@ -15,7 +15,6 @@ struct CreateEventView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     @State private var searchInput: String = ""  // in textfield
-    
     @State private var isLocationSelected: Bool = false  // when tap search result
     
     // textfields

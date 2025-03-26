@@ -86,7 +86,7 @@ class EventViewModel: ObservableObject {
         } else {
             if meetingType == "Online" {
                 color = .customGreen
-            } else if meetingType == "In=Person" {
+            } else if meetingType == "In-Person" {
                 color = .customYellow
             }
         }

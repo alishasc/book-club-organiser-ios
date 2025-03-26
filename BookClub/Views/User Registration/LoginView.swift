@@ -91,6 +91,7 @@ struct LoginView: View {
                             Task {
                                 try await authViewModel.logIn(email: authValidationViewModel.email, password: authValidationViewModel.password)
                                 try await bookClubViewModel.fetchBookClubs()
+                                try await bookClubViewModel.fetchJoinedClubs()
                             }
                         } else {
                             // show any error prompts for invalid field inputs

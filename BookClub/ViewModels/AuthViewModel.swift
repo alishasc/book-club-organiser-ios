@@ -85,7 +85,8 @@ class AuthViewModel: ObservableObject {
             
             try await userRef.setData([
                 "favouriteGenres": favouriteGenres,
-                "location": location
+                "location": location,
+                "joinedClubs": []
             ], merge: true)
             
             print("Successfully saved onboarding details to Firestore")

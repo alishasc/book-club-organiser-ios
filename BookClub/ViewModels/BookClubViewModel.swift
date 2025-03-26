@@ -15,17 +15,55 @@ import FirebaseStorage
 class BookClubViewModel: ObservableObject {
     @Published var allClubs: [BookClub] = []
     @Published var createdClubs: [BookClub] = []
+    @Published var joinedClubs: [BookClub] = []
     @Published var bookClub: BookClub?  // updated when tap club in clubs list
     @Published var coverImages: [UUID: UIImage] = [:]  // bookClubId : UIImage
     @Published var tempCoverImage: UIImage?  // temp image while waiting for image to load from db
-    
+        
     // for creating new club
-    let genreChoices: [String] = ["Art & Design", "Biography", "Business", "Children's Fiction", "Classics", "Contemporary", "Education", "Fantasy", "Food", "Graphic Novels", "Historical Fiction", "History", "Horror", "Humour", "LGBTQ+", "Mystery", "Music", "Myths & Legends", "Nature & Environment", "Personal Growth", "Poetry", "Politics", "Psychology", "Religion & Spirituality", "Romance", "Science", "Science-Fiction", "Short Stories", "Sports", "Technology", "Thriller", "Travel", "True Crime", "Wellness", "Young Adult"]
+    let genreChoices: [String] = [
+        "Art & Design",
+        "Biography",
+        "Business",
+        "Children's Fiction",
+        "Classics",
+        "Contemporary",
+        "Education",
+        "Fantasy",
+        "Food",
+        "Graphic Novels",
+        "Historical Fiction",
+        "History",
+        "Horror",
+        "Humour",
+        "LGBTQ+",
+        "Mystery",
+        "Music",
+        "Myths & Legends",
+        "Nature & Environment",
+        "Personal Growth",
+        "Poetry",
+        "Politics",
+        "Psychology",
+        "Religion & Spirituality",
+        "Romance",
+        "Science",
+        "Science-Fiction",
+        "Short Stories",
+        "Sports",
+        "Technology",
+        "Thriller",
+        "Travel",
+        "True Crime",
+        "Wellness",
+        "Young Adult"
+    ]
     let meetingTypeChoices: [String] = ["Online", "In-Person"]
     
     init() {
         Task {
             try await fetchBookClubs()
+            try await fetchJoinedClubs()
         }
     }
     
@@ -36,7 +74,9 @@ class BookClubViewModel: ObservableObject {
         // cover image storage
         let storageRef = Storage.storage().reference()
         let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"  // ref to save to database
-        let fileRef = storageRef.child(imageFilePath)  // to save image to storage
+        let fileRef = storageRef.child(
+            imageFilePath
+        )  // to save image to storage
         
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get the user id")
@@ -44,21 +84,42 @@ class BookClubViewModel: ObservableObject {
         }
 
         // new instance of BookClub
-        let bookClub = BookClub(id: bookClubId, name: name, moderatorId: userId, moderatorName: moderatorName, coverImageURL: imageFilePath, description: description, genre: genre, meetingType: meetingType, isPublic: isPublic, creationDate: Date.now, currentBookId: nil, booksRead: [])
+        let bookClub = BookClub(
+            id: bookClubId,
+            name: name,
+            moderatorId: userId,
+            moderatorName: moderatorName,
+            coverImageURL: imageFilePath,
+            description: description,
+            genre: genre,
+            meetingType: meetingType,
+            isPublic: isPublic,
+            creationDate: Date.now,
+            currentBookId: nil,
+            booksRead: []
+        )
         
         do {
             // create new book club doc
-            try db.collection("BookClub").document(bookClub.id.uuidString).setData(from: bookClub)
+            try db
+                .collection("BookClub")
+                .document(bookClub.id.uuidString)
+                .setData(from: bookClub)
             // add image to storage
             if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
-                _ = fileRef.putData(imageData, metadata: nil) { (metadata, error) in
-                    if let error = error {
-                        print("error saving image: \(error.localizedDescription)")
+                _ = fileRef
+                    .putData(imageData, metadata: nil) { (metadata, error) in
+                        if let error = error {
+                            print(
+                                "error saving image: \(error.localizedDescription)"
+                            )
+                        }
                     }
-                }
             }
         } catch {
-            print("failed to save new club details: \(error.localizedDescription)")
+            print(
+                "failed to save new club details: \(error.localizedDescription)"
+            )
         }
         
         self.bookClub = bookClub
@@ -77,12 +138,18 @@ class BookClubViewModel: ObservableObject {
         do {
             // new instance of BookClub
             let bookClub = try await docRef.getDocument(as: BookClub.self)
-            let imageRef = storageRef.child(bookClub.coverImageURL)  // file to look for
+            let imageRef = storageRef.child(
+                bookClub.coverImageURL
+            )  // file to look for
 
             // try and get the image
-            imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+            imageRef.getData(maxSize: 5 * 1024 * 1024) {
+ data,
+ error in
                 if let error = error {
-                    print("error occured fetching image: \(error.localizedDescription)")
+                    print(
+                        "error occured fetching image: \(error.localizedDescription)"
+                    )
                 } else if let data = data {
                     let image = UIImage(data: data)
                     // bookClubId and matching cover image to dictionary
@@ -124,10 +191,16 @@ class BookClubViewModel: ObservableObject {
                 }
 
                 // get cover image for each club
-                let imageRef = storageRef.child(bookClub.coverImageURL)  // image file to look for
-                imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                let imageRef = storageRef.child(
+                    bookClub.coverImageURL
+                )  // image file to look for
+                imageRef.getData(maxSize: 5 * 1024 * 1024) {
+ data,
+ error in
                     if let error = error {
-                        print("error occured fetching image: \(error.localizedDescription)")
+                        print(
+                            "error occured fetching image: \(error.localizedDescription)"
+                        )
                     } else if let data = data {
                         let image = UIImage(data: data)
                         // add bookClubId and cover image to dictionary
@@ -140,13 +213,88 @@ class BookClubViewModel: ObservableObject {
         }
     }
     
+    // save joined BookClubs in array
+    func fetchJoinedClubs(/*joinedClubs: [String]*/) async throws {
+        self.joinedClubs.removeAll()
+        
+        let db = Firestore.firestore()
+        let storageRef = Storage.storage().reference()
+        
+        // get logged in user's id
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        let snapshot = try? await Firestore.firestore().collection("User").document(userId).getDocument()
+        let user = try snapshot?.data(as: User.self)
+        
+        do {
+            if let joinedClubs = user?.joinedClubs {
+                for id in joinedClubs {
+                    let querySnapshot = try await db.collection("BookClub").whereField("id", isEqualTo: id).getDocuments()
+                    
+                    for document in querySnapshot.documents {
+                        // create BookClub object from document data
+                        let bookClub = try document.data(as: BookClub.self)
+                        self.joinedClubs.append(bookClub)
+                        
+                        // get cover image for each club
+                        let imageRef = storageRef.child(
+                            bookClub.coverImageURL
+                        )  // image file to look for
+                        imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                            if let error = error {
+                                print(
+                                    "error occured fetching image: \(error.localizedDescription)"
+                                )
+                            } else if let data = data {
+                                let image = UIImage(data: data)
+                                // add bookClubId and cover image to dictionary
+                                self.coverImages[bookClub.id] = image
+                            }
+                        }
+                    }
+                }
+            }
+        } catch {
+            print("error fetching joined clubs: \(error.localizedDescription)")
+        }
+    }
+    
+    // add club id to joinedClubs array
+    func joinClub(bookClub: BookClub) async throws {
+        guard let id = Auth.auth().currentUser?.uid else {
+            print("couldn't get the uid to save onboarding details")
+            return
+        }
+        
+        let db = Firestore.firestore()
+        let userRef = db.collection("User").document(id)
+        
+        do {
+            try await userRef.setData([
+                "joinedClubs": FieldValue.arrayUnion([bookClub.id.uuidString])
+            ], merge: true)
+            self.joinedClubs.append(bookClub)
+            print(self.joinedClubs)
+            
+            print("success joining club")
+        } catch {
+            print("error joining club: \(error.localizedDescription)")
+        }
+    }
+    
     // ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
     // to get word count of book club description
     func getWordCount(str: String) -> Int {
-        let chararacterSet = CharacterSet.whitespacesAndNewlines.union(.punctuationCharacters)
+        let chararacterSet = CharacterSet.whitespacesAndNewlines.union(
+            .punctuationCharacters
+        )
         let components = str.components(separatedBy: chararacterSet)
         let words = components.filter { !$0.isEmpty }
         return words.count
+    }
+    
+    func checkIsMember(bookClub: BookClub) -> Bool {
+        return joinedClubs
+            .contains(where: { $0.id.uuidString == bookClub.id.uuidString })
     }
     
     
@@ -155,73 +303,73 @@ class BookClubViewModel: ObservableObject {
     
     
     // get club and moderator details of selected book club
-//        func fetchBookClubDetails(bookClubId: UUID) async throws {
-//            print("fetch book club details")
-//
-//            let db = Firestore.firestore()
-//            let clubDocRef = db.collection("BookClub").document(bookClubId.uuidString)
-//
-//            // try get selected book club from BookClub collection
-//            do {
-//                let document = try await clubDocRef.getDocument()
-//                if document.exists {
-//                    // create BookClub object from retrieved data
-//                    let bookClub = try document.data(as: BookClub.self)
-//                    self.bookClub = bookClub  // update @Published var with the book club
-//                } else {
-//                    print("document for book club \(bookClubId) doesn't exist")
-//                }
-//            } catch {
-//                print("error getting book club document: \(error.localizedDescription)")
-//            }
-//
-//            // try get moderator name from User collection
-//            if let bookClub = self.bookClub {
-//                let userDocRef = db.collection("User").document(bookClub.moderatorId)
-//
-//                do {
-//                    let document = try await userDocRef.getDocument()
-//                    if document.exists {
-//                        // create user object from doc data
-//                        let user = try document.data(as: User.self)
-//                        // save the moderator name for ui
-//                        self.moderatorName = user.name
-//                    } else {
-//                        print("user document doesn't exist for this moderatorId: \(bookClub.moderatorId)")
-//                    }
-//                } catch {
-//                    print("error getting moderatorId: \(error.localizedDescription)")
-//                }
-//            }
-//        }
+    //        func fetchBookClubDetails(bookClubId: UUID) async throws {
+    //            print("fetch book club details")
+    //
+    //            let db = Firestore.firestore()
+    //            let clubDocRef = db.collection("BookClub").document(bookClubId.uuidString)
+    //
+    //            // try get selected book club from BookClub collection
+    //            do {
+    //                let document = try await clubDocRef.getDocument()
+    //                if document.exists {
+    //                    // create BookClub object from retrieved data
+    //                    let bookClub = try document.data(as: BookClub.self)
+    //                    self.bookClub = bookClub  // update @Published var with the book club
+    //                } else {
+    //                    print("document for book club \(bookClubId) doesn't exist")
+    //                }
+    //            } catch {
+    //                print("error getting book club document: \(error.localizedDescription)")
+    //            }
+    //
+    //            // try get moderator name from User collection
+    //            if let bookClub = self.bookClub {
+    //                let userDocRef = db.collection("User").document(bookClub.moderatorId)
+    //
+    //                do {
+    //                    let document = try await userDocRef.getDocument()
+    //                    if document.exists {
+    //                        // create user object from doc data
+    //                        let user = try document.data(as: User.self)
+    //                        // save the moderator name for ui
+    //                        self.moderatorName = user.name
+    //                    } else {
+    //                        print("user document doesn't exist for this moderatorId: \(bookClub.moderatorId)")
+    //                    }
+    //                } catch {
+    //                    print("error getting moderatorId: \(error.localizedDescription)")
+    //                }
+    //            }
+    //        }
     
     // add image to storage and its ref to Firestore
-//    func uploadPhoto(bookClubId: UUID, coverImage: UIImage) async throws {
-//        // location for storing image
-//        let storageRef = Storage.storage().reference()
-//        let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
-//        let fileRef = storageRef.child(imageFilePath)
-//        
-//        // try and save image to firebase storage
-//        if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
-//            _ = fileRef.putData(imageData, metadata: nil) { (metadata, error) in
-//                if error != nil {
-//                    print("error saving image: \(error!.localizedDescription)")
-//                } else {
-//                    print("successfully uploaded image")
-//                }
-//            }
-//        }
-//        
-//        // save image ref to firestore - in doc for selected book club
-//        let db = Firestore.firestore()
-//        let bookClubRef = db.collection("BookClub").document(bookClubId.uuidString)
-//        
-//        do {
-//            try await bookClubRef.setData(["coverImageURL": imageFilePath], merge: true)
-//            print("image ref added to firebase")
-//        } catch {
-//            print("error saving image ref: \(error.localizedDescription)")
-//        }
-//    }
+    //    func uploadPhoto(bookClubId: UUID, coverImage: UIImage) async throws {
+    //        // location for storing image
+    //        let storageRef = Storage.storage().reference()
+    //        let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
+    //        let fileRef = storageRef.child(imageFilePath)
+    //        
+    //        // try and save image to firebase storage
+    //        if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
+    //            _ = fileRef.putData(imageData, metadata: nil) { (metadata, error) in
+    //                if error != nil {
+    //                    print("error saving image: \(error!.localizedDescription)")
+    //                } else {
+    //                    print("successfully uploaded image")
+    //                }
+    //            }
+    //        }
+    //        
+    //        // save image ref to firestore - in doc for selected book club
+    //        let db = Firestore.firestore()
+    //        let bookClubRef = db.collection("BookClub").document(bookClubId.uuidString)
+    //        
+    //        do {
+    //            try await bookClubRef.setData(["coverImageURL": imageFilePath], merge: true)
+    //            print("image ref added to firebase")
+    //        } catch {
+    //            print("error saving image ref: \(error.localizedDescription)")
+    //        }
+    //    }
 }

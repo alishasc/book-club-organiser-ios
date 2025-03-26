@@ -14,6 +14,7 @@ struct BookClubDetailsView: View {
     @State private var currentRead: Book?
     var bookClub: BookClub
     var isModerator: Bool
+    var isMember: Bool
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -81,10 +82,13 @@ struct BookClubDetailsView: View {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
                 }
-            } else {
+            } else if !isMember {
+                // change to else if condition - check if user has joined club already
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Join") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                        Task {
+                            try await bookClubViewModel.joinClub(bookClub: bookClub)
+                        }
                     }
                 }
             }
