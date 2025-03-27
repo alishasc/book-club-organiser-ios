@@ -22,6 +22,7 @@ struct ProfileView: View {
                         .resizable()
                         .scaledToFill()
                         .frame(width: 100, height: 100)
+                        .clipShape(Circle())
                 } else {
                     Circle()
                         .frame(width: 100, height: 100)
