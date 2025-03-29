@@ -113,13 +113,6 @@ struct ClubsView: View {
             }
         }
         .padding()
-//        .onAppear {
-//            Task {
-//                if let joinedClubsArr = authViewModel.currentUser?.joinedClubs {
-//                    try await bookClubViewModel.fetchJoinedClubs(joinedClubs: joinedClubsArr)
-//                }
-//            }
-//        }
     }
 }
 

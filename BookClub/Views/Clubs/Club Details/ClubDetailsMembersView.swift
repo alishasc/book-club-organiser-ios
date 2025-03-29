@@ -16,7 +16,7 @@ struct ClubDetailsMembersView: View {
     
     var body: some View {
         HStack {
-            // mooderator info
+            // moderator info
             HStack(spacing: 15) {
                 // moderator profile pic
                 Circle()

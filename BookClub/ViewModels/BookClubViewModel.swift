@@ -18,7 +18,8 @@ class BookClubViewModel: ObservableObject {
     @Published var joinedClubs: [BookClub] = []
     @Published var bookClub: BookClub?  // updated when tap club in clubs list
     @Published var coverImages: [UUID: UIImage] = [:]  // bookClubId : UIImage
-//    @Published var tempCoverImage: UIImage?  // temp image while waiting for image to load from db
+    
+//    @Published var memberPics: [UIImage] = []
     
     // options for creating new club
     let genreChoices: [String] = [
@@ -209,19 +210,26 @@ class BookClubViewModel: ObservableObject {
     }
     
     func joinClub(bookClub: BookClub) async throws {
-        guard let id = Auth.auth().currentUser?.uid else {
+        guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get user's id to join club")
             return
         }
         
         let db = Firestore.firestore()
-        let userRef = db.collection("User").document(id)
+        let userRef = db.collection("User").document(userId)
+        let clubMembers = db.collection("BookClubMembers").document(bookClub.id.uuidString)
         
         do {
+            // update 'joinedClubs' array in 'User'
             try await userRef.setData([
                 "joinedClubs": FieldValue.arrayUnion([bookClub.id.uuidString])
             ], merge: true)
             self.joinedClubs.append(bookClub)
+            
+            // updated 'members' array in 'BookClubMembers' - keep track of users in each club
+            try await clubMembers.setData([
+                "members": FieldValue.arrayUnion([userId])
+            ], merge: true)
             
             print("success joining club")
         } catch {
@@ -245,7 +253,14 @@ class BookClubViewModel: ObservableObject {
         return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
     }
     
-    
+//    func fetchMemberPics() async throws {
+//        self.memberPics.removeAll()
+//        
+//        let db = Firestore.firestore()
+//        let storageRef = Storage.storage().reference()
+//        
+//        
+//    }
     
     
     
