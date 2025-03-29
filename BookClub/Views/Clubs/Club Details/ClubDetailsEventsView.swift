@@ -36,14 +36,14 @@ struct ClubDetailsEventsView: View {
 
             // only show events for shown book club
             ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: -20) {
+                HStack {
                     ForEach(eventViewModel.allEvents) { event in
                         if event.bookClubId == bookClub.id {
                             EventsRowView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
                         }
                     }
-                    .padding([.horizontal, .bottom])
                 }
+                .padding([.horizontal, .bottom])
             }
         }
     }

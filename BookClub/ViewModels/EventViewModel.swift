@@ -158,26 +158,20 @@ class EventViewModel: ObservableObject {
         }
     }
     
-    func getLocationName(location: GeoPoint) -> String {
+    // for showing location address in EventsRowView
+    func getLocationPlacemark(location: GeoPoint, completionHandler: @escaping (CLPlacemark?) -> Void) {
         let geocoder = CLGeocoder()
-        // convert geopoint to CLLocation
+        // convert GeoPoint into CLLocation
         let location = CLLocation(latitude: location.latitude, longitude: location.longitude)
-        var locationName = ""
-
-        if location.coordinate.latitude != 0 && location.coordinate.longitude != 0 {
-            // get placemark name from CLLocation
-            geocoder.reverseGeocodeLocation(location) { (placemarks, error) in
-                if let placemark = placemarks?.first?.name {
-                    locationName = placemark
-                    print(locationName)
-                } else {
-                    locationName = "Location unavailable"
-                }
-            }
-        } else {
-            locationName = "Online"
-        }
         
-        return locationName
+        // get placemark info for that location
+        geocoder.reverseGeocodeLocation(location, completionHandler: { (placemarks, error) in
+            if error == nil {
+                let locationPlacemark = placemarks?[0]
+                completionHandler(locationPlacemark)
+            } else {
+                completionHandler(nil)
+            }
+        })
     }
 }

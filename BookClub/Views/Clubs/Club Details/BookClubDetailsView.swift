@@ -68,10 +68,11 @@ struct BookClubDetailsView: View {
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .onAppear {
             Task {
-                try await eventViewModel.fetchEvents()  // get latest events
+                try await eventViewModel.fetchEvents()  // get up-to-date events
                 
+                // to get current read info
                 if bookClub.currentBookId != nil {
-                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")  // to show current read info
+                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")
                 }
             }
         }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct EventPopupView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
@@ -125,20 +126,58 @@ struct MembersAttending: View {
 }
 
 struct MeetingLocation: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var event: Event
+    
+    @State private var locationName: String = "Loading..."
+    @State private var city: String = "Loading..."
+    @State private var postcode: String = "Loading..."
     
     var body: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
                 Text("Online")
                     .fontWeight(.semibold)
-                Text(event.meetingLink ?? "")
-                    .foregroundStyle(.accent)
+                // meeting link here
+                if let link = event.meetingLink {
+                    Link(destination: URL(string: link)!) {
+                        Text(link)
+                            .foregroundStyle(.customBlue)
+                            .underline()
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.subheadline)
+                    }
+                }
             } else {
-//                Text(event.location ?? "")
-//                    .fontWeight(.semibold)
-                // map view here
+                Text(locationName)
+                    .fontWeight(.semibold)
+                Text("\(city), \(postcode)")
+                // map here
+                Map() {
+                    Marker("", coordinate: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0))
+                        .tint(.accent)
+                }
+                .frame(maxWidth: .infinity, maxHeight: 200)
+                .cornerRadius(10)
+            }
+        }
+        .onAppear {
+            // get event address
+            if let geoPoint = event.location {
+                eventViewModel.getLocationPlacemark(location: geoPoint, completionHandler: { placemark in
+                    // get name from placemark
+                    if let name = placemark?.name {
+                        self.locationName = name
+                    }
+                    if let city = placemark?.locality {
+                        self.city = city
+                    }
+                    if let postcode = placemark?.postalCode {
+                        self.postcode = postcode
+                    }
+                })
             }
         }
     }
