@@ -14,7 +14,7 @@ struct EventPopupView: View {
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
-    
+        
     var body: some View {
         VStack(spacing: 15) {
             // cover image
@@ -134,6 +134,14 @@ struct MeetingLocation: View {
     @State private var city: String = "Loading..."
     @State private var postcode: String = "Loading..."
     
+    @State private var position: MapCameraPosition
+    
+    init(bookClub: BookClub, event: Event) {
+        self.bookClub = bookClub
+        self.event = event
+        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
+    }
+    
     var body: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
@@ -141,6 +149,7 @@ struct MeetingLocation: View {
                     .fontWeight(.semibold)
                 // meeting link here
                 if let link = event.meetingLink {
+                    // add default link here!
                     Link(destination: URL(string: link)!) {
                         Text(link)
                             .foregroundStyle(.customBlue)
@@ -154,13 +163,17 @@ struct MeetingLocation: View {
                 Text(locationName)
                     .fontWeight(.semibold)
                 Text("\(city), \(postcode)")
-                // map here
-                Map() {
-                    Marker("", coordinate: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0))
-                        .tint(.accent)
+                // location on map
+                if let geoCoords = event.location {
+                    Map(position: $position) {
+                        Marker("", coordinate: CLLocationCoordinate2D(latitude: geoCoords.latitude, longitude: geoCoords.longitude))
+                            .tint(.accent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: 200)
+                    .cornerRadius(10)
+                } else {
+                    ProgressView()
                 }
-                .frame(maxWidth: .infinity, maxHeight: 200)
-                .cornerRadius(10)
             }
         }
         .onAppear {
