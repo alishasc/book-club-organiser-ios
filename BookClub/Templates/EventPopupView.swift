@@ -38,7 +38,7 @@ struct EventPopupView: View {
                 
                 Divider()
                 
-                // zoom link/map
+                // online meeting link/address and map
                 MeetingLocation(bookClub: bookClub, event: event)
             }
             .padding(.horizontal)
@@ -129,12 +129,11 @@ struct MeetingLocation: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var event: Event
-    
+    private var position: MapCameraPosition
+    // for location Text
     @State private var locationName: String = "Loading..."
     @State private var city: String = "Loading..."
     @State private var postcode: String = "Loading..."
-    
-    @State private var position: MapCameraPosition
     
     init(bookClub: BookClub, event: Event) {
         self.bookClub = bookClub
@@ -165,19 +164,25 @@ struct MeetingLocation: View {
                 Text("\(city), \(postcode)")
                 // location on map
                 if let geoCoords = event.location {
-                    Map(position: $position) {
+                    Map(initialPosition: position, interactionModes: [.pan, .zoom]) {
                         Marker("", coordinate: CLLocationCoordinate2D(latitude: geoCoords.latitude, longitude: geoCoords.longitude))
                             .tint(.accent)
                     }
-                    .frame(maxWidth: .infinity, maxHeight: 200)
+                    .frame(maxWidth: .infinity, maxHeight: 250)
                     .cornerRadius(10)
+                    .onTapGesture {
+                        // open Apple Maps application for location
+                        if let url = URL(string: "maps://?q=\(geoCoords.latitude),\(geoCoords.longitude)") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
                 } else {
                     ProgressView()
                 }
             }
         }
         .onAppear {
-            // get event address
+            // get event address info
             if let geoPoint = event.location {
                 eventViewModel.getLocationPlacemark(location: geoPoint, completionHandler: { placemark in
                     // get name from placemark

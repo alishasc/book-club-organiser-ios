@@ -10,7 +10,7 @@ import SwiftUI
 struct LoginView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @StateObject var authValidationViewModel = AuthValidationViewModel()
+    @EnvironmentObject var authValidationViewModel: AuthValidationViewModel
     @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var showPassword: Bool = false
     

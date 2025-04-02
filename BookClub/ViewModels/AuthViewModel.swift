@@ -23,8 +23,6 @@ class AuthViewModel: ObservableObject {
     
     // choose random asset for default profile pic
     private var defaultIconStr: [String] = ["blueIcon", "yellowIcon", "pinkIcon", "greenIcon"]
-    // store actual images here from storage
-//    @Published var profilePics: [String: UIImage] = [:]  // [userId : UIImage]
     @Published var profilePic: UIImage?  // loaded profile pic for logged in user - fetchUser()
     
     init() {

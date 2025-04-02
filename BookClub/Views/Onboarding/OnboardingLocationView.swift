@@ -132,5 +132,5 @@ struct OnboardingLocationView: View {
 }
 
 #Preview {
-    OnboardingLocationView(onboardingViewModel: OnboardingViewModel()/*, signUpViewModel: SignUpViewModel()*/)
+    OnboardingLocationView(onboardingViewModel: OnboardingViewModel())
 }
