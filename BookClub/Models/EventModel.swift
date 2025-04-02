@@ -18,6 +18,6 @@ struct Event: Identifiable, Codable {
     var maxCapacity: Int
     var attendeesCount: Int = 0
     var eventStatus: String = "upcoming"  // alter this somewhere
-    var meetingLink: String?
-    var location: String?
+    var meetingLink: String?  // if online
+    var location: GeoPoint?  // make not optional?
 }

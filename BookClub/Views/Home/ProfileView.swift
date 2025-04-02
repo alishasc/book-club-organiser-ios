@@ -11,15 +11,29 @@ import PhotosUI
 struct ProfileView: View {
     var bookClubViewModel: BookClubViewModel
     var authViewModel: AuthViewModel
-
+    
     var body: some View {
         VStack(spacing: 30) {
             // personal details
             VStack {
                 // profile picture
-                Circle()
-                    .frame(width: 100, height: 100)
-                    .foregroundStyle(.quinary)
+                if let profilePic = authViewModel.profilePic {
+                    Image(uiImage: profilePic)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                } else {
+                    Image("blueIcon")
+                        .resizable()
+                        .scaledToFill()
+                        .frame(width: 100, height: 100)
+                        .clipShape(Circle())
+                    
+//                    Circle()
+//                        .frame(width: 100, height: 100)
+//                        .foregroundStyle(.quinary)
+                }
                 Text(authViewModel.currentUser?.name ?? "")
                     .font(.title)
                     .fontWeight(.semibold)
@@ -37,7 +51,7 @@ struct ProfileView: View {
                     Spacer()
                     Spacer()
                     VStack {
-                        Text("0")
+                        Text("\(bookClubViewModel.joinedClubs.count)")
                             .font(.title2).bold()
                         Text("clubs joined")
                             .font(.subheadline)
@@ -106,9 +120,9 @@ struct ProfileView: View {
         .navigationTitle("My Profile")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-//                Button("Edit") {
-//                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-//                }
+                //                Button("Edit") {
+                //                    /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                //                }
                 
                 EditButton() // check apple landmarks project for this
             }

@@ -13,7 +13,8 @@ struct EventsRowView: View {
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
-    @State private var isEventSheetPresented: Bool = false
+    @State private var isEventSheetPresented: Bool = false  // event details pop-up
+    @State private var locationName: String = "Loading..."
     
     var body: some View {
         ZStack {
@@ -42,7 +43,7 @@ struct EventsRowView: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .lineLimit(1)
-                    Text(event.location ?? "Online")
+                    Text(locationName)
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
@@ -84,15 +85,25 @@ struct EventsRowView: View {
             .background(.white)
             .cornerRadius(10)
         }
-        .padding(.horizontal, 2)  // to show drop shadow on edges
+        .frame(width: 350)
+        .onAppear {
+            // to show event address
+            if event.meetingLink != nil {
+                locationName = "Online"
+            } else if let geoPoint = event.location {
+                eventViewModel.getLocationPlacemark(location: geoPoint, completionHandler: { placemark in
+                    // get name from placemark
+                    if let name = placemark?.name {
+                        self.locationName = name
+                    }
+                })
+            }
+        }
         .onTapGesture {
             isEventSheetPresented = true
         }
         .sheet(isPresented: $isEventSheetPresented) {
             EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
-                .onTapGesture {
-                    print("tapped")
-                }
         }
     }
 }

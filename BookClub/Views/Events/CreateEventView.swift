@@ -15,7 +15,6 @@ struct CreateEventView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     @State private var searchInput: String = ""  // in textfield
-    
     @State private var isLocationSelected: Bool = false  // when tap search result
     
     // textfields
@@ -161,11 +160,12 @@ struct CreateEventView: View {
                     default:
                         durationInt = 0
                     }
-                    
+
                     // call function to save new event
                     Task {
-                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: eventViewModel.selectedLocation?.placemark.title ?? "")
+                        try await eventViewModel.saveNewEvent(bookClubId: bookClubId, eventTitle: title, dateAndTime: dateAndTime, duration: durationInt, maxCapacity: maxCapacity + 1, meetingLink: meetingLink, location: eventViewModel.selectedLocation?.placemark.coordinate ?? CLLocationCoordinate2D())
                                                 
+                        eventViewModel.selectedLocation = nil
                         eventViewModel.searchResults = []
                         dismiss()  // go back to previous screen
                     }

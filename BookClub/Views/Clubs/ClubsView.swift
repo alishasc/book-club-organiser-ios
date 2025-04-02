@@ -77,9 +77,18 @@ struct ClubsView: View {
             if selectedItem == 0 {
                 // joined clubs list
                 List {
-                    ClubsCardView(coverImage: UIImage(), clubName: "joined club name")  // hardcoded - change this
-                        .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))
-                        .listRowSeparator(.hidden)
+                    ForEach(bookClubViewModel.joinedClubs) { club in
+                        if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
+                            ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                .background(
+                                    // hide navigation link arrows
+                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: false, isMember: true))
+                                        .opacity(0)
+                                )
+                        }
+                    }
+                    .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))
+                    .listRowSeparator(.hidden)
                 }
                 .listStyle(.plain)
             } else {
@@ -91,7 +100,7 @@ struct ClubsView: View {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                 .background(
                                     // hide navigation link arrows
-                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false))
+                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false))
                                         .opacity(0)
                                 )
                         }

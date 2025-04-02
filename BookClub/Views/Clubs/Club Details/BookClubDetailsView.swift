@@ -14,6 +14,7 @@ struct BookClubDetailsView: View {
     @State private var currentRead: Book?
     var bookClub: BookClub
     var isModerator: Bool
+    var isMember: Bool
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -67,10 +68,11 @@ struct BookClubDetailsView: View {
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .onAppear {
             Task {
-                try await eventViewModel.fetchEvents()  // get latest events
+                try await eventViewModel.fetchEvents()  // get up-to-date events
                 
+                // to get current read info
                 if bookClub.currentBookId != nil {
-                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")  // to show current read info
+                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")
                 }
             }
         }
@@ -81,10 +83,13 @@ struct BookClubDetailsView: View {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
                 }
-            } else {
+            } else if !isMember {
+                // change to else if condition - check if user has joined club already
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Join") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
+                        Task {
+                            try await bookClubViewModel.joinClub(bookClub: bookClub)
+                        }
                     }
                 }
             }

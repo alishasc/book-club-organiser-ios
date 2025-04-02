@@ -180,7 +180,7 @@ struct CreateClubView: View {
         }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
-                BookClubDetailsView(bookClub: bookClub, isModerator: true)
+                BookClubDetailsView(bookClub: bookClub, isModerator: true, isMember: false)
             }
         }
     }

@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import MapKit
 
 struct EventPopupView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
@@ -13,7 +14,7 @@ struct EventPopupView: View {
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
-    
+        
     var body: some View {
         VStack(spacing: 15) {
             // cover image
@@ -37,7 +38,7 @@ struct EventPopupView: View {
                 
                 Divider()
                 
-                // zoom link/map
+                // online meeting link/address and map
                 MeetingLocation(bookClub: bookClub, event: event)
             }
             .padding(.horizontal)
@@ -125,20 +126,76 @@ struct MembersAttending: View {
 }
 
 struct MeetingLocation: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var event: Event
+    private var position: MapCameraPosition
+    // for location Text
+    @State private var locationName: String = "Loading..."
+    @State private var city: String = "Loading..."
+    @State private var postcode: String = "Loading..."
+    
+    init(bookClub: BookClub, event: Event) {
+        self.bookClub = bookClub
+        self.event = event
+        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
+    }
     
     var body: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
                 Text("Online")
                     .fontWeight(.semibold)
-                Text(event.meetingLink ?? "")
-                    .foregroundStyle(.accent)
+                // meeting link here
+                if let link = event.meetingLink {
+                    // add default link here!
+                    Link(destination: URL(string: link)!) {
+                        Text(link)
+                            .foregroundStyle(.customBlue)
+                            .underline()
+                            .multilineTextAlignment(.leading)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .font(.subheadline)
+                    }
+                }
             } else {
-                Text(event.location ?? "")
+                Text(locationName)
                     .fontWeight(.semibold)
-                // map view here
+                Text("\(city), \(postcode)")
+                // location on map
+                if let geoCoords = event.location {
+                    Map(initialPosition: position, interactionModes: [.pan, .zoom]) {
+                        Marker("", coordinate: CLLocationCoordinate2D(latitude: geoCoords.latitude, longitude: geoCoords.longitude))
+                            .tint(.accent)
+                    }
+                    .frame(maxWidth: .infinity, maxHeight: 250)
+                    .cornerRadius(10)
+                    .onTapGesture {
+                        // open Apple Maps application for location
+                        if let url = URL(string: "maps://?q=\(geoCoords.latitude),\(geoCoords.longitude)") {
+                            UIApplication.shared.open(url)
+                        }
+                    }
+                } else {
+                    ProgressView()
+                }
+            }
+        }
+        .onAppear {
+            // get event address info
+            if let geoPoint = event.location {
+                eventViewModel.getLocationPlacemark(location: geoPoint, completionHandler: { placemark in
+                    // get name from placemark
+                    if let name = placemark?.name {
+                        self.locationName = name
+                    }
+                    if let city = placemark?.locality {
+                        self.city = city
+                    }
+                    if let postcode = placemark?.postalCode {
+                        self.postcode = postcode
+                    }
+                })
             }
         }
     }

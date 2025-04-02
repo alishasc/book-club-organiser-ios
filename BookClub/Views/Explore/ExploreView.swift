@@ -8,9 +8,12 @@
 import SwiftUI
 
 struct ExploreView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     let genreFilter: [String] = ["All", "Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
     @State private var searchInput: String = ""
+    
+    @State private var isMember: Bool = false
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -56,8 +59,6 @@ struct ExploreView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
 //                        HStack {
 //                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
 //                        }
 //                        .padding(.horizontal)
                     }
@@ -80,7 +81,9 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "Online" {
-                                    ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    }
                                 }
                             }
                         }
@@ -105,7 +108,9 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "In-Person" {
-                                    ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    }
                                 }
                             }
                         }
