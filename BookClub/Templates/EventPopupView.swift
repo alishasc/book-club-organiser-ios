@@ -10,10 +10,12 @@ import MapKit
 
 struct EventPopupView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
+    @Binding var isAttendingEvent: Bool
         
     var body: some View {
         VStack(spacing: 15) {
@@ -31,7 +33,7 @@ struct EventPopupView: View {
             
             VStack(alignment: .leading, spacing: 10) {
                 // text info and checkmark
-                TextInfo(bookClub: bookClub, event: event, isModerator: isModerator)
+                TextInfo(bookClub: bookClub, event: event, isModerator: isModerator, isAttendingEvent: $isAttendingEvent)
                 
                 // host and members attending
                 MembersAttending()
@@ -49,10 +51,12 @@ struct EventPopupView: View {
 }
 
 struct TextInfo: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
     var event: Event
     var isModerator: Bool
-    
+    @Binding var isAttendingEvent: Bool
+
     var body: some View {
         HStack {
             // text
@@ -73,9 +77,16 @@ struct TextInfo: View {
             
             // checkmark icon
             if !isModerator {
-                Image(systemName: "checkmark.circle.fill")
+                Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
                     .font(.system(size: 24))
                     .foregroundStyle(.accent)
+                    .onTapGesture {
+                        isAttendingEvent.toggle()
+                        // call function to un/reserve space for event
+                        Task {
+                            try await eventViewModel.attendEvent(isAttending: isAttendingEvent, eventId: event.id, bookClubId: bookClub.id)
+                        }
+                    }
             }
         }
     }

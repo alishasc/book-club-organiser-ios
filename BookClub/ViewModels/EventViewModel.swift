@@ -15,7 +15,7 @@ import MapKit
 @MainActor
 class EventViewModel: ObservableObject {
     @Published var allEvents: [Event] = []
-    @Published var selectedClubEvents: [Event] = []  // when view club details
+//    @Published var selectedClubEvents: [Event] = []  // when view club details
     
     @Published var searchResults: [MKMapItem] = []
     @Published var locationErrorPrompt: String = ""  // error message if invalid search query
@@ -56,24 +56,6 @@ class EventViewModel: ObservableObject {
             }
         } catch {
             print("error getting event documents: \(error.localizedDescription)")
-        }
-    }
-    
-    // fetch events only for selected club
-    func fetchSelectedClubEvents(bookClubId: UUID) async throws {
-        print("fetch selected club events")
-        self.selectedClubEvents.removeAll()
-        
-        let db = Firestore.firestore()
-        
-        do {
-            let querySnapshot = try await db.collection("Event").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
-            for document in querySnapshot.documents {
-                let event = try document.data(as: Event.self)
-                self.selectedClubEvents.append(event)
-            }
-        } catch {
-            print("error getting events: \(error.localizedDescription)")
         }
     }
 
@@ -174,4 +156,94 @@ class EventViewModel: ObservableObject {
             }
         })
     }
+    
+    func attendEvent(isAttending: Bool, eventId: UUID, bookClubId: UUID) async throws {
+        // logged in user's id
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("couldn't get user ID to fetch details")
+            return
+        }
+        
+        let db = Firestore.firestore()
+
+        if isAttending {
+            // save attendee info to db
+            do {
+                let eventAttendee = EventAttendee(eventId: eventId, bookClubId: bookClubId, userId: userId)
+                try db.collection("EventAttendees").document(eventAttendee.id.uuidString).setData(from: eventAttendee)
+                                
+                print("saved space for event")
+            } catch {
+                print("failed to save event space: \(error.localizedDescription)")
+            }
+        }
+        else {
+            // remove attendee info to db
+            do {
+                // look for doc with matching eventId and userId
+                let querySnapshot = try await db.collection("EventAttendees")
+                    .whereField("eventId", isEqualTo: eventId.uuidString)
+                    .whereField("userId", isEqualTo: userId)
+                    .getDocuments()
+                
+                if let document = querySnapshot.documents.first {
+                    let eventAttendee = try document.data(as: EventAttendee.self)
+                    // delete doc from db
+                    try await db.collection("EventAttendees").document(eventAttendee.id.uuidString).delete()
+                }
+                
+                print("unreserved space for event")
+            } catch {
+                print("failed to remove event rsvp: \(error.localizedDescription)")
+            }
+        }
+    }
+    
+    // check if user is attending shown events. passed as var to change ui
+    func isAttendingEvent(eventId: UUID) async throws -> Bool {
+        guard let userId = Auth.auth().currentUser?.uid else {
+            print("couldn't get user ID to fetch details")
+            return false
+        }
+        
+        let db = Firestore.firestore()
+        
+        // look for doc with matching eventId and userId
+        let querySnapshot = try await db.collection("EventAttendees")
+            .whereField("eventId", isEqualTo: eventId.uuidString)
+            .whereField("userId", isEqualTo: userId)
+            .getDocuments()
+        
+        // doc exists = user has reserved space for event
+        if querySnapshot.documents.first != nil {
+            print("true")
+            return true
+        } else {
+            print("false")
+            return false
+        }
+    }
+    
+    
+    
+    
+    
+    
+    // fetch events only for selected club
+//    func fetchSelectedClubEvents(bookClubId: UUID) async throws {
+//        print("fetch selected club events")
+//        self.selectedClubEvents.removeAll()
+//
+//        let db = Firestore.firestore()
+//
+//        do {
+//            let querySnapshot = try await db.collection("Event").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+//            for document in querySnapshot.documents {
+//                let event = try document.data(as: Event.self)
+//                self.selectedClubEvents.append(event)
+//            }
+//        } catch {
+//            print("error getting events: \(error.localizedDescription)")
+//        }
+//    }
 }

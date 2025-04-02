@@ -13,6 +13,7 @@ struct EventsRowView: View {
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
+    @State private var isAttendingEvent: Bool = false
     @State private var isEventSheetPresented: Bool = false  // event details pop-up
     @State private var locationName: String = "Loading..."
     
@@ -64,9 +65,22 @@ struct EventsRowView: View {
                     // icon - make it toggle to checkmark.circle
                     // only show if user isn't the moderator
                     if !isModerator {
-                        Image(systemName: "checkmark.circle.fill")
+                        Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 24))
                             .foregroundStyle(.accent)
+                            .onTapGesture {
+                                isAttendingEvent.toggle()
+                                // call function to un/reserve space for event
+                                Task {
+                                    try await eventViewModel.attendEvent(isAttending: isAttendingEvent, eventId: event.id, bookClubId: bookClub.id)
+                                }
+                            }
+                            .onAppear {
+                                Task {
+                                    // check whether user is already attending event - change ui
+                                    isAttendingEvent = try await eventViewModel.isAttendingEvent(eventId: event.id)
+                                }
+                            }
                     }
                     Spacer()
                     
@@ -103,7 +117,7 @@ struct EventsRowView: View {
             isEventSheetPresented = true
         }
         .sheet(isPresented: $isEventSheetPresented) {
-            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator)
+            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent)
         }
     }
 }

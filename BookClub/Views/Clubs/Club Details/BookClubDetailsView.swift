@@ -69,7 +69,7 @@ struct BookClubDetailsView: View {
         .onAppear {
             Task {
                 try await eventViewModel.fetchEvents()  // get up-to-date events
-                
+
                 // to get current read info
                 if bookClub.currentBookId != nil {
                     self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")

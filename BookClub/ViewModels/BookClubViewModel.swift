@@ -253,6 +253,14 @@ class BookClubViewModel: ObservableObject {
         return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
     }
     
+    
+    
+    
+    
+    
+    
+    
+    
 //    func fetchMemberPics() async throws {
 //        self.memberPics.removeAll()
 //        
@@ -261,8 +269,6 @@ class BookClubViewModel: ObservableObject {
 //        
 //        
 //    }
-    
-    
     
     // fetch cover image for one club
     //    func fetchCoverImage(bookClubId: UUID) async throws {
