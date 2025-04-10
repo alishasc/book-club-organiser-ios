@@ -23,7 +23,7 @@ struct EventsRowView: View {
             RoundedRectangle(cornerRadius: 10)
                 .foregroundStyle(eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType))
                 .frame(height: 110)
-                .offset(y: 5)
+                .offset(y: 4)
                 .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
             
             HStack {

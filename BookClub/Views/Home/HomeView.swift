@@ -10,9 +10,8 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthViewModel  // to get user info
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
-    @Binding var selectedNavBarTab: Int  // from NavBarView()
-    
     @EnvironmentObject var eventViewModel: EventViewModel
+    @Binding var selectedNavBarTab: Int  // from NavBarView()
     
     var body: some View {
         VStack(spacing: 20) {
@@ -51,10 +50,14 @@ struct HomeView: View {
                 }
                 .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
-                    //                    HStack {
-                    //                        ViewTemplates.bookClubRow(clubName: "Book Club Name")
-                    //                    }
-                    //                    .padding(.horizontal)
+                    HStack {
+                        ForEach(bookClubViewModel.joinedClubs) { club in
+                            NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
                 }
             }
             
@@ -71,7 +74,14 @@ struct HomeView: View {
                 }
                 
                 // scrollview of events the user is ATTENDING - replace spacer
-                Spacer()
+                ScrollView(.vertical, showsIndicators: false) {
+                    ForEach(eventViewModel.joinedEvents) { event in
+                        if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                            EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                .padding(.bottom, 8)
+                        }
+                    }
+                }
             }
             .padding([.horizontal, .bottom])
         }
