@@ -12,6 +12,8 @@ struct HomeView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @Binding var selectedNavBarTab: Int  // from NavBarView()
     
+    @EnvironmentObject var eventViewModel: EventViewModel
+    
     var body: some View {
         VStack(spacing: 20) {
             // header

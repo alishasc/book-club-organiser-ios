@@ -13,7 +13,7 @@ struct EventsRowView: View {
     var event: Event
     var coverImage: UIImage
     var isModerator: Bool
-    @State private var isAttendingEvent: Bool = false
+    @State private var isAttendingEvent: Bool = false  // checkmark icon ui
     @State private var isEventSheetPresented: Bool = false  // event details pop-up
     @State private var locationName: String = "Loading..."
     
@@ -22,7 +22,7 @@ struct EventsRowView: View {
             // for line along bottom - in background
             RoundedRectangle(cornerRadius: 10)
                 .foregroundStyle(eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType))
-                .frame(height: 120)
+                .frame(height: 110)
                 .offset(y: 5)
                 .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
             
@@ -31,9 +31,9 @@ struct EventsRowView: View {
                 Image(uiImage: coverImage)
                     .resizable()
                     .scaledToFill()
-                    .frame(width: 110, height: 120)
-                    .padding(.trailing, 5)
+                    .frame(width: 100, height: 110)
                     .clipped()
+                    .padding(.trailing, 5)
                 
                 // text event info
                 VStack(alignment: .leading) {
@@ -72,16 +72,17 @@ struct EventsRowView: View {
                                 isAttendingEvent.toggle()
                                 // call function to un/reserve space for event
                                 Task {
-                                    try await eventViewModel.attendEvent(isAttending: isAttendingEvent, eventId: event.id, bookClubId: bookClub.id)
+                                    try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
                                 }
                             }
                             .onAppear {
                                 Task {
-                                    // check whether user is already attending event - change ui
+                                    // check whether user is already attending event - sets ui
                                     isAttendingEvent = try await eventViewModel.isAttendingEvent(eventId: event.id)
                                 }
                             }
                     }
+                    
                     Spacer()
                     
                     Text(eventViewModel.eventTagText(isModerator: isModerator, meetingType: bookClub.meetingType))
@@ -122,6 +123,6 @@ struct EventsRowView: View {
     }
 }
 
-//#Preview {
-//    YourEventsListView(bookClubName: "Romance Book Club", eventTitle: "Starting new book!", location: "Waterstones Piccadilly", dateAndTime: Date(), spacesLeft: 5, isModerator: true, meetingType: "Online")
-//}
+#Preview {
+    EventsRowView(bookClub: BookClub(name: "", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date.now, currentBookId: "", booksRead: []), event: Event(moderatorId: "", bookClubId: UUID(), eventTitle: "event title", dateAndTime: Date.now, duration: 30, maxCapacity: 10), coverImage: UIImage(named: "banner") ?? UIImage(), isModerator: false)
+}

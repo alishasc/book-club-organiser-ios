@@ -8,9 +8,14 @@
 import SwiftUI
 
 struct EventsView: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var selectedFilter: Int = 0
     @State private var showUpcomingEvents: Bool = true
     @State private var showDiscoverEvents: Bool = true
+    
+//    @State private var eventsAttending: [Event] = []  // maybe remove?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -86,7 +91,7 @@ struct EventsView: View {
                             // show/hide event list
                             showUpcomingEvents.toggle()
                         } label: {
-                            Label("Expand upcoming events", systemImage: showUpcomingEvents ? "chevron.up" : "chevron.down")
+                            Label("Toggle upcoming events", systemImage: showUpcomingEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
                         }
                     }
@@ -94,7 +99,15 @@ struct EventsView: View {
                     .fontWeight(.semibold)
                     
                     if showUpcomingEvents {
-                        // events list
+                        // events scrollview
+                        ScrollView(.vertical, showsIndicators: false) {
+                            ForEach(eventViewModel.joinedEvents) { event in
+                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                                    EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                        .padding(.bottom, 8)
+                                }
+                            }
+                        }
                     }
                 }
                 
@@ -107,7 +120,7 @@ struct EventsView: View {
                             // show/hide event list
                             showDiscoverEvents.toggle()
                         } label: {
-                            Label("Expand upcoming events", systemImage: showDiscoverEvents ? "chevron.up" : "chevron.down")
+                            Label("Toggle upcoming events", systemImage: showDiscoverEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
                         }
                     }
@@ -116,7 +129,24 @@ struct EventsView: View {
                     .padding(.top, 15)
                     
                     if showDiscoverEvents {
-                        // events list
+                        // events scrollview
+                        ScrollView(.vertical, showsIndicators: false) {
+                            ForEach(eventViewModel.allEvents.filter { event in
+                                // Event is from a joined club AND not already joined
+                                bookClubViewModel.joinedClubs.contains(where: { $0.id == event.bookClubId }) &&
+                                !eventViewModel.joinedEvents.contains(where: { $0.id == event.id })
+                            }) { event in
+                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                                    EventsRowView(
+                                        bookClub: bookClub,
+                                        event: event,
+                                        coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(),
+                                        isModerator: bookClub.moderatorName == authViewModel.currentUser?.name
+                                    )
+                                    .padding(.bottom, 8)
+                                }
+                            }
+                        }
                     }
                 }
             }

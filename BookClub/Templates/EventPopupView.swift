@@ -84,7 +84,7 @@ struct TextInfo: View {
                         isAttendingEvent.toggle()
                         // call function to un/reserve space for event
                         Task {
-                            try await eventViewModel.attendEvent(isAttending: isAttendingEvent, eventId: event.id, bookClubId: bookClub.id)
+                            try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
                         }
                     }
             }
