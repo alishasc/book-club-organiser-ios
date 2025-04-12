@@ -22,6 +22,12 @@ class EventViewModel: ObservableObject {
     @Published var locationErrorPrompt: String = ""  // error message if invalid search query
     @Published var selectedLocation: MKMapItem?  // when tap location from search result list
     
+    init() {
+        Task {
+            try await fetchEvents()
+        }
+    }
+    
     // add event to database
     func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: CLLocationCoordinate2D) async throws {
         // id of current user will be moderator

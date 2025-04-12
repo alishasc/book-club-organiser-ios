@@ -105,6 +105,7 @@ struct EventsView: View {
                         } label: {
                             Label("Toggle upcoming events", systemImage: showUpcomingEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .font(.title2)
@@ -145,6 +146,7 @@ struct EventsView: View {
                         } label: {
                             Label("Toggle upcoming events", systemImage: showDiscoverEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .font(.title2)

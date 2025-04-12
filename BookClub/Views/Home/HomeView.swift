@@ -47,6 +47,7 @@ struct HomeView: View {
                     Button("View all") {
                         selectedNavBarTab = 1  // clubs tab
                     }
+                    .foregroundStyle(.customBlue)
                 }
                 .padding(.horizontal)
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -71,6 +72,7 @@ struct HomeView: View {
                     Button("View all") {
                         selectedNavBarTab = 2  // events tab
                     }
+                    .foregroundStyle(.customBlue)
                 }
                 
                 // scrollview of events the user is ATTENDING - replace spacer
