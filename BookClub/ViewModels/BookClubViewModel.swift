@@ -162,7 +162,7 @@ class BookClubViewModel: ObservableObject {
                 let imageRef = storageRef.child(
                     bookClub.coverImageURL
                 )  // image file to look for
-                imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                     if let error = error {
                         print(
                             "error occured fetching image: \(error.localizedDescription)"

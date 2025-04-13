@@ -21,7 +21,7 @@ class EventViewModel: ObservableObject {
     @Published var searchResults: [MKMapItem] = []
     @Published var locationErrorPrompt: String = ""  // error message if invalid search query
     @Published var selectedLocation: MKMapItem?  // when tap location from search result list
-    
+        
     init() {
         Task {
             try await fetchEvents()
@@ -253,8 +253,6 @@ class EventViewModel: ObservableObject {
             return false
         }
     }
-    
-    
     
     
     

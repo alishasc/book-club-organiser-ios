@@ -7,6 +7,15 @@
 
 import SwiftUI
 
+import UIKit
+ 
+//extension UIScrollView {
+//  open override var clipsToBounds: Bool {
+//    get { false }
+//    set { }
+//  }
+//}
+
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthViewModel  // to get user info
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
@@ -56,10 +65,12 @@ struct HomeView: View {
                             NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                 ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                             }
+                            .padding(.vertical, 15)  // to see shadows
                         }
                     }
                     .padding(.horizontal)
                 }
+                .padding(.vertical, -15)  // reverse padding to see shadows
             }
             
             // upcoming events
@@ -75,15 +86,17 @@ struct HomeView: View {
                     .foregroundStyle(.customBlue)
                 }
                 
-                // scrollview of events the user is ATTENDING - replace spacer
+                // scrollview of events the user is attending
                 ScrollView(.vertical, showsIndicators: false) {
-                    ForEach(eventViewModel.joinedEvents) { event in
-                        if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                            EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
-                                .padding(.bottom, 8)
+                        ForEach(eventViewModel.joinedEvents) { event in
+                            if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                    .padding([.horizontal, .top], 10)  // to show shadowing
+                                    .padding(.bottom, -2)
+                            }
                         }
-                    }
                 }
+                .padding([.horizontal, .top], -10)  // reduce size of padding from showing shadows
             }
             .padding([.horizontal, .bottom])
         }

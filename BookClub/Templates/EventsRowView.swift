@@ -24,7 +24,8 @@ struct EventsRowView: View {
                 .foregroundStyle(eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType))
                 .frame(height: 110)
                 .offset(y: 4)
-                .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
+                .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: -2)  // top shadow
+                .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)  // bottom shadow
             
             HStack {
                 // image
@@ -87,20 +88,20 @@ struct EventsRowView: View {
                     
                     Text(eventViewModel.eventTagText(isModerator: isModerator, meetingType: bookClub.meetingType))
                         .font(.caption2)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .fontWeight(.medium)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .background(
                             eventViewModel.eventTagColor(isModerator: isModerator, meetingType: bookClub.meetingType)
                                 .opacity(0.2)
                         )
                         .clipShape(RoundedRectangle(cornerRadius: 20))
-                        .offset(x: -7, y: -7)
+                        .offset(x: -5, y: -5)
                 }
             }
             .background(.white)
             .cornerRadius(10)
         }
-        .frame(width: 350)
         .onAppear {
             // to show event address
             if event.meetingLink != nil {

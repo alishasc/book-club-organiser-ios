@@ -61,7 +61,7 @@ class ViewTemplates {
                 .scaledToFill()
                 .frame(width: 240, height: 150)
                 .cornerRadius(10)
-                .shadow(color: .gray, radius: 5, x: 0, y: 5)
+                .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
             Text(clubName)
                 .font(.title3)
                 .fontWeight(.semibold)
