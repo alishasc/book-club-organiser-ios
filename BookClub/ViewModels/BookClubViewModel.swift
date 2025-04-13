@@ -162,7 +162,7 @@ class BookClubViewModel: ObservableObject {
                 let imageRef = storageRef.child(
                     bookClub.coverImageURL
                 )  // image file to look for
-                imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+                imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                     if let error = error {
                         print(
                             "error occured fetching image: \(error.localizedDescription)"
@@ -253,6 +253,14 @@ class BookClubViewModel: ObservableObject {
         return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
     }
     
+    
+    
+    
+    
+    
+    
+    
+    
 //    func fetchMemberPics() async throws {
 //        self.memberPics.removeAll()
 //        
@@ -261,8 +269,6 @@ class BookClubViewModel: ObservableObject {
 //        
 //        
 //    }
-    
-    
     
     // fetch cover image for one club
     //    func fetchCoverImage(bookClubId: UUID) async throws {

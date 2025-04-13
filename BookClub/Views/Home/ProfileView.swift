@@ -117,7 +117,7 @@ struct ProfileView: View {
             }
         }
         .padding()
-        .navigationTitle("My Profile")
+        .navigationTitle("Profile")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 //                Button("Edit") {

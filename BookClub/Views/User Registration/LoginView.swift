@@ -9,8 +9,9 @@ import SwiftUI
 
 struct LoginView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @EnvironmentObject var authValidationViewModel: AuthValidationViewModel
+    @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var showPassword: Bool = false
     
@@ -92,6 +93,7 @@ struct LoginView: View {
                                 try await authViewModel.logIn(email: authValidationViewModel.email, password: authValidationViewModel.password)
                                 try await bookClubViewModel.fetchBookClubs()
                                 try await bookClubViewModel.fetchJoinedClubs()
+                                try await eventViewModel.fetchEvents()  // get up-to-date events
                             }
                         } else {
                             // show any error prompts for invalid field inputs
@@ -140,7 +142,7 @@ struct LoginView: View {
     }
 }
 
-#Preview {
-    LoginView()
-        .environmentObject(AuthViewModel())
-}
+//#Preview {
+//    LoginView()
+//        .environmentObject(AuthViewModel())
+//}

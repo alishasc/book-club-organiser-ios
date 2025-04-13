@@ -6,11 +6,17 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct EventsView: View {
+    @EnvironmentObject var eventViewModel: EventViewModel
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var authViewModel: AuthViewModel
     @State private var selectedFilter: Int = 0
     @State private var showUpcomingEvents: Bool = true
     @State private var showDiscoverEvents: Bool = true
+    
+    @State private var selectedClubName: String = ""  // doing nothing atm
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -27,39 +33,49 @@ struct EventsView: View {
                             selectedFilter = 0
                         }
                         .tag(0)
-                        .tint(selectedFilter == 0 ? .accent : .secondary)
+                        .tint(selectedFilter == 0 ? .accent : .quaternaryHex)
+                        .foregroundStyle(selectedFilter == 0 ? .white : .black)
                         
                         Button("In-Person") {
                             selectedFilter = 1
                         }
                         .tag(1)
-                        .tint(selectedFilter == 1 ? .customYellow : .secondary)
+                        .tint(selectedFilter == 1 ? .customYellow : .customYellow.opacity(0.2))
                         
                         Button("Online") {
                             selectedFilter = 2
                         }
                         .tag(2)
-                        .tint(selectedFilter == 2 ? .customGreen : .secondary)
+                        .tint(selectedFilter == 2 ? .customGreen : .customGreen.opacity(0.2))
                         
                         Button("Created Events") {
                             selectedFilter = 3
                         }
                         .tag(3)
-                        .tint(selectedFilter == 3 ? .customPink : .secondary)
+                        .tint(selectedFilter == 3 ? .customPink : .customPink.opacity(0.2))
                         
-                        Button {
-                            selectedFilter = 4
+                        // filter by book club
+                        Menu {
+                            // put list of book clubs joined and created
+                            ForEach(bookClubViewModel.joinedClubs) { club in
+                                Button("\(club.name)") {
+                                    selectedFilter = 5
+                                    selectedClubName = club.name
+                                }
+                            }
                         } label: {
                             HStack {
                                 Text("Book Club")
                                 Image(systemName: "chevron.down")
                             }
                         }
-                        .tag(4)
-                        .tint(selectedFilter == 4 ? .accent : .secondary)
+                        .tint(.quaternaryHex)
+                        .foregroundStyle(.black)
                     }
                     .font(.footnote)
-                    .buttonStyle(.bordered)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.black)
+                    .buttonStyle(.borderedProminent)
                     .buttonBorderShape(.capsule)
                 }
                 .padding(.horizontal)
@@ -76,6 +92,7 @@ struct EventsView: View {
             }
             .padding(.bottom, 5)
             
+            // event lists
             ScrollView(.vertical, showsIndicators: false) {
                 // your upcoming events
                 VStack(spacing: 10) {
@@ -86,15 +103,52 @@ struct EventsView: View {
                             // show/hide event list
                             showUpcomingEvents.toggle()
                         } label: {
-                            Label("Expand upcoming events", systemImage: showUpcomingEvents ? "chevron.up" : "chevron.down")
+                            Label("Toggle upcoming events", systemImage: showUpcomingEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .font(.title2)
                     .fontWeight(.semibold)
                     
                     if showUpcomingEvents {
-                        // events list
+                        // events joined scrollview
+                        //                        ScrollView(.vertical, showsIndicators: false) {
+                        //                            ForEach(eventViewModel.joinedEvents) { event in
+                        //                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                        //                                    EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                        //                                        .padding(.bottom, 8)
+                        //                                }
+                        //                            }
+                        //                        }
+
+                        ScrollView(.vertical, showsIndicators: false) {
+                            if selectedFilter != 3 {
+                                ForEach(testFilter(selectedFilter: selectedFilter)) { event in
+                                    if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                                        EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                            .padding(.bottom, -2)
+                                            .padding([.horizontal, .top], 10)  // to show shadow around the row
+                                    }
+                                }
+                            }
+                            else {
+                                let currentUserId = Auth.auth().currentUser?.uid ?? ""
+                                ForEach(eventViewModel.allEvents.filter { $0.moderatorId == currentUserId }) { event in
+                                    if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                                        EventsRowView(
+                                            bookClub: bookClub,
+                                            event: event,
+                                            coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(),
+                                            isModerator: bookClub.moderatorName == authViewModel.currentUser?.name
+                                        )
+                                        .padding(.bottom, -2)
+                                        .padding([.horizontal, .top], 10)  // to show shadow around the row
+                                    }
+                                }
+                            }
+                        }
+                        .padding([.horizontal, .top], -10)  // shrink space created with padding for shadows
                     }
                 }
                 
@@ -107,16 +161,36 @@ struct EventsView: View {
                             // show/hide event list
                             showDiscoverEvents.toggle()
                         } label: {
-                            Label("Expand upcoming events", systemImage: showDiscoverEvents ? "chevron.up" : "chevron.down")
+                            Label("Toggle upcoming events", systemImage: showDiscoverEvents ? "chevron.up" : "chevron.down")
                                 .labelStyle(.iconOnly)
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .font(.title2)
                     .fontWeight(.semibold)
-                    .padding(.top, 15)
+                    .padding(.top, 10)
                     
                     if showDiscoverEvents {
-                        // events list
+                        // events haven't joined scrollview
+                        ScrollView(.vertical, showsIndicators: false) {
+                            ForEach(eventViewModel.allEvents.filter { event in
+                                // Event is from a joined club AND not already joined
+                                bookClubViewModel.joinedClubs.contains(where: { $0.id == event.bookClubId }) &&
+                                !eventViewModel.joinedEvents.contains(where: { $0.id == event.id })
+                            }) { event in
+                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                                    EventsRowView(
+                                        bookClub: bookClub,
+                                        event: event,
+                                        coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(),
+                                        isModerator: bookClub.moderatorName == authViewModel.currentUser?.name
+                                    )
+                                    .padding(.bottom, -2)
+                                    .padding([.horizontal, .top], 10)
+                                }
+                            }
+                        }
+                        .padding([.horizontal, .top], -10)
                     }
                 }
             }
@@ -124,15 +198,74 @@ struct EventsView: View {
             
             Spacer()
         }
+        .onDisappear {
+            selectedFilter = 0
+        }
+    }
+    
+    // for upcoming events atm
+    func testFilter(selectedFilter: Int) -> [Event] {
+        var selectedFilterStr: String = ""
+        var eventArr: [Event] = []
+        
+        // convert selectedFilter into a String value
+        switch selectedFilter {
+        case 1:
+            selectedFilterStr = "In-Person"
+        case 2:
+            selectedFilterStr = "Online"
+        case 3:
+            selectedFilterStr = "Created Events"
+        default:
+            selectedFilterStr = "All"
+        }
+        
+        for event in eventViewModel.joinedEvents {
+            // find events with matching id to joined book clubs
+            if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                if selectedFilterStr == "All" {
+                    eventArr.append(event)
+                } else if bookClub.meetingType == selectedFilterStr {
+                    eventArr.append(event)
+                }
+//                else if selectedFilterStr == "Created Events" {
+//                    let currentUserId = Auth.auth().currentUser?.uid ?? ""
+//                    for event in eventViewModel.allEvents.filter({ $0.moderatorId == currentUserId }) {
+//                        if bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) != nil {
+//                            eventArr.append(event)
+//                        }
+//                    }
+//                }
+            }
+        }
+        
+        return eventArr
+    }
+    
+    
+    
+    // not working atm
+    func createdEvents() -> [Event] {
+        var eventArr: [Event] = []
+        
+        for event in eventViewModel.allEvents {
+            if event.moderatorId == Auth.auth().currentUser?.uid {
+                eventArr.append(event)
+            }
+        }
+        
+        return eventArr
     }
 }
+
+#Preview {
+    EventsView()
+}
+
+
 
 //func getDayName(day: Int) -> String {
 //    let calendar = Calendar(identifier: .gregorian)
 //    let shortDays = calendar.shortWeekdaySymbols
 //    return shortDays[day];
 //}
-
-#Preview {
-    EventsView()
-}

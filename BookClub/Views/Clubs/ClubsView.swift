@@ -54,7 +54,7 @@ struct ClubsView: View {
                     selectedFilter = 0
                 }
                 .tag(0)
-                .tint(selectedFilter == 0 ? .accent : .accent.opacity(0.2))
+                .tint(selectedFilter == 0 ? .accent : .quaternaryHex)
                 .foregroundStyle(selectedFilter == 0 ? .white : .black)
                 
                 Button("In-Person") {
@@ -70,6 +70,7 @@ struct ClubsView: View {
                 .tint(selectedFilter == 2 ? .customGreen : .customGreen.opacity(0.2))
             }
             .font(.footnote)
+            .fontWeight(.medium)
             .foregroundStyle(.black)
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)

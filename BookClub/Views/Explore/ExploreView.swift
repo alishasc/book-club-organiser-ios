@@ -84,11 +84,13 @@ struct ExploreView: View {
                                     NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
+                                    .padding(.vertical, 15)  // to see shadows
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
+                    .padding(.vertical, -15)  // reverse padding to see shadows
                 }
                 
                 // in-person book clubs
@@ -108,14 +110,16 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "In-Person" {
-                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
+                                    .padding(.vertical, 15)  // to see shadows
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
+                    .padding(.vertical, -15)  // reverse padding to see shadows
                 }
             }
             .padding(.bottom)
