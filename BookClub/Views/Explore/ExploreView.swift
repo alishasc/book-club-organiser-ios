@@ -71,8 +71,9 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
                             Text("View all")
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .padding(.horizontal)
@@ -100,8 +101,9 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "In-Person" }), coverImages: bookClubViewModel.coverImages, clubCategory: "In-Person")) {
                             Text("View all")
+                                .foregroundStyle(.customBlue)
                         }
                     }
                     .padding(.horizontal)

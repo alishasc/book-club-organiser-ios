@@ -183,6 +183,10 @@ struct CreateClubView: View {
                 BookClubDetailsView(bookClub: bookClub, isModerator: true, isMember: false)
             }
         }
+        .onDisappear {
+            photosPickerViewModel.pickerItem = nil
+            photosPickerViewModel.selectedImage = nil
+        }
     }
 }
 
