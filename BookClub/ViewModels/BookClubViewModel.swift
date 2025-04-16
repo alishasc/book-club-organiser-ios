@@ -253,6 +253,29 @@ class BookClubViewModel: ObservableObject {
         return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
     }
     
+    // filter and sort book clubs on Explore page lists
+    func filterAndSortArray(clubsArr: [BookClub], selectedSortBy: String?, selectedGenre: String?) -> [BookClub] {
+        var filteredArray = clubsArr
+        
+        if let selectedGenre {
+            // only show genre selected
+            filteredArray = filteredArray.filter { $0.genre == selectedGenre }
+        }
+        
+        switch selectedSortBy {
+        case "Date Created":
+            // sort in alphabetical order
+            filteredArray = filteredArray.sorted { $0.creationDate > $1.creationDate }
+        case "Name":
+            // sort by date created - newest first
+            filteredArray = filteredArray.sorted { $0.name.lowercased() < $1.name.lowercased() }
+        default:
+            break
+        }
+        
+        return filteredArray
+    }
+    
     
     
     

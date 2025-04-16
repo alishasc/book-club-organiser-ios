@@ -70,6 +70,26 @@ class ViewTemplates {
         }
     }
     
+    static func bookClubExploreList(coverImage: UIImage, clubName: String) -> some View {
+        ZStack(alignment: .bottomLeading) {
+            GeometryReader { geometry in
+                Image(uiImage: coverImage)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geometry.size.width, height: 150)
+                    .cornerRadius(10)
+//                    .shadow(color: .black.opacity(0.25), radius: 2, x: 0, y: -2)  // top shadow
+                    .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)  // bottom shadow
+            }
+            .frame(height: 150)
+            Text(clubName)
+                .font(.title3)
+                .fontWeight(.semibold)
+                .foregroundStyle(.white)
+                .padding([.leading, .bottom], 15)
+        }
+    }
+    
     struct loginSignupButtonModifier: ViewModifier {
         func body(content: Content) -> some View {
             content
