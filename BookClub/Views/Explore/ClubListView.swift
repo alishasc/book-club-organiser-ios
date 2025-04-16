@@ -10,15 +10,13 @@ import SwiftUI
 struct ClubListView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
-    var clubsArr: [BookClub]  // original arr of BookClubs
+    var clubsArr: [BookClub]  // original arr
     var coverImages: [UUID: UIImage]
     var clubCategory: String  // in-person or online clubs
-    //    @State var copiedArr: [BookClub] = []  // copy of clubsArr
-    @State private var selectedGenre: String?  // for genre Picker
-    @State private var selectedSortBy: String?
-    let sortByOptions: [String] = ["Name", "Date Created"]
-    
     @State private var filteredArray: [BookClub] = []  // looped in ScrollView
+    @State private var selectedGenre: String?  // genre Picker
+    @State private var selectedSortBy: String?  // sort by Picker
+    let sortByOptions: [String] = ["Name", "Date Created"]
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -37,7 +35,7 @@ struct ClubListView: View {
                                 }
                             }
                             .onChange(of: selectedSortBy) {
-                                filteredArray = filterAndSortArray(clubsArr: clubsArr, selectedSortBy: selectedSortBy, selectedGenre: selectedGenre)
+                                filteredArray = bookClubViewModel.filterAndSortArray(clubsArr: clubsArr, selectedSortBy: selectedSortBy, selectedGenre: selectedGenre)
                             }
                         } label: {
                             HStack {
@@ -63,7 +61,7 @@ struct ClubListView: View {
                                 }
                             }
                             .onChange(of: selectedGenre) {
-                                filteredArray = filterAndSortArray(clubsArr: clubsArr, selectedSortBy: selectedSortBy, selectedGenre: selectedGenre)
+                                filteredArray = bookClubViewModel.filterAndSortArray(clubsArr: clubsArr, selectedSortBy: selectedSortBy, selectedGenre: selectedGenre)
                             }
                         } label: {
                             HStack {
@@ -100,26 +98,7 @@ struct ClubListView: View {
                 .padding([.horizontal, .top])
             }
             .padding(.bottom, 5)
-            
-            // if filter has been applied - show button to clear filters
-            //            if selectedGenre != nil || selectedSortBy != nil {
-            //                HStack {
-            //                    Spacer()
-            //                    Button() {
-            //                        // remove all filters - reset list
-            //                        selectedGenre = nil
-            //                        selectedSortBy = nil
-            //                    } label: {
-            //                        Text("Clear Filters")
-            //                            .font(.subheadline)
-            //                            .fontWeight(.medium)
-            //                            .foregroundStyle(.customBlue)
-            //                            .padding(.trailing)
-            //                            .padding(.bottom, 5)
-            //                    }
-            //                }
-            //            }
-            
+                        
             ScrollView(.vertical, showsIndicators: false) {
                 ForEach(filteredArray) { club in
                     NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
@@ -140,27 +119,6 @@ struct ClubListView: View {
             }
         }
     }
-}
-
-func filterAndSortArray(clubsArr: [BookClub], selectedSortBy: String?, selectedGenre: String?) -> [BookClub] {
-    var filteredArray = clubsArr
-    
-    if let selectedGenre {
-        filteredArray = filteredArray.filter { $0.genre == selectedGenre }
-    }
-    
-    switch selectedSortBy {
-    case "Date Created":
-        // sort in alphabetical order
-        filteredArray = filteredArray.sorted { $0.creationDate > $1.creationDate }
-    case "Name":
-        // sort by date created - newest first
-        filteredArray = filteredArray.sorted { $0.name.lowercased() < $1.name.lowercased() }
-    default:
-        break
-    }
-    
-    return filteredArray
 }
 
 #Preview {
