@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct MessagesView: View {
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    
     var body: some View {
         VStack {
             // header
@@ -16,7 +18,7 @@ struct MessagesView: View {
                     .font(.largeTitle).bold()
                 Spacer()
                 // new message button
-                NavigationLink(destination: /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Destination@*/Text("Destination")/*@END_MENU_TOKEN@*/) {
+                NavigationLink(destination: UserListView(users: bookClubViewModel.messageUsers, profilePics: bookClubViewModel.memberPics)) {
                     Label("New message", systemImage: "square.and.pencil")
                         .labelStyle(.iconOnly)
                         .font(.system(size: 24))
@@ -32,6 +34,11 @@ struct MessagesView: View {
             }
         }
         .padding()
+        .onAppear {
+            Task {
+                try await bookClubViewModel.getMessageUserList()
+            }
+        }
     }
 }
 

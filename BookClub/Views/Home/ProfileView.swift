@@ -29,10 +29,6 @@ struct ProfileView: View {
                         .scaledToFill()
                         .frame(width: 100, height: 100)
                         .clipShape(Circle())
-                    
-//                    Circle()
-//                        .frame(width: 100, height: 100)
-//                        .foregroundStyle(.quinary)
                 }
                 Text(authViewModel.currentUser?.name ?? "")
                     .font(.title)

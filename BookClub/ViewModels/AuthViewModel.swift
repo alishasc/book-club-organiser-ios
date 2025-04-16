@@ -157,7 +157,7 @@ class AuthViewModel: ObservableObject {
             // create new instance of User with details from doc
             self.currentUser = try snapshot?.data(as: User.self)
             
-            print("Current user is: \(String(describing: self.currentUser))")
+//            print("Current user is: \(String(describing: self.currentUser))")
             
             // get profile pic for logged in user
             let imageRef = storageRef.child(

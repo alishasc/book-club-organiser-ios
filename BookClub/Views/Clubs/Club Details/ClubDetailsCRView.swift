@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-// this will be filled with book API information
+// fill with book API information
 
 struct ClubDetailsCRView: View {
     var bookClub: BookClub
@@ -60,8 +60,12 @@ struct ClubDetailsCRView: View {
                     }
                     .foregroundStyle(.black)
                     
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 24))
+                    NavigationLink {
+                        BookDetailsView(book: currentRead)
+                    } label: {
+                        Image(systemName: "chevron.right")
+                            .font(.system(size: 24))
+                    }
                 }
                 .padding(12)
                 .background(

@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BookClubDetailsView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var bookViewModel: BookViewModel
@@ -86,7 +87,7 @@ struct BookClubDetailsView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Join") {
                         Task {
-                            try await bookClubViewModel.joinClub(bookClub: bookClub)
+                            try await bookClubViewModel.joinClub(bookClub: bookClub, currentUser: authViewModel.currentUser)
                         }
                     }
                 }

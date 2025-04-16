@@ -184,7 +184,7 @@ class EventViewModel: ObservableObject {
         })
     }
     
-    // update db and array when join/leave event
+    // update db when join/leave event
     func attendEvent(isAttending: Bool, event: Event, bookClub: BookClub) async throws {
         let db = Firestore.firestore()
         // logged in user's id
@@ -208,7 +208,7 @@ class EventViewModel: ObservableObject {
             }
         }
         else {
-            // remove attendee info to db
+            // remove attendee info from db
             do {
                 // look for doc with matching eventId and userId
                 let querySnapshot = try await db.collection("EventAttendees")
@@ -226,7 +226,7 @@ class EventViewModel: ObservableObject {
                 self.joinedEvents.removeAll(where: { event.id == $0.id })
                 print("unreserved space for event")
             } catch {
-                print("failed to remove event rsvp: \(error.localizedDescription)")
+                print("failed to unreserve event space: \(error.localizedDescription)")
             }
         }
     }
@@ -306,6 +306,7 @@ class EventViewModel: ObservableObject {
     //
     //        return events
     //    }
+    
     
     // fetch events only for selected club
     //    func fetchSelectedClubEvents(bookClubId: UUID) async throws {
