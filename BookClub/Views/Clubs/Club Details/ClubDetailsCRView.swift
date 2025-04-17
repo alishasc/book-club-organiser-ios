@@ -14,6 +14,26 @@ struct ClubDetailsCRView: View {
     var currentRead: Book?
     var isModerator: Bool
     
+    private var tidyDescription: String {
+        if let currentRead {
+            currentRead.description
+                .replacingOccurrences(of: "<br>", with: "\n", options: .regularExpression)
+                .replacingOccurrences(of: "</p><p>", with: "\n\n", options: .regularExpression)
+                .replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        } else {
+            "Loading..."
+        }
+    }
+    
+    // split genre string into array
+    private var genresArr: [String] {
+        if let currentRead {
+            currentRead.genre.components(separatedBy: "/")
+        } else {
+            []
+        }
+    }
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
@@ -50,13 +70,11 @@ struct ClubDetailsCRView: View {
                             .fontWeight(.semibold)
                         Text(currentRead.author)
                             .font(.subheadline)
-                        Text(currentRead.genre)
-                            .font(.subheadline)
-                            .padding(.bottom, 4)
-                        Text(currentRead.description)
+                        Text(tidyDescription)
                             .font(.footnote)
                             .lineLimit(2)
                             .multilineTextAlignment(.leading)
+                        StaticTagView(tags: [TagViewItem(title: genresArr.first ?? "Unknown genre", isSelected: false)])
                     }
                     .foregroundStyle(.black)
                     
