@@ -66,6 +66,7 @@ class BookClubViewModel: ObservableObject {
         Task {
             try await fetchBookClubs()
             try await fetchJoinedClubs()
+            try await getMessageUserList()
         }
     }
     
@@ -279,6 +280,8 @@ class BookClubViewModel: ObservableObject {
     
     // rename to getUserMessagingList() ??
     func getMessageUserList() async throws {
+        print("getting message user list")
+        
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()  // get profile pic
         var members: [BookClubMembers] = []
@@ -292,7 +295,6 @@ class BookClubViewModel: ObservableObject {
                 for document in querySnapshot.documents {
                     // new BookClubMember object
                     let clubMember = try document.data(as: BookClubMembers.self)
-                    print(clubMember.userName)
                     if clubMember.userId != Auth.auth().currentUser!.uid {
                         members.append(clubMember)
                     }

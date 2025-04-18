@@ -6,38 +6,67 @@
 //
 
 import SwiftUI
+import FirebaseAuth
 
 struct ChatLogView: View {
-//    let chatUser: ChatUser?
-    @State private var chatText: String = ""
+    @ObservedObject var messageViewModel: MessageViewModel
+    let chatUser: BookClubMembers?  // recipient of message
+    
+    init(chatUser: BookClubMembers?) {
+        self.chatUser = chatUser
+        self.messageViewModel = .init(chatUser: chatUser)
+    }
     
     var body: some View {
         VStack {
             chatMessages
             chatBottomBar
         }
-        .navigationTitle("User name")
+        .navigationTitle(chatUser?.userName ?? "")
         .navigationBarTitleDisplayMode(.inline)
     }
     
     private var chatMessages: some View {
         ScrollView {
-            ForEach(0..<10) { num in
-                HStack {
-                    Spacer()
-                    HStack {
-                        Text("FAKE MESSAGE FOR NOW")
-                            .foregroundStyle(.white)
+            ScrollViewReader { scrollViewProxy in
+                ForEach(messageViewModel.chatMessages) { message in
+                    VStack {
+                        if message.fromId == Auth.auth().currentUser?.uid {
+                            HStack {
+                                Spacer()
+                                HStack {
+                                    Text(message.text)
+                                        .foregroundStyle(.white)
+                                }
+                                .padding()
+                                .background(.customBlue)
+                                .cornerRadius(8)
+                            }
+                        } else {
+                            HStack {
+                                HStack {
+                                    Text(message.text)
+                                        .foregroundStyle(.black)
+                                }
+                                .padding()
+                                .background(.white)
+                                .cornerRadius(8)
+                                Spacer()
+                            }
+                        }
                     }
-                    .padding()
-                    .background(.customBlue)
-                    .cornerRadius(8)
+                    .padding(.horizontal)
+                    .padding(.top, 8)
                 }
-                .padding(.horizontal)
-                .padding(.top, 8)
+                
+                HStack { Spacer() }
+                    .id("Empty")
+                    .onReceive(messageViewModel.$count) { _ in
+                        withAnimation(.easeOut(duration: 0.5)) {
+                            scrollViewProxy.scrollTo("Empty", anchor: .bottom)
+                        }
+                    }
             }
-            
-            HStack { Spacer() }
         }
         .background(Color(.init(white: 0.95, alpha: 1)))
     }
@@ -46,9 +75,11 @@ struct ChatLogView: View {
             Image(systemName: "photo.on.rectangle")
                 .font(.system(size: 24))
                 .foregroundStyle(Color(.darkGray))
-            TextField("Description", text: $chatText)
+            TextEditor(text: $messageViewModel.chatText)
+                .opacity(messageViewModel.chatText.isEmpty ? 0.5 : 1)
+                .frame(height: 40)
             Button {
-                // action
+                messageViewModel.handleSend()
             } label: {
                 Text("Send")
                     .foregroundStyle(.white)
@@ -64,8 +95,8 @@ struct ChatLogView: View {
     }
 }
 
-#Preview {
-    NavigationView {
-        ChatLogView()
-    }
-}
+//#Preview {
+//    NavigationView {
+//        ChatLogView()
+//    }
+//}

@@ -94,6 +94,7 @@ struct LoginView: View {
                                 try await bookClubViewModel.fetchBookClubs()
                                 try await bookClubViewModel.fetchJoinedClubs()
                                 try await eventViewModel.fetchEvents()  // get up-to-date events
+                                try await bookClubViewModel.getMessageUserList()
                             }
                         } else {
                             // show any error prompts for invalid field inputs
