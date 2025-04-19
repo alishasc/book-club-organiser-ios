@@ -42,10 +42,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		8055040B2DB2FA21005BA83C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		80D1FADE2D46B7F600B912C9 = {
 			isa = PBXGroup;
 			children = (
 				80D1FAE92D46B7F600B912C9 /* BookClub */,
+				8055040B2DB2FA21005BA83C /* Frameworks */,
 				80D1FAE82D46B7F600B912C9 /* Products */,
 			);
 			sourceTree = "<group>";

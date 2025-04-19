@@ -54,14 +54,14 @@ struct MessagesView: View {
         ScrollView(.vertical, showsIndicators: false) {
             ForEach(messageViewModel.recentMessages) { recentMessage in
                 NavigationLink {
-                    Text("destination")
+                    ChatLogView(chatUser: chatUser)
                 } label: {
                     HStack(spacing: 20) {
                         if let profilePic = bookClubViewModel.memberPics[recentMessage.toId] {
                             Image(uiImage: profilePic)
                                 .resizable()
                                 .scaledToFill()
-                                .frame(width: 64, height: 64)
+                                .frame(width: 60, height: 60)
                                 .clipShape(Circle())
                                 .overlay(Circle().stroke(.black, lineWidth: 1))
                                 .shadow(radius: 2)
@@ -72,6 +72,7 @@ struct MessagesView: View {
                                 .foregroundStyle(.black)
                                 .font(.system(size: 16, weight: .semibold))
                                 .fontWeight(.semibold)
+                                .lineLimit(1)
                             Text(recentMessage.text)
                                 .foregroundStyle(Color(.lightGray))
                                 .multilineTextAlignment(.leading)
@@ -80,7 +81,7 @@ struct MessagesView: View {
                         
                         Spacer()
                         
-                        Text("22d")
+                        Text(recentMessage.timestamp.description)
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .padding(.horizontal)

@@ -7,7 +7,6 @@
 
 import Foundation
 import FirebaseAuth
-import FirebaseFirestore
 import Firebase
 
 @MainActor
@@ -51,7 +50,19 @@ class MessageViewModel: ObservableObject {
                     }
                     
                     // add latest recent message to the array - insert at beginning of list
-//                    self.recentMessages.insert(RecentMessage(documentId: docId, data: change.document.data()), at: 0)
+                    self.recentMessages.insert(RecentMessage(documentId: docId, data: change.document.data()), at: 0)
+                    
+                    // remove or fix
+//                    do {
+//                        let recentMessage = try change.document.data(as: RecentMessage.self)
+//                        self.recentMessages.insert(recentMessage, at: 0)
+//                    } catch {
+//                        print(error.localizedDescription)
+//                    }
+                    
+//                    if let recentMessage = try? change.document.data(as: RecentMessage.self) {
+//                        self.recentMessages.insert(recentMessage, at: 0)
+//                    }
                 }
             }
     }
@@ -81,14 +92,6 @@ class MessageViewModel: ObservableObject {
                 DispatchQueue.main.async {
                     self.count += 1
                 }
-                
-//                querySnapshot?.documents.forEach { queryDocumentSnapshot in
-//                    // data = dictionary saved in db
-//                    let data = queryDocumentSnapshot.data()
-//                    let docId = queryDocumentSnapshot.documentID
-//                    let message = Message(documentId: docId, data: data)
-//                    self.chatMessages.append(message)
-//                }
             }
     }
     

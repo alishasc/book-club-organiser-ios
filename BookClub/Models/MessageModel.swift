@@ -24,24 +24,24 @@ struct Message: Identifiable {
     }
 }
 
-struct RecentMessage: Identifiable {
+struct RecentMessage: Identifiable, Codable {
     var id: String { documentId }
-    
+        
     let documentId: String
     let fromId: String
     let toId: String
     let text: String
     let userName: String
     let profilePictureURL: String
-    let timestamp: Firebase.Timestamp
+    let timestamp: Date
     
-//    init(documentId: String, data: [String: Any]) {
-//        self.documentId = documentId
-//        self.fromId = data["fromId"] as? String ?? ""
-//        self.toId = data["toId"] as? String ?? ""
-//        self.text = data["text"] as? String ?? ""
-//        self.userName = data["userName"] as? String ?? ""
-//        self.profilePictureURL = data["profilePictureURL"] as? String ?? ""
-//        self.timestamp = data["timestamp"] as? Timestamp ?? Timestamp(date: Date())
-//    }
+    init(documentId: String, data: [String: Any]) {
+        self.documentId = documentId
+        self.fromId = data["fromId"] as? String ?? ""
+        self.toId = data["toId"] as? String ?? ""
+        self.text = data["text"] as? String ?? ""
+        self.userName = data["userName"] as? String ?? ""
+        self.profilePictureURL = data["profilePictureURL"] as? String ?? ""
+        self.timestamp = data["timestamp"] as? Date ?? Date()
+    }
 }
