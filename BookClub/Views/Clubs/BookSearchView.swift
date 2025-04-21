@@ -80,10 +80,9 @@ struct BookSearchView: View {
                     // save chosen book to db
                     Task {
                         if let selectedBook = bookViewModel.selectedBook {
-                            try await bookViewModel.saveBook(bookClubId: bookClub.id, book: selectedBook)
+                            try await bookViewModel.fetchOneBook(bookClubId: bookClub.id, selectedBook: selectedBook)
                         }
                     }
-                    
                     dismiss()
                 }
                 .disabled(bookViewModel.selectedBook == nil)

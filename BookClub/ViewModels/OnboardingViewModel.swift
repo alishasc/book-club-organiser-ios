@@ -29,10 +29,10 @@ class OnboardingViewModel: ObservableObject {
             locationErrorPrompt = ""
             return
         } else {
-            // remove trailing whitespace
+            // remove trailing & leading whitespace
             let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
             
-            // use to check string only has letters, numbers, hyphens, apostrophes and spaces
+            // check string only has letters, numbers, hyphens, apostrophes and spaces
             let queryTest = NSPredicate(format: "SELF MATCHES %@", "^[a-zA-Z0-9\\-\\'\\’\\s]+$")
             
             // check the now trimmed query matches the regex pattern

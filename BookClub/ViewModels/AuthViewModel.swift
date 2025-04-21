@@ -19,10 +19,10 @@ class AuthViewModel: ObservableObject {
     @Published var userIsLoggedIn: Bool = false
     // for sign up
     @Published var isEmailInUse: Bool = false  // return if email already in use when sign up
-    @Published var isNewUser: Bool = false  // go to onboarding if just signed up
+    @Published var isNewUser: Bool = false  // trigger onboarding
     
     // choose random asset for default profile pic
-    private var defaultIconStr: [String] = ["blueIcon", "yellowIcon", "pinkIcon", "greenIcon"]
+    private var defaultIconStr: [String] = ["fantasyIcon", "mysteryIcon", "romanceIcon", "scifiIcon"]
     @Published var profilePic: UIImage?  // loaded profile pic for logged in user - fetchUser()
     
     init() {
@@ -41,13 +41,10 @@ class AuthViewModel: ObservableObject {
     }
     
     func signUp(name: String, email: String, password: String) async throws {
-        print("sign up...")
-        
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
             self.userSession = result.user
             isNewUser = true  // flag to trigger onboarding
-            print("sign up successful")
             
             guard let id = Auth.auth().currentUser?.uid else {
                 print("couldn't get the uid to add new user")
@@ -64,8 +61,6 @@ class AuthViewModel: ObservableObject {
                     "name": name,
                     "email": email
                 ])
-                
-                print("successfully added new user details to Firestore")
             } catch {
                 print("Error writing sign up info to Firestore: \(error.localizedDescription)")
             }
@@ -87,7 +82,7 @@ class AuthViewModel: ObservableObject {
         
         do {
             guard let id = Auth.auth().currentUser?.uid else {
-                print("couldn't get the uid to save onboarding details")
+                print("Couldn't get the uid to save onboarding details")
                 return
             }
             
@@ -100,10 +95,8 @@ class AuthViewModel: ObservableObject {
                 "profilePictureURL": imageFilePath
             ], merge: true)
             
-            print("Successfully saved onboarding details to Firestore")
-            
             // choose random image to set as default
-            let profilePic = UIImage(named: defaultIconStr.randomElement() ?? "blueIcon")
+            let profilePic = UIImage(named: defaultIconStr.randomElement() ?? "fantasyIcon")
             
             // add default image to storage
             if let imageData = profilePic?.jpegData(compressionQuality: 0.8) {
@@ -117,23 +110,22 @@ class AuthViewModel: ObservableObject {
                     }
             }
             self.profilePic = profilePic
-
-            print("profile pic saved successfully")
         } catch {
             print("Failed to save onboarding info: \(error.localizedDescription)")
         }
     }
     
-    func logIn(email: String, password: String) async throws {
-        print("sign in...")
-        
+    func loginAndLoadData(email: String, password: String, bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
         do {
-            // try log in
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.userSession = result.user
-            print("log in successful")
-            
             await fetchUser()
+            
+            // fetch data after logging in
+            try await bookClubViewModel.fetchBookClubs()
+            try await bookClubViewModel.fetchJoinedClubs()
+            try await eventViewModel.fetchEvents()
+            try await bookClubViewModel.getMessageUserList()
         } catch {
             print("Could not log in user: \(error.localizedDescription)")
         }
@@ -141,13 +133,12 @@ class AuthViewModel: ObservableObject {
     
     // get details of logged in user
     func fetchUser() async {
-        print("Fetch user...")
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
         
         // get uid created when user signed up - String
         guard let userId = Auth.auth().currentUser?.uid else {
-            print("no user signed in")
+            print("No user is signed in")
             return
         }
         
@@ -157,18 +148,16 @@ class AuthViewModel: ObservableObject {
             // create new instance of User with details from doc
             self.currentUser = try snapshot?.data(as: User.self)
             
-            print("Current user is: \(String(describing: self.currentUser))")
-            
             // get profile pic for logged in user
             let imageRef = storageRef.child(
                 // path to image in storage
                 self.currentUser?.profilePictureURL ?? ""
             )
             // get the image from storage
-            imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
+            imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                 if let error = error {
                     print(
-                        "error occured fetching image: \(error.localizedDescription)"
+                        "error occured fetching user's profile picture: \(error.localizedDescription)"
                     )
                 } else if let data = data {
                     let image = UIImage(data: data)
@@ -176,17 +165,12 @@ class AuthViewModel: ObservableObject {
                     self.profilePic = image
                 }
             }
-            
-            print("fetched profile pic successfully")
         } catch {
             print("Could not fetch user: \(error.localizedDescription)")
         }
     }
     
-    // check first version of code
     func logOut() {
-        print("sign out...")
-        
         let firebaseAuth = Auth.auth()
         do {
             try firebaseAuth.signOut()
@@ -194,9 +178,79 @@ class AuthViewModel: ObservableObject {
             userSession = nil
             currentUser = nil
             isNewUser = false
-            print("sign out successful")
         } catch let signOutError as NSError {
             print("Error signing out:", signOutError)
+        }
+    }
+    
+    func updateDetails(name: String, email: String, favouriteGenres: [String], location: String, profilePicture: UIImage) async throws {
+        let db = Firestore.firestore()
+        let storageRef = Storage.storage().reference()
+        guard let id = Auth.auth().currentUser?.uid else { return }
+        var updatedData: [String: Any] = [:]
+        
+        if name != currentUser?.name {
+            updatedData["name"] = name
+        }
+        if email != currentUser?.email {
+            updatedData["email"] = email
+            // send email to user to update email
+            Auth.auth().currentUser?.sendEmailVerification(beforeUpdatingEmail: email) { error in
+                if let error = error {
+                    print(
+                        "error sending email verification: \(error.localizedDescription)"
+                    )
+                    return
+                }
+            }
+        }
+        if favouriteGenres != currentUser?.favouriteGenres {
+            updatedData["favouriteGenres"] = favouriteGenres
+        }
+        if location != currentUser?.location {
+            updatedData["location"] = location
+        }
+        
+        if profilePicture != self.profilePic {
+            // create the image url for the db
+            let imageFilePath = "profilePictures/\(UUID().uuidString).jpg"
+            let fileRef = storageRef.child(imageFilePath)
+            updatedData["profilePictureURL"] = imageFilePath  // to save to db
+            
+            // add new image to storage
+            if let imageData = profilePicture.jpegData(compressionQuality: 0.8) {
+                _ = fileRef
+                    .putData(imageData, metadata: nil) { (metadata, error) in
+                        if let error = error {
+                            print(
+                                "error saving updated image: \(error.localizedDescription)"
+                            )
+                        }
+                    }
+            }
+            
+            // delete old image
+            let oldImageRef = storageRef.child(self.currentUser?.profilePictureURL ?? "")
+
+            do {
+                try await oldImageRef.delete()
+            } catch {
+                print("error deleting old image: \(error.localizedDescription)")
+            }
+            
+            self.profilePic = profilePicture
+        }
+        
+        do {
+            // update info in db
+            try await db.collection("User").document(id).setData(updatedData, merge: true)
+        } catch {
+            print("error updating user details: \(error.localizedDescription)")
+        }
+                
+        // update currentUser
+        Task {
+            await fetchUser()
         }
     }
 }

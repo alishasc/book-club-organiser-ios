@@ -11,8 +11,9 @@ import FirebaseFirestore
 @MainActor
 class BookViewModel: ObservableObject {
 //    @Published var currentRead: Book?  // loaded from db
-    @Published var booksList: [Book] = []  // when search for books
-    @Published var selectedBook: Book?  // when search for books
+    // when search for books
+    @Published var booksList: [Book] = []
+    @Published var selectedBook: Book?
     
     // search results
     func fetchBooksList(searchQuery: String) async throws {
@@ -35,18 +36,48 @@ class BookViewModel: ObservableObject {
     }
     
     // add book to db
-    func saveBook(bookClubId: UUID, book: Book) async throws {
+//    func saveBook(bookClubId: UUID, book: Book) async throws {
+//        do {
+//            let db = Firestore.firestore()
+//            try db.collection("Book").document(book.id).setData(from: book)  // add to Book collection
+//
+//            // save as current read in BookClub collection
+//            try await db.collection("BookClub").document(bookClubId.uuidString).setData([
+//                "currentBookId": book.id
+//            ], merge: true)
+//        } catch {
+//            print("error saving book to db: \(error.localizedDescription)")
+//        }
+//    }
+    
+    // fetches chosen book individually from API and saves to db
+    func fetchOneBook(bookClubId: UUID, selectedBook: Book) async throws {
+        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(selectedBook.id)?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
+
+        guard let bookUrl = URL(string: bookUrlString) else {
+            fatalError("Invalid URL: \(bookUrlString)")
+        }
+        
         do {
+            let (data, _) = try await URLSession.shared.data(from: bookUrl)
+            let decoder = JSONDecoder()
+            let book = try decoder.decode(Book.self, from: data)
+            
+            print("description: \(book.description)")
+            print("genre: \(book.genre)")
+            
             let db = Firestore.firestore()
             try db.collection("Book").document(book.id).setData(from: book)  // add to Book collection
-
+            
             // save as current read in BookClub collection
             try await db.collection("BookClub").document(bookClubId.uuidString).setData([
                 "currentBookId": book.id
             ], merge: true)
+            
+            print("success saving book")
         } catch {
-            print("error saving book to db: \(error.localizedDescription)")
-        }
+            print("failed to save one book: \(error.localizedDescription)")
+        }        
     }
 
     // get book from db - use the book's id
@@ -63,33 +94,4 @@ class BookViewModel: ObservableObject {
         
         return currentRead
     }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
-//    func fetchOneBook(searchQuery: String) async throws {
-//        // replace J4QUEAAAQBAJ with book id var
-//        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/J4QUEAAAQBAJ?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"  // love hypothesis
-//
-//        guard let bookUrl = URL(string: bookUrlString) else {
-//            fatalError("Invalid URL: \(bookUrlString)")
-//        }
-//        
-//        do {
-//            let (data, _) = try await URLSession.shared.data(from: bookUrl)
-//            let decoder = JSONDecoder()
-//            
-//            let book = try decoder.decode(Book.self, from: data)
-//            self.book = book
-//            print("decoded one book")
-//        } catch {
-//            print("failed to load book data: \(error.localizedDescription)")
-//        }
-//    }
 }
