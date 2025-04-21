@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// fill with book API information
-
 struct ClubDetailsCRView: View {
     var bookClub: BookClub
     var currentRead: Book?

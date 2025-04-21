@@ -11,22 +11,15 @@ struct testPhoto: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     
     var body: some View {
-//        let coverImage = bookClubViewModel.coverImages[]
-
         VStack {
             List {
-                ForEach(Array(bookClubViewModel.coverImages), id: \.key) { bookClubId, image in
+                ForEach(Array(bookClubViewModel.allUserPictures), id: \.key) { userId, image in
                     Image(uiImage: image)
                         .resizable()
                         .scaledToFill()
-                        .frame(width: 300, height: 200)
+                        .frame(width: 50, height: 50)
                 }
             }
-            
-//            Image(uiImage: coverImage)
-//                .resizable()
-//                .scaledToFill()
-//                .frame(width: 300, height: 200)
         }
         .padding()
     }

@@ -11,17 +11,19 @@ import SwiftUI
 
 struct ClubDetailsMembersView: View {
     var moderatorName: String
-//    var moderatorPic: Image
-//    var memberPics: [Image]
+    var moderatorPic: UIImage
+    var memberPics: [UIImage]
     
     var body: some View {
         HStack {
             // moderator info
             HStack(spacing: 15) {
                 // moderator profile pic
-                Circle()
+                Image(uiImage: moderatorPic)
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 50, height: 50)
-                    .foregroundStyle(.customYellow)
+                    .clipShape(Circle())
                 
                 // moderator name
                 VStack(alignment: .leading) {
@@ -38,24 +40,25 @@ struct ClubDetailsMembersView: View {
             
             // members info
             VStack(alignment: .trailing, spacing: 4) {
-                Text("no. of members")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
+                if memberPics.count > 0 {
+                    Text("\(memberPics.count) members")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    Text("No members yet")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
+                
                 // member profile pics
                 HStack(spacing: -5) {
-                    // add ForEach loop here for club members? max 4 pics
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customYellow)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customGreen)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customPink)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customBlue)
+                    ForEach(memberPics, id: \.self) { image in
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(width: 30, height: 30)
+                            .clipShape(Circle())
+                    }
                 }
             }
         }

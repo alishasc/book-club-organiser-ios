@@ -10,7 +10,7 @@ import SwiftUI
 struct MessagesView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @ObservedObject var messageViewModel: MessageViewModel
-        
+    
     @State private var showNewMessageScreen: Bool = false
     @State private var showChatLogView: Bool = false
     @State var chatUser: BookClubMembers?
@@ -19,7 +19,16 @@ struct MessagesView: View {
         NavigationStack {
             VStack {
                 messageHeader
-                messageList
+                
+                if messageViewModel.recentMessages.isEmpty {
+                    ContentUnavailableView {
+                        Label("No Messages", systemImage: "bubble.fill")
+                    } description: {
+                        Text("New messages you receive will appear here.")
+                    }
+                } else {
+                    messageList
+                }
             }
             .navigationDestination(isPresented: $showChatLogView, destination: {
                 ChatLogView(chatUser: self.chatUser)
@@ -92,12 +101,6 @@ struct MessagesView: View {
         }
     }
 }
-
-//                ContentUnavailableView {
-//                    Label("No Messages", systemImage: "bubble.fill")
-//                } description: {
-//                    Text("New messages you receive will appear here.")
-//                }
 
 //#Preview {
 //    MessagesView()

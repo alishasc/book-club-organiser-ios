@@ -21,7 +21,7 @@ struct BookClub: Identifiable, Codable {
     let creationDate: Date
     // books
     let currentBookId: String?
-    let booksRead: [String]?  // change to dict?
+    let booksRead: [String]?
     
     enum CodingKeys: String, CodingKey {
         case id, name, moderatorId, moderatorName, coverImageURL, description, genre, meetingType, isPublic, creationDate, currentBookId, booksRead

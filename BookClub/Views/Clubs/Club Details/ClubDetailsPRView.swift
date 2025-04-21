@@ -8,6 +8,11 @@
 import SwiftUI
 
 struct ClubDetailsPRView: View {
+    var isModerator: Bool
+    var booksRead: [Book]
+    @State var showBookDetails: Bool = false
+    @State var bookToView: Book?
+        
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Previously Read")
@@ -15,39 +20,54 @@ struct ClubDetailsPRView: View {
                 .fontWeight(.semibold)
                 .padding(.leading)
             
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 12) {
-                    Rectangle()
-                        .frame(width: 100, height: 142)
-                        .foregroundStyle(.customBlue)
-                        .padding(15)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.customBlue.opacity(0.3))
-                        )
-                    Rectangle()
-                        .frame(width: 100, height: 142)
-                        .foregroundStyle(.customYellow)
-                        .padding(15)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.customYellow.opacity(0.3))
-                        )
-                    Rectangle()
-                        .frame(width: 100, height: 142)
-                        .foregroundStyle(.customPink)
-                        .padding(15)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(Color.customPink.opacity(0.3))
-                        )
+            if !booksRead.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 12) {
+                        ForEach(booksRead) { book in
+                            Menu {
+                                Button("View Book") {
+                                    showBookDetails = true
+                                    bookToView = book
+                                }
+                                if isModerator {
+                                    Button("Delete") {
+                                        // call function here
+                                        print("delete book")
+                                    }
+                                }
+                            } label: {
+                                AsyncImage(url: URL(string: book.cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: ""))) { image in
+                                    image
+                                        .resizable()
+                                        .scaledToFit()
+                                        .frame(width: 100, height: 142)
+                                        .padding(15)
+                                        .background(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(Color.customYellow.opacity(0.3))
+                                        )
+                                } placeholder: {
+                                    ProgressView()
+                                }
+                            }
+                        }
+                    }
+                    .padding(.horizontal)
                 }
-                .padding(.horizontal)
+            } else {
+                ContentUnavailableView {
+                    Label("This club hasn't read any books yet", systemImage: "books.vertical.fill")
+                }
+            }
+        }
+        .navigationDestination(isPresented: $showBookDetails) {
+            if let bookToView {
+                BookDetailsView(book: bookToView)
             }
         }
     }
 }
 
-#Preview {
-    ClubDetailsPRView()
-}
+//#Preview {
+//    ClubDetailsPRView()
+//}

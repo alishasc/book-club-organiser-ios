@@ -12,7 +12,6 @@ struct BookClubDetailsView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var bookViewModel: BookViewModel
-    @State private var currentRead: Book?
     var bookClub: BookClub
     var isModerator: Bool
     var isMember: Bool
@@ -24,7 +23,6 @@ struct BookClubDetailsView: View {
                 ZStack(alignment: .bottomLeading) {
                     // cover image
                     GeometryReader { geometry in
-                        // image from db
                         if let coverImage = bookClubViewModel.coverImages[bookClub.id] {
                             Image(uiImage: coverImage)
                                 .resizable()
@@ -46,17 +44,21 @@ struct BookClubDetailsView: View {
                 // moderator/member info and current read
                 VStack(alignment: .leading, spacing: 20) {
                     // moderator and members info
-                    ClubDetailsMembersView(moderatorName: bookClub.moderatorName)
+                    ClubDetailsMembersView(
+                        moderatorName: bookClub.moderatorName,
+                        moderatorPic: isModerator ? authViewModel.profilePic ?? UIImage() : bookClubViewModel.moderatorPic,
+                        memberPics: bookClubViewModel.clubMemberPics
+                    )
                     
                     ClubDetailsAboutView(description: bookClub.description)
                     
                     // current read
-                    ClubDetailsCRView(bookClub: bookClub, currentRead: currentRead, isModerator: isModerator)
+                    ClubDetailsCRView(bookClub: bookClub, currentRead: bookViewModel.currentRead, isModerator: isModerator)
                 }
                 .padding(.horizontal)
                 
                 // previously read books
-                ClubDetailsPRView()
+                ClubDetailsPRView(isModerator: isModerator, booksRead: bookViewModel.booksRead)
                 
                 // upcoming events scheduled
                 VStack {
@@ -69,11 +71,17 @@ struct BookClubDetailsView: View {
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .onAppear {
             Task {
-                // to get current read info
                 if bookClub.currentBookId != nil {
-                    self.currentRead = try await bookViewModel.fetchBookDetails(bookId: bookClub.currentBookId ?? "")
+                    try await bookViewModel.fetchBook(bookId: bookClub.currentBookId ?? "")
                 }
+                try await bookClubViewModel.getModeratorAndMemberPics(bookClubId: bookClub.id, moderatorId: bookClub.moderatorId)
+                try await bookViewModel.loadPRBooks(bookClub: bookClub)
             }
+        }
+        .onDisappear {
+            bookViewModel.currentRead = nil
+            bookClubViewModel.moderatorPic = UIImage()
+            bookClubViewModel.clubMemberPics = [UIImage()]
         }
         .toolbar {
             if isModerator {

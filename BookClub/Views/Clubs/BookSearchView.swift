@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct BookSearchView: View {
-    @Environment(\.dismiss) private var dismiss  // change back button
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var bookClubViewModel: BookClubViewModel
     @StateObject var bookViewModel: BookViewModel
     @State private var searchQuery: String = ""
@@ -80,10 +80,11 @@ struct BookSearchView: View {
                     // save chosen book to db
                     Task {
                         if let selectedBook = bookViewModel.selectedBook {
-                            try await bookViewModel.fetchOneBook(bookClubId: bookClub.id, selectedBook: selectedBook)
+                            try await bookViewModel.fetchBookFromAPI(bookClubId: bookClub.id, selectedBook: selectedBook, oldBookId: bookClub.currentBookId ?? "")
+                            try await bookClubViewModel.fetchBookClubs()
                         }
+                        dismiss()
                     }
-                    dismiss()
                 }
                 .disabled(bookViewModel.selectedBook == nil)
             }

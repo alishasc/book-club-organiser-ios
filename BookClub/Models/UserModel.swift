@@ -15,5 +15,5 @@ struct User: Identifiable, Codable {
     var favouriteGenres: [String]
     var location: String
     var joinedClubs: [String]
-    var profilePictureURL: String?  // maybe remove optional?    
+    var profilePictureURL: String 
 }
