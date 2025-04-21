@@ -11,7 +11,11 @@ import Foundation
 import Foundation
 import FirebaseFirestore
 
-struct ClubMembersModel: Identifiable, Codable {
+struct BookClubMembers: Identifiable, Codable {
     var id: UUID = UUID()
-    let members: [String]
+    let bookClubId: UUID
+    let bookClubName: String
+    let userId: String
+    let userName: String
+    let profilePictureURL: String
 }

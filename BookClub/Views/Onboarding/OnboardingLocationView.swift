@@ -121,7 +121,7 @@ struct OnboardingLocationView: View {
                         .foregroundStyle(.secondary)
                 }
                 .padding(.top, 5)
-                // triggers when press buttons
+                // triggers when press 'skip now' or 'done'
                 .navigationDestination(isPresented: $navigateToNavBar) {
                     NavBarView()
                 }

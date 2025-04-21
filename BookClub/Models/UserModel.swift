@@ -10,10 +10,10 @@ import FirebaseFirestore
 
 struct User: Identifiable, Codable {
     var id: String
-    let name: String
-    let email: String
-    let favouriteGenres: [String]
-    let location: String
-    let joinedClubs: [String]
-    let profilePictureURL: String?  // maybe remove optional?
+    var name: String
+    var email: String
+    var favouriteGenres: [String]
+    var location: String
+    var joinedClubs: [String]
+    var profilePictureURL: String?  // maybe remove optional?    
 }

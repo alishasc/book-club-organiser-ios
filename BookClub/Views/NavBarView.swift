@@ -36,7 +36,7 @@ struct NavBarView: View {
                         Label("Explore", systemImage: "magnifyingglass")
                     }
                     .tag(3)
-                MessagesView()
+                MessagesView(messageViewModel: MessageViewModel(chatUser: nil))
                     .tabItem {
                         Label("Messages", systemImage: "bubble")
                     }
