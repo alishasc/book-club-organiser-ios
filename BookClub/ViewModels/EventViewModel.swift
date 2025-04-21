@@ -44,6 +44,7 @@ class EventViewModel: ObservableObject {
         
         do {
             try db.collection("Event").document(event.id.uuidString).setData(from: event)
+            self.allEvents.append(event)
         } catch {
             print("failed to save new event details: \(error.localizedDescription)")
         }

@@ -11,6 +11,7 @@ import FirebaseCore
 @main
 struct BookClubApp: App {
     @StateObject var authViewModel = AuthViewModel()
+    @StateObject var onboardingViewModel = OnboardingViewModel()
     @StateObject var bookClubViewModel = BookClubViewModel()
     @StateObject var eventViewModel = EventViewModel()
     @StateObject var photosPickerViewModel = PhotosPickerViewModel()
@@ -24,6 +25,7 @@ struct BookClubApp: App {
         WindowGroup {
             ContentView()
                 .environmentObject(authViewModel)
+                .environmentObject(onboardingViewModel)
                 .environmentObject(bookClubViewModel)
                 .environmentObject(eventViewModel)
                 .environmentObject(photosPickerViewModel)

@@ -6,7 +6,6 @@
 //
 
 // code ref: https://github.com/happyiosdeveloper/swiftui-tagview
-// for onboarding genre tags
 
 import SwiftUI
 
@@ -24,6 +23,7 @@ struct TagViewItem: Hashable {
     }
 }
 
+// onboarding genre tags
 struct TagView: View {
     @State var tags: [TagViewItem]
     @State private var totalHeight = CGFloat.zero
@@ -106,7 +106,7 @@ struct TagView: View {
     }
 }
 
-// for book details
+// for book details - genre tags
 struct StaticTagView: View {
     @State var tags: [TagViewItem]
     @State private var totalHeight = CGFloat.zero

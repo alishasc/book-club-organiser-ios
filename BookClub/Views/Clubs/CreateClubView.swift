@@ -12,6 +12,7 @@ struct CreateClubView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
+    @Environment(\.dismiss) var dismiss
     @FocusState private var focusedField: Field?  // navigate between textfields
     // form fields
     @State private var name: String = ""
@@ -156,6 +157,7 @@ struct CreateClubView: View {
         .padding()
         .ignoresSafeArea(.keyboard)
         .navigationTitle("Create a New Club")
+        .navigationBarBackButtonHidden(true)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Confirm") {
@@ -177,15 +179,24 @@ struct CreateClubView: View {
                 }
                 .disabled(name.isEmpty || description.isEmpty)  // complete form to submit
             }
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    photosPickerViewModel.pickerItem = nil
+                    photosPickerViewModel.selectedImage = nil
+                    dismiss()
+                } label: {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                            .fontWeight(.medium)
+                        Text("Back")
+                    }
+                }
+            }
         }
         .navigationDestination(isPresented: $showClubDetails) {
             if let bookClub = bookClubViewModel.bookClub {
                 BookClubDetailsView(bookClub: bookClub, isModerator: true, isMember: false)
             }
-        }
-        .onDisappear {
-            photosPickerViewModel.pickerItem = nil
-            photosPickerViewModel.selectedImage = nil
         }
     }
 }
