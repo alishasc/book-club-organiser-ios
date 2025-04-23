@@ -7,11 +7,33 @@
 
 import SwiftUI
 
+    // code ref: https://www.hackingwithswift.com/example-code/media/how-to-read-the-average-color-of-a-uiimage-using-ciareaaverage
+//extension UIImage {h
+//    var averageColor: UIColor? {
+//        guard let inputImage = CIImage(image: self) else { return nil }
+//        let extentVector = CIVector(x: inputImage.extent.origin.x, y: inputImage.extent.origin.y, z: inputImage.extent.size.width, w: inputImage.extent.size.height)
+//
+//        guard let filter = CIFilter(name: "CIAreaAverage", parameters: [kCIInputImageKey: inputImage, kCIInputExtentKey: extentVector]) else { return nil }
+//        guard let outputImage = filter.outputImage else { return nil }
+//
+//        var bitmap = [UInt8](repeating: 0, count: 4)
+//        let context = CIContext(options: [.workingColorSpace: kCFNull as Any])
+//        context.render(outputImage, toBitmap: &bitmap, rowBytes: 4, bounds: CGRect(x: 0, y: 0, width: 1, height: 1), format: .RGBA8, colorSpace: nil)
+//
+//        return UIColor(red: CGFloat(bitmap[0]) / 255, green: CGFloat(bitmap[1]) / 255, blue: CGFloat(bitmap[2]) / 255, alpha: CGFloat(bitmap[3]) / 255)
+//    }
+//}
+
 struct ClubDetailsCRView: View {
+    @EnvironmentObject var bookViewModel: BookViewModel
+    
     var bookClub: BookClub
     var currentRead: Book?
+//    var currentReadImage: UIImage
     var isModerator: Bool
     
+    @State private var bgColor: UIColor?
+        
     private var tidyDescription: String {
         if let currentRead {
             currentRead.description
@@ -52,6 +74,11 @@ struct ClubDetailsCRView: View {
             
             if let currentRead = currentRead {
                 HStack(spacing: 15) {
+//                    Image(uiImage: currentReadImage)
+//                        .resizable()
+//                        .scaledToFit()
+//                        .frame(width: 80, height: 120)
+                    
                     // book cover
                     AsyncImage(url: URL(string: currentRead.cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: ""))) { image in
                         image
@@ -88,12 +115,21 @@ struct ClubDetailsCRView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.quaternaryHex.opacity(0.3))
                 )
+//                .background(
+//                    RoundedRectangle(cornerRadius: 10)
+//                        .fill(Color(bgColor ?? UIColor.quaternaryHex)
+//                            .opacity(0.3)
+//                        )
+//                )
             } else {
                 ContentUnavailableView {
                     Label("No book selected yet", systemImage: "book.closed.fill")
                 }
             }
         }
+//        .onAppear {
+//            bgColor = currentReadImage.averageColor
+//        }
     }
 }
 

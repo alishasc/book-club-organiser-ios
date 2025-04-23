@@ -234,12 +234,11 @@ class EventViewModel: ObservableObject {
     
     // check if user is attending shown events. passed as var to change ui
     func isAttendingEvent(eventId: UUID) async throws -> Bool {
+        let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get user ID to fetch details")
             return false
         }
-        
-        let db = Firestore.firestore()
         
         // look for doc with matching eventId and userId
         let querySnapshot = try await db.collection("EventAttendees")

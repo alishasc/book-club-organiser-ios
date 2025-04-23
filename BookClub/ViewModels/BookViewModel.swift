@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import UIKit
 
 @MainActor
 class BookViewModel: ObservableObject {
@@ -15,6 +16,10 @@ class BookViewModel: ObservableObject {
     // when search for books
     @Published var booksList: [Book] = []
     @Published var selectedBook: Book?
+    
+    
+//    @Published var currentReadImage: UIImage?
+
     
     // search results
     func fetchBooksList(searchQuery: String) async throws {
@@ -107,4 +112,36 @@ class BookViewModel: ObservableObject {
             print("Error loading previously read books: \(error.localizedDescription)")
         }
     }
+    
+    
+    
+    
+    
+    
+    
+    // code ref: https://medium.com/@nani.monish/swift-concurrency-async-await-download-images-8d91fe654982
+//    enum ImageError: Error {
+//        case invalidData
+//    }
+//
+//    func loadImage(from bookId: String) async {
+//        do {
+//            let imageURL = URL(string: "https://books.google.com/books/publisher/content?id=J4QUEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&imgtk=AFLRE73Lq1ARR_mM_y-5ZI44P3udrPPUrvugON9M8R2-OYlD5mTahJMeCNHEXwo6-gD82VUpEbUEgZ3q3bRsXoZ_Px1Bp4SyUOU5aTM1Bow1kHY_SPIbbfqDM_jegPlDFvgvEdm6576u&source=gbs_api")!
+//            let image = try await downloadImage(from: imageURL)
+//            self.currentReadImage = image
+//            // Display or use the downloaded image
+//        } catch {
+//            // Handle the error
+//            print("error loading image: \(error.localizedDescription)")
+//        }
+//    }
+//    
+//    func downloadImage(from url: URL) async throws -> UIImage {
+//        let (data, _) = try await URLSession.shared.data(from: url)
+//        guard let image = UIImage(data: data) else {
+//            throw ImageError.invalidData
+//        }
+//        return image
+//    }
 }
+

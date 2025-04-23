@@ -27,6 +27,13 @@ struct HomeView: View {
             header
             yourClubs
             yourEvents
+            
+            if bookClubViewModel.joinedClubs.isEmpty && eventViewModel.joinedEvents.isEmpty {
+                Spacer()
+                Image("homePageBanner")
+                    .resizable()
+                    .padding(.bottom, 6)
+            }
         }
     }
     

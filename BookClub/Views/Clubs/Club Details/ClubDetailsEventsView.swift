@@ -12,7 +12,7 @@ struct ClubDetailsEventsView: View {
     var bookClub: BookClub
     var coverImage: UIImage
     var isModerator: Bool
-    
+
     // ref: https://stackoverflow.com/questions/68143240/tabview-dot-index-color-does-not-change
     init(bookClub: BookClub, coverImage: UIImage, isModerator: Bool) {
         UIPageControl.appearance().currentPageIndicatorTintColor = .accent

@@ -27,6 +27,9 @@ class BookClubViewModel: ObservableObject {
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorPic: UIImage = UIImage()
     
+    
+    @Published var isMember: Bool = false
+    
     // options for creating new club
     let genreChoices: [String] = [
         "Art & Design",
@@ -409,6 +412,50 @@ class BookClubViewModel: ObservableObject {
             print("Error fetching book club member pictures: \(error.localizedDescription)")
         }
     }
+    
+    func leaveClub(bookClubId: UUID, eventViewModel: EventViewModel) async throws {
+        let db = Firestore.firestore()
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
+        // remove club from joined clubs array
+        self.joinedClubs.removeAll { $0.id == bookClubId }
+        
+        // remove from joinedClubs field in User collection
+       try await db.collection("User").document(userId)
+            .updateData(["joinedClubs": FieldValue.arrayRemove([bookClubId.uuidString])])
+        
+        // delete document from BookClubMembers with matching bookClubId and userId
+        do {
+            let querySnapshot = try await db.collection("BookClubMembers")
+                .whereField("bookClubId", isEqualTo: bookClubId.uuidString)
+                .whereField("userId", isEqualTo: userId)
+                .getDocuments()
+                        
+            if let document = querySnapshot.documents.first {
+                try await db.collection("BookClubMembers").document(document.documentID).delete()
+            }
+        } catch {
+            print("Error deleting BookClubMembers document: \(error.localizedDescription)")
+        }
+        
+        // remove from eventAttendees
+        do {
+            let querySnapshot = try await db.collection("EventAttendees")
+                .whereField("bookClubId", isEqualTo: bookClubId.uuidString)
+                .whereField("userId", isEqualTo: userId)
+                .getDocuments()
+                        
+            if let document = querySnapshot.documents.first {
+                try await db.collection("EventAttendees").document(document.documentID).delete()
+            }
+        } catch {
+            print("Error deleting EventAttendees document: \(error.localizedDescription)")
+        }
+        
+        // remove events from joinedEvents in eventViewModel
+        eventViewModel.joinedEvents.removeAll(where: { $0.bookClubId == bookClubId })
+    }
+    
     
     
     

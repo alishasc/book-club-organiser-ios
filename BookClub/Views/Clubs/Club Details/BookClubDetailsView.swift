@@ -16,6 +16,9 @@ struct BookClubDetailsView: View {
     var isModerator: Bool
     var isMember: Bool
     
+    @State private var isMemberState = false  // update UI
+    @State private var showAlert = false
+    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(spacing: 20) {
@@ -54,6 +57,7 @@ struct BookClubDetailsView: View {
                     
                     // current read
                     ClubDetailsCRView(bookClub: bookClub, currentRead: bookViewModel.currentRead, isModerator: isModerator)
+//                    ClubDetailsCRView(bookClub: bookClub, currentRead: bookViewModel.currentRead, currentReadImage: bookViewModel.currentReadImage ?? UIImage(), isModerator: isModerator)
                 }
                 .padding(.horizontal)
                 
@@ -65,7 +69,27 @@ struct BookClubDetailsView: View {
                     ClubDetailsEventsView(bookClub: bookClub, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: isModerator)
                 }
                 
-                Spacer()
+                // alert
+                if isMemberState {
+                    Button {
+                        showAlert = true
+                    } label: {
+                        Text("Leave Club")
+                            .foregroundStyle(.red)
+                            .fontWeight(.medium)
+                    }
+                    .alert("Are you sure?", isPresented: $showAlert) {
+                        Button("OK", role: .cancel) { }
+                        Button("Leave \(bookClub.name)", role: .destructive) {
+                            Task {
+                                try await bookClubViewModel.leaveClub(bookClubId: bookClub.id, eventViewModel: eventViewModel)
+                                bookClubViewModel.clubMemberPics.removeAll(where: { $0 == authViewModel.profilePic })
+                            }
+                            isMemberState = false
+                        }
+                        Button("Cancel", role: .cancel) { }
+                    }
+                }
             }
         }
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
@@ -74,11 +98,21 @@ struct BookClubDetailsView: View {
                 if bookClub.currentBookId != nil {
                     try await bookViewModel.fetchBook(bookId: bookClub.currentBookId ?? "")
                 }
+                
+//                if bookClub.currentBookId != nil {
+//                    if let currentReadId = bookClub.currentBookId {
+//                        await bookViewModel.loadImage(from: currentReadId)
+//                    }
+//                }
+                
                 try await bookClubViewModel.getModeratorAndMemberPics(bookClubId: bookClub.id, moderatorId: bookClub.moderatorId)
                 try await bookViewModel.loadPRBooks(bookClub: bookClub)
             }
+            
+            isMemberState = isMember
         }
         .onDisappear {
+            // change this
             bookViewModel.currentRead = nil
             bookClubViewModel.moderatorPic = UIImage()
             bookClubViewModel.clubMemberPics = [UIImage()]
@@ -90,13 +124,15 @@ struct BookClubDetailsView: View {
                         /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
                     }
                 }
-            } else if !isMember {
+            } else if !isMemberState {
                 // change to else if condition - check if user has joined club already
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Join") {
                         Task {
                             try await bookClubViewModel.joinClub(bookClub: bookClub, currentUser: authViewModel.currentUser)
+                            bookClubViewModel.clubMemberPics.append(authViewModel.profilePic ?? UIImage())
                         }
+                        isMemberState = true
                     }
                 }
             }

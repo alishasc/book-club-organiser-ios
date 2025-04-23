@@ -9,6 +9,7 @@ import SwiftUI
 
 struct EventsRowView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
     var bookClub: BookClub
     var event: Event
     var coverImage: UIImage
@@ -63,9 +64,8 @@ struct EventsRowView: View {
                 VStack {
                     Spacer()
                     Spacer()
-                    // icon - make it toggle to checkmark.circle
-                    // only show if user isn't the moderator
-                    if !isModerator {
+                    // only show icons if the user isn't the moderator and is part of the club
+                    if !isModerator && bookClubViewModel.checkIsMember(bookClub: bookClub) {
                         Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
                             .font(.system(size: 24))
                             .foregroundStyle(.accent)
@@ -116,7 +116,10 @@ struct EventsRowView: View {
             }
         }
         .onTapGesture {
-            isEventSheetPresented = true
+            // can only see extra details if member of the club
+            if bookClubViewModel.checkIsMember(bookClub: bookClub) {
+                isEventSheetPresented = true
+            }
         }
         .sheet(isPresented: $isEventSheetPresented) {
             EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent)
@@ -124,6 +127,6 @@ struct EventsRowView: View {
     }
 }
 
-#Preview {
-    EventsRowView(bookClub: BookClub(name: "", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date.now, currentBookId: "", booksRead: []), event: Event(moderatorId: "", bookClubId: UUID(), eventTitle: "event title", dateAndTime: Date.now, duration: 30, maxCapacity: 10), coverImage: UIImage(named: "banner") ?? UIImage(), isModerator: false)
-}
+//#Preview {
+//    EventsRowView(bookClub: BookClub(name: "", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date.now, currentBookId: "", booksRead: []), event: Event(moderatorId: "", bookClubId: UUID(), eventTitle: "event title", dateAndTime: Date.now, duration: 30, maxCapacity: 10), coverImage: UIImage(named: "banner") ?? UIImage(), isModerator: false)
+//}
