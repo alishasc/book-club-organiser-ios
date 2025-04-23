@@ -10,8 +10,7 @@ import SwiftUI
 // moderator and members info
 
 struct ClubDetailsMembersView: View {
-    var moderatorName: String
-    var moderatorPic: UIImage
+    var moderatorInfo: [String:UIImage]
     var memberPics: [UIImage]
     
     var body: some View {
@@ -19,7 +18,7 @@ struct ClubDetailsMembersView: View {
             // moderator info
             HStack(spacing: 15) {
                 // moderator profile pic
-                Image(uiImage: moderatorPic)
+                Image(uiImage: moderatorInfo.values.first ?? UIImage())
                     .resizable()
                     .scaledToFill()
                     .frame(width: 50, height: 50)
@@ -30,7 +29,7 @@ struct ClubDetailsMembersView: View {
                     Text("Created by")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
-                    Text(moderatorName)
+                    Text(moderatorInfo.keys.first ?? "")
                         .font(.subheadline)
                         .fontWeight(.medium)
                 }

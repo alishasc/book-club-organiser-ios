@@ -16,8 +16,8 @@ struct BookClubDetailsView: View {
     var isModerator: Bool
     var isMember: Bool
     
-    @State private var isMemberState = false  // update UI
-    @State private var showAlert = false
+    @State private var isMemberState = false  // re-render UI
+    @State private var showAlert = false  // alert to leave club
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -48,8 +48,7 @@ struct BookClubDetailsView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     // moderator and members info
                     ClubDetailsMembersView(
-                        moderatorName: bookClub.moderatorName,
-                        moderatorPic: isModerator ? authViewModel.profilePic ?? UIImage() : bookClubViewModel.moderatorPic,
+                        moderatorInfo: bookClubViewModel.moderatorInfo,
                         memberPics: bookClubViewModel.clubMemberPics
                     )
                     
@@ -105,7 +104,7 @@ struct BookClubDetailsView: View {
 //                    }
 //                }
                 
-                try await bookClubViewModel.getModeratorAndMemberPics(bookClubId: bookClub.id, moderatorId: bookClub.moderatorId)
+                try await bookClubViewModel.getModeratorAndMemberPics(bookClubId: bookClub.id, moderatorId: bookClub.moderatorId, authViewModel: authViewModel)
                 try await bookViewModel.loadPRBooks(bookClub: bookClub)
             }
             

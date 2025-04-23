@@ -27,8 +27,8 @@ class BookClubViewModel: ObservableObject {
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorPic: UIImage = UIImage()
     
+    @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
-    @Published var isMember: Bool = false
     
     // options for creating new club
     let genreChoices: [String] = [
@@ -362,7 +362,9 @@ class BookClubViewModel: ObservableObject {
         }
     }
 
-    func getModeratorAndMemberPics(bookClubId: UUID, moderatorId: String) async throws {
+    // change to get the moderators name and picture from 'User'
+    func getModeratorAndMemberPics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
+        self.moderatorInfo.removeAll()
         self.clubMemberPics.removeAll()
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
@@ -404,9 +406,12 @@ class BookClubViewModel: ObservableObject {
                     } else if let data = data {
                         let image = UIImage(data: data)
                         // save user id and image to dictionary
-                        self.moderatorPic = image ?? UIImage()
+                        self.moderatorInfo[moderator.name] = image ?? UIImage()
                     }
                 }
+            } else {
+//                self.moderatorPic = authViewModel.profilePic ?? UIImage()
+                self.moderatorInfo[authViewModel.currentUser?.name ?? ""] = authViewModel.profilePic ?? UIImage()
             }
         } catch {
             print("Error fetching book club member pictures: \(error.localizedDescription)")
