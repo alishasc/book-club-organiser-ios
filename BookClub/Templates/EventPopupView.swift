@@ -9,6 +9,7 @@ import SwiftUI
 import MapKit
 
 struct EventPopupView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
     var bookClub: BookClub
@@ -16,6 +17,23 @@ struct EventPopupView: View {
     var coverImage: UIImage
     var isModerator: Bool
     @Binding var isAttendingEvent: Bool
+    private var position: MapCameraPosition
+    // for location Text
+    @State private var locationName: String = "Loading..."
+    @State private var city: String = "Loading..."
+    @State private var postcode: String = "Loading..."
+    
+    @Binding private var spacesLeft: Int
+        
+    init(bookClub: BookClub, event: Event, coverImage: UIImage, isModerator: Bool, isAttendingEvent: Binding<Bool>, spacesLeft: Binding<Int>) {
+        self.bookClub = bookClub
+        self.event = event
+        self.coverImage = coverImage
+        self.isModerator = isModerator
+        self._isAttendingEvent = isAttendingEvent
+        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
+        self._spacesLeft = spacesLeft
+    }
     
     var body: some View {
         VStack(spacing: 15) {
@@ -33,31 +51,25 @@ struct EventPopupView: View {
             
             VStack(alignment: .leading, spacing: 10) {
                 // text info and checkmark
-                TextInfo(bookClub: bookClub, event: event, isModerator: isModerator, isAttendingEvent: $isAttendingEvent)
-                
-                // host and members attending
-                MembersAttending()
-                
+                eventInfo
+                membersAttending
                 Divider()
-                
                 // online meeting link/address and map
-                MeetingLocation(bookClub: bookClub, event: event)
+                meetingLocation
             }
             .padding(.horizontal)
                         
             Spacer()
         }  // vstack
+        .onAppear {
+            Task {
+                // function to get moderator and attendee images
+                try await eventViewModel.getModeratorAndAttendeePics(bookClubId: bookClub.id, eventId: event.id, moderatorId: bookClub.moderatorId, authViewModel: authViewModel)
+            }
+        }
     }
-}
 
-struct TextInfo: View {
-    @EnvironmentObject var eventViewModel: EventViewModel
-    var bookClub: BookClub
-    var event: Event
-    var isModerator: Bool
-    @Binding var isAttendingEvent: Bool
-
-    var body: some View {
+    private var eventInfo: some View {
         HStack {
             // text
             VStack(alignment: .leading) {
@@ -69,7 +81,7 @@ struct TextInfo: View {
                 Text(ViewTemplates.eventSheetDateFormatter(dateAndTime: event.dateAndTime))
                 Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime))
                     .foregroundStyle(.gray)
-                Text("\(event.maxCapacity - event.attendeesCount) spaces left")
+                Text("\(spacesLeft) spaces left")
                     .font(.subheadline)
                     .foregroundStyle(.gray)
             }
@@ -90,10 +102,8 @@ struct TextInfo: View {
             }
         }
     }
-}
-
-struct MembersAttending: View {
-    var body: some View {
+    
+    private var membersAttending: some View {
         HStack(alignment: .top, spacing: 60) {
             // host info
             VStack(alignment: .leading, spacing: 4) {
@@ -102,9 +112,11 @@ struct MembersAttending: View {
                     .fontWeight(.medium)
                     .foregroundStyle(.gray)
                 // host profile pic
-                Circle()  // replace with image
+                Image(uiImage: eventViewModel.moderatorPic)
+                    .resizable()
+                    .scaledToFill()
                     .frame(width: 30, height: 30)
-                    .foregroundStyle(.customYellow)
+                    .clipShape(Circle())
             }
 
             // attending members info
@@ -113,46 +125,30 @@ struct MembersAttending: View {
                     .font(.subheadline)
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
-                // member profile pics
-                HStack(spacing: -5) {
-                    // add ForEach loop here for club members? max 4 pics
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customYellow)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customGreen)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customPink)
-                    Circle()
-                        .frame(width: 30, height: 30)
-                        .foregroundStyle(.customBlue)
+                
+                if eventViewModel.eventAttendeePics.count > 0 {
+                    // member profile pics
+                    HStack(spacing: -5) {
+                        ForEach(eventViewModel.eventAttendeePics, id: \.self) { image in
+                            Image(uiImage: image)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 30, height: 30)
+                                .clipShape(Circle())
+                        }
+                    }
+                } else {
+                    Text("No one yet!")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
                 }
             }
             
             Spacer()
         }
     }
-}
-
-struct MeetingLocation: View {
-    @EnvironmentObject var eventViewModel: EventViewModel
-    var bookClub: BookClub
-    var event: Event
-    private var position: MapCameraPosition
-    // for location Text
-    @State private var locationName: String = "Loading..."
-    @State private var city: String = "Loading..."
-    @State private var postcode: String = "Loading..."
     
-    init(bookClub: BookClub, event: Event) {
-        self.bookClub = bookClub
-        self.event = event
-        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
-    }
-    
-    var body: some View {
+    private var meetingLocation: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
                 Text("Online")
@@ -211,6 +207,7 @@ struct MeetingLocation: View {
         }
     }
 }
+
 
 //#Preview {
 //    EventPopupView(bookClub: BookClub(name: "Fantasy Book Club", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date(), currentBookId: "", booksRead: [""]))

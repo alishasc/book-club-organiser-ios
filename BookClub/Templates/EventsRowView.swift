@@ -18,6 +18,8 @@ struct EventsRowView: View {
     @State private var isEventSheetPresented: Bool = false  // event details pop-up
     @State private var locationName: String = "Loading..."
     
+    @State private var spacesLeft: Int = 0
+        
     var body: some View {
         ZStack {
             // for line along bottom - in background
@@ -53,7 +55,7 @@ struct EventsRowView: View {
                     Text(ViewTemplates.dateFormatter(dateAndTime: event.dateAndTime))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text("\(event.maxCapacity - event.attendeesCount) spaces left")
+                    Text("\(spacesLeft) spaces left")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 }
@@ -115,6 +117,8 @@ struct EventsRowView: View {
                     }
                 })
             }
+            
+            self.spacesLeft = event.maxCapacity - event.attendeesCount
         }
         .onTapGesture {
             // can only see extra details if member of the club or moderator
@@ -123,7 +127,7 @@ struct EventsRowView: View {
             }
         }
         .sheet(isPresented: $isEventSheetPresented) {
-            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent)
+            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent, spacesLeft: $spacesLeft)
         }
     }
 }

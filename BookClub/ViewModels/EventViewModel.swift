@@ -7,7 +7,6 @@
 
 import Foundation
 import SwiftUI
-import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
 import MapKit
@@ -16,16 +15,15 @@ import FirebaseStorage
 @MainActor
 class EventViewModel: ObservableObject {
     @Published var allEvents: [Event] = []
-    //    @Published var selectedClubEvents: [Event] = []  // when view club details
     @Published var joinedEvents: [Event] = []
     
     @Published var searchResults: [MKMapItem] = []
     @Published var locationErrorPrompt: String = ""  // error message if invalid search query
     @Published var selectedLocation: MKMapItem?  // when tap location from search result list
     
-    @Published var clubMemberPics: [UIImage] = []
-    @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
-        
+    @Published var eventAttendeePics: [UIImage] = []
+    @Published var moderatorPic: UIImage = UIImage()
+    
     init() {
         Task {
             try await fetchEvents()
@@ -65,13 +63,13 @@ class EventViewModel: ObservableObject {
             print("couldn't get user ID to fetch details")
             return
         }
-                
+        
         do {
             let querySnapshot = try await db.collection("Event").order(by: "dateAndTime").getDocuments()
             for document in querySnapshot.documents {
                 let event = try document.data(as: Event.self)
                 self.allEvents.append(event)
-
+                
                 // filter joined clubs into separate array
                 let querySnapshot = try await db.collection("EventAttendees")
                     .whereField("eventId", isEqualTo: event.id.uuidString)
@@ -86,8 +84,6 @@ class EventViewModel: ObservableObject {
         } catch {
             print("error getting event documents: \(error.localizedDescription)")
         }
-        
-        print("joined events: \(self.joinedEvents.count)")
     }
     
     // change color on event cards
@@ -188,25 +184,38 @@ class EventViewModel: ObservableObject {
         })
     }
     
+//    func fetchUpdatedEvent(eventId: UUID) async throws {
+//        let db = Firestore.firestore()
+//        self.allEvents.removeAll(where: { $0.id == eventId })
+//        self.joinedEvents.removeAll(where: { $0.id == eventId })
+//        
+//        let document = try await db.collection("Event").document(eventId.uuidString).getDocument()
+//        let event = try document.data(as: Event.self)
+//        self.allEvents.append(event)
+//        self.joinedEvents.append(event)
+//    }
+    
     // update db when join/leave event
     func attendEvent(isAttending: Bool, event: Event, bookClub: BookClub) async throws {
         let db = Firestore.firestore()
         // logged in user's id
-        guard let userId = Auth.auth().currentUser?.uid else {
-            print("couldn't get user ID to fetch details")
-            return
-        }
-                
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+        
         // if icon toggled to true
         if isAttending {
             // save attendee info to db
             do {
                 let eventAttendee = EventAttendee(eventId: event.id, bookClubId: bookClub.id, userId: userId)
                 try db.collection("EventAttendees").document(eventAttendee.id.uuidString).setData(from: eventAttendee)
-                print("saved space for event")
+                try await db.collection("Event").document(event.id.uuidString).updateData([
+                    // add one to attendeesCount
+                    "attendeesCount": FieldValue.increment(Int64(1))
+                ])
                 
+                let document = try await db.collection("Event").document(event.id.uuidString).getDocument()
+                let updatedEvent = try document.data(as: Event.self)
                 // update joinedEvents array
-                self.joinedEvents.append(event)
+                self.joinedEvents.append(updatedEvent)
             } catch {
                 print("failed to save event space: \(error.localizedDescription)")
             }
@@ -224,15 +233,23 @@ class EventViewModel: ObservableObject {
                     let eventAttendee = try document.data(as: EventAttendee.self)
                     // delete doc from db
                     try await db.collection("EventAttendees").document(eventAttendee.id.uuidString).delete()
+                    try await db.collection("Event").document(event.id.uuidString).updateData([
+                        // remove one from attendeesCount
+                        "attendeesCount": FieldValue.increment(Int64(-1))
+                    ])
                 }
                 
                 // update joinedEvents array
                 self.joinedEvents.removeAll(where: { event.id == $0.id })
-                print("unreserved space for event")
             } catch {
                 print("failed to unreserve event space: \(error.localizedDescription)")
             }
         }
+        
+        self.allEvents.removeAll(where: { $0.id == event.id })
+        let document = try await db.collection("Event").document(event.id.uuidString).getDocument()
+        let event = try document.data(as: Event.self)
+        self.allEvents.append(event)
     }
     
     // check if user is attending shown events. passed as var to change ui
@@ -312,7 +329,7 @@ class EventViewModel: ObservableObject {
             // only show club selected
             filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
         }
-
+        
         return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
     }
     
@@ -369,19 +386,21 @@ class EventViewModel: ObservableObject {
     }
     
     
-    func getModeratorAndAttendeePics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
-        self.moderatorInfo.removeAll()
-        self.clubMemberPics.removeAll()
+    func getModeratorAndAttendeePics(bookClubId: UUID, eventId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
+        self.eventAttendeePics.removeAll()
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
-
+        
         do {
             // get attendee pics
-            let querySnapshot = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
-
+            let querySnapshot = try await db.collection("EventAttendees").whereField("eventId", isEqualTo: eventId.uuidString).getDocuments()
+            
             for document in querySnapshot.documents {
-                let clubMember = try document.data(as: BookClubMembers.self)
-                let imageRef = storageRef.child(clubMember.profilePictureURL)
+                let eventAttendee = try document.data(as: EventAttendee.self)
+                
+                // get profile picture from User collection
+                let user = try await db.collection("User").document(eventAttendee.userId).getDocument(as: User.self)
+                let imageRef = storageRef.child(user.profilePictureURL)
                 
                 // get the image
                 imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
@@ -392,7 +411,7 @@ class EventViewModel: ObservableObject {
                     } else if let data = data {
                         let image = UIImage(data: data)
                         // save user id and image to dictionary
-                        self.clubMemberPics.append(image ?? UIImage())
+                        self.eventAttendeePics.append(image ?? UIImage())
                     }
                 }
             }
@@ -412,17 +431,29 @@ class EventViewModel: ObservableObject {
                     } else if let data = data {
                         let image = UIImage(data: data)
                         // save user id and image to dictionary
-                        self.moderatorInfo[moderator.name] = image ?? UIImage()
+                        self.moderatorPic = image ?? UIImage()
                     }
                 }
             } else {
-                self.moderatorInfo[authViewModel.currentUser?.name ?? ""] = authViewModel.profilePic ?? UIImage()
+                self.moderatorPic = authViewModel.profilePic ?? UIImage()
             }
         } catch {
             print("Error fetching book club member pictures: \(error.localizedDescription)")
         }
     }
-
+    
+    //    func attendingMemberCount(eventId: UUID) async throws {
+    //        let db = Firestore.firestore()
+    //
+    //        let querySnapshot = try await db.collection("EventAttendees").whereField("eventId", isEqualTo: eventId.uuidString).getDocuments()
+    //        for _ in querySnapshot.documents {
+    //            if querySnapshot.documents.count > 0 {
+    //                self.totalAttending[eventId] = querySnapshot.documents.count
+    //            } else {
+    //                self.totalAttending.removeValue(forKey: eventId)
+    //            }
+    //        }
+    //    }
     
     
     
@@ -432,17 +463,17 @@ class EventViewModel: ObservableObject {
     
     
     
-//    func checkIsAttending(bookClub: BookClub) -> Bool {
-//        let db = Firestore.firestore()
-//        guard let userId = Auth.auth().currentUser?.uid else {
-//            print("couldn't get user ID to fetch details")
-//            return false
-//        }
-//
-//        return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
-//        return true
-//    }
-
+    //    func checkIsAttending(bookClub: BookClub) -> Bool {
+    //        let db = Firestore.firestore()
+    //        guard let userId = Auth.auth().currentUser?.uid else {
+    //            print("couldn't get user ID to fetch details")
+    //            return false
+    //        }
+    //
+    //        return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
+    //        return true
+    //    }
+    
     
     //    func fetchAttendingEvents() async throws -> [Event] {
     //        let db = Firestore.firestore()

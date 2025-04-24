@@ -182,11 +182,3 @@ struct EventsView: View {
 #Preview {
     EventsView()
 }
-
-
-
-//func getDayName(day: Int) -> String {
-//    let calendar = Calendar(identifier: .gregorian)
-//    let shortDays = calendar.shortWeekdaySymbols
-//    return shortDays[day];
-//}

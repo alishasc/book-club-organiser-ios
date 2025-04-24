@@ -78,7 +78,6 @@ struct BookClubDetailsView: View {
                             .fontWeight(.medium)
                     }
                     .alert("Are you sure?", isPresented: $showAlert) {
-                        Button("OK", role: .cancel) { }
                         Button("Leave \(bookClub.name)", role: .destructive) {
                             Task {
                                 try await bookClubViewModel.leaveClub(bookClubId: bookClub.id, eventViewModel: eventViewModel)
