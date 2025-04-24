@@ -15,9 +15,7 @@ class ViewTemplates {
             TextField("", text: input)
             Divider()
         }
-        .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
-        .submitLabel(.next)
     }
     
     static func signupTextField(placeholder: String, input: Binding<String>, isSecureField: Bool, prompt: String) -> some View {
@@ -30,9 +28,7 @@ class ViewTemplates {
                 .foregroundStyle(.red)
                 .font(.footnote)
         }
-        .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
-        .submitLabel(.next)
     }
     
     static func passwordSecureField(placeholder: String, input: Binding<String>, showPassword: Binding<Bool>) -> some View {

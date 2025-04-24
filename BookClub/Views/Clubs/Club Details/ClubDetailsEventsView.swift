@@ -52,9 +52,10 @@ struct ClubDetailsEventsView: View {
                     }
                 }
             }
+            .scrollClipDisabled()
             .tabViewStyle(.page(indexDisplayMode: .automatic))
             .indexViewStyle(.page(backgroundDisplayMode: .always))
-            .frame(height: 160)
+            .frame(height: 170)
             .padding(.top, -10)
         }
     }

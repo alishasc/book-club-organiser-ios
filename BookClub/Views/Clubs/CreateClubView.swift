@@ -32,74 +32,79 @@ struct CreateClubView: View {
         VStack(alignment: .leading) {
             VStack(alignment: .leading, spacing: 10) {
                 // so cover image title and edit picture are on top of selected image
-                ZStack {
-                    VStack(alignment: .leading, spacing: 10) {
-                        // cover image
-                        HStack {
-                            Text("Cover image")
-                                .fontWeight(.medium)
-                            // edit or remove picture after selected
-                            if photosPickerViewModel.selectedImage != nil {
-                                Spacer()
-                                PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
-                                    Text("Edit")
-                                        .foregroundStyle(.customBlue)
-                                        .fontWeight(.medium)
-                                }
-                                
-                                Button("Remove") {
-                                    photosPickerViewModel.pickerItem = nil
-                                    photosPickerViewModel.selectedImage = nil
-                                }
-                                .foregroundStyle(.red)
-                                .fontWeight(.medium)
+                VStack(alignment: .leading, spacing: 10) {
+                    // cover image
+                    HStack {
+                        Text("Cover image")
+                            .fontWeight(.medium)
+                        // edit or remove picture after selected
+                        if photosPickerViewModel.selectedImage != nil {
+                            Spacer()
+                            PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
+                                Text("Edit")
+                                    .foregroundStyle(.customBlue)
+                                    .fontWeight(.medium)
+                            }
+                            
+                            Button("Remove") {
+                                photosPickerViewModel.pickerItem = nil
+                                photosPickerViewModel.selectedImage = nil
+                            }
+                            .foregroundStyle(.red)
+                            .fontWeight(.medium)
+                        }
+                    }
+                    .zIndex(1)  // put hstack at top of zstack
+                    
+                    // show photo picker or the selected image
+                    if photosPickerViewModel.selectedImage == nil {
+                        ZStack {
+                            RoundedRectangle(cornerRadius: 10)
+                                .frame(height: 180)
+                                .foregroundColor(.quaternaryHex)
+                            
+                            PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
+                                Label("Add cover image", systemImage: "plus")
+                                    .labelStyle(.iconOnly)
+                                    .font(.system(size: 60)).bold()
+                                    .foregroundStyle(.white)
                             }
                         }
-                        .zIndex(1)  // put hstack at top of zstack
-                        
-                        // show photo picker or the selected image
-                        if photosPickerViewModel.selectedImage == nil {
-                            ZStack {
-                                RoundedRectangle(cornerRadius: 10)
-                                    .frame(height: 180)
-                                    .foregroundColor(.quaternaryHex)
-                                
-                                PhotosPicker(selection: $photosPickerViewModel.pickerItem, matching: .images) {
-                                    Label("Add cover image", systemImage: "plus")
-                                        .labelStyle(.iconOnly)
-                                        .font(.system(size: 60)).bold()
-                                        .foregroundStyle(.white)
-                                }
+                    } else {
+                        if let image = photosPickerViewModel.selectedImage {
+                            GeometryReader { geometry in
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: geometry.size.width, height: 180)  // of image
+                                    .cornerRadius(10)
+                                    .clipped()
                             }
-                        } else {
-                            if let image = photosPickerViewModel.selectedImage {
-                                GeometryReader { geometry in
-                                    Image(uiImage: image)
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: geometry.size.width, height: 180)  // of image
-                                        .cornerRadius(10)
-                                }
-                                .frame(height: 180)  // constrict GeometryReader height
-                            }
+                            .frame(height: 180)  // constrict GeometryReader height
                         }
-                    } // vstack
-                } // zstack
+                    }
+                } // vstack
                 
                 ViewTemplates.textField(placeholder: "Club name", input: $name, isSecureField: false)
                     .focused($focusedField, equals: .clubName)
                     .onSubmit {
                         focusedField = .description
                     }
+                    .submitLabel(.next)
                 
-                ViewTemplates.textField(placeholder: "Description", input: $description, isSecureField: false)
+                Text("Description")
+                    .fontWeight(.medium)
+                
+                TextEditor(text: $description)
+                    .frame(height: 120)
+                    .scrollContentBackground(.hidden)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 10)
+                            .stroke(Color.gray, lineWidth: 0.5)
+                    )
                     .focused($focusedField, equals: .description)
-                    .onSubmit {
-                        focusedField = nil
-                    }
                     .onChange(of: description) {
                         wordCount = bookClubViewModel.getWordCount(str: description)
-                        // can't add more than 40 words
                         if wordCount == 41 {
                             description.removeLast()
                         }
@@ -172,7 +177,7 @@ struct CreateClubView: View {
                         // add new club to db
                         try await bookClubViewModel.saveNewClub(name: name, moderatorName: authViewModel.currentUser?.name ?? "", coverImage: coverImage ?? UIImage(), description: description, genre: genre, meetingType: meetingType, isPublic: isPublic)
                     }
-
+                    
                     // show details of new club after press confirm
                     showClubDetails = true
                     photosPickerViewModel.selectedImage = nil  // reset image selection
@@ -189,6 +194,14 @@ struct CreateClubView: View {
                         Image(systemName: "chevron.left")
                             .fontWeight(.medium)
                         Text("Back")
+                    }
+                }
+            }
+            ToolbarItemGroup(placement: .keyboard) {
+                if focusedField == .description {
+                    Spacer()
+                    Button("Done") {
+                        focusedField = nil
                     }
                 }
             }
