@@ -78,7 +78,7 @@ struct ClubsView: View {
             if selectedItem == 0 {
                 // joined clubs list
                 List {
-                    ForEach(bookClubViewModel.joinedClubs) { club in
+                    ForEach(bookClubViewModel.joinedClubs.sorted(by: { $0.name < $1.name })) { club in
                         if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                 .background(
@@ -95,7 +95,7 @@ struct ClubsView: View {
             } else {
                 // created clubs list
                 List {
-                    ForEach(bookClubViewModel.createdClubs) { club in
+                    ForEach(bookClubViewModel.createdClubs.sorted(by: { $0.name < $1.name })) { club in
                         // check what club filter is selected
                         if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)

@@ -6,7 +6,6 @@
 //
 
 import Foundation
-import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
 import FirebaseStorage
@@ -25,8 +24,6 @@ class BookClubViewModel: ObservableObject {
     @Published var allUserPictures: [String: UIImage] = [:]  // remove this
     
     @Published var clubMemberPics: [UIImage] = []
-    @Published var moderatorPic: UIImage = UIImage()
-    
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
     
@@ -333,6 +330,7 @@ class BookClubViewModel: ObservableObject {
         self.messageUsers = members
     }
         
+    // not being used?
     func getAllUserPictures() async throws {
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
@@ -410,7 +408,6 @@ class BookClubViewModel: ObservableObject {
                     }
                 }
             } else {
-//                self.moderatorPic = authViewModel.profilePic ?? UIImage()
                 self.moderatorInfo[authViewModel.currentUser?.name ?? ""] = authViewModel.profilePic ?? UIImage()
             }
         } catch {
@@ -459,6 +456,19 @@ class BookClubViewModel: ObservableObject {
         
         // remove events from joinedEvents in eventViewModel
         eventViewModel.joinedEvents.removeAll(where: { $0.bookClubId == bookClubId })
+    }
+    
+    func joinedAndCreatedClubNames() -> [String] {
+        var clubNameString: [String] = []
+        
+        for i in joinedClubs {
+            clubNameString.append(i.name)
+        }
+        for i in createdClubs {
+            clubNameString.append(i.name)
+        }
+        
+        return clubNameString.sorted(by: { $0.lowercased() < $1.lowercased() })
     }
     
     

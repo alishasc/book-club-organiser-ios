@@ -16,7 +16,7 @@ struct EventPopupView: View {
     var coverImage: UIImage
     var isModerator: Bool
     @Binding var isAttendingEvent: Bool
-        
+    
     var body: some View {
         VStack(spacing: 15) {
             // cover image

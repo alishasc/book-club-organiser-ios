@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import UIKit
 
 struct EventsView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
@@ -16,7 +17,9 @@ struct EventsView: View {
     @State private var showUpcomingEvents: Bool = true
     @State private var showDiscoverEvents: Bool = true
     
-    @State private var selectedClubName: String = ""  // doing nothing atm
+    //    @State private var selectedDate: Date = Date()
+    
+    @State private var selectedClubName: String?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -26,71 +29,9 @@ struct EventsView: View {
                 .padding([.top, .horizontal])
             
             // event type filters
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    Group {
-                        Button("All") {
-                            selectedFilter = 0
-                        }
-                        .tag(0)
-                        .tint(selectedFilter == 0 ? .accent : .quaternaryHex)
-                        .foregroundStyle(selectedFilter == 0 ? .white : .black)
-                        
-                        Button("In-Person") {
-                            selectedFilter = 1
-                        }
-                        .tag(1)
-                        .tint(selectedFilter == 1 ? .customYellow : .customYellow.opacity(0.2))
-                        
-                        Button("Online") {
-                            selectedFilter = 2
-                        }
-                        .tag(2)
-                        .tint(selectedFilter == 2 ? .customGreen : .customGreen.opacity(0.2))
-                        
-                        Button("Created Events") {
-                            selectedFilter = 3
-                        }
-                        .tag(3)
-                        .tint(selectedFilter == 3 ? .customPink : .customPink.opacity(0.2))
-                        
-                        // filter by book club
-                        Menu {
-                            // put list of book clubs joined and created
-                            ForEach(bookClubViewModel.joinedClubs) { club in
-                                Button("\(club.name)") {
-                                    selectedFilter = 5
-                                    selectedClubName = club.name
-                                }
-                            }
-                        } label: {
-                            HStack {
-                                Text("Book Club")
-                                Image(systemName: "chevron.down")
-                            }
-                        }
-                        .tint(.quaternaryHex)
-                        .foregroundStyle(.black)
-                    }
-                    .font(.footnote)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.black)
-                    .buttonStyle(.borderedProminent)
-                    .buttonBorderShape(.capsule)
-                }
-                .padding(.horizontal)
-            }
-            
+            filters
             // dates
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack {
-                    ForEach(1..<8) { index in
-                        EventDatesView(dateStr: "Mon", dateInt: index)
-                    }
-                }
-                .padding(.horizontal)
-            }
-            .padding(.bottom, 5)
+            dateFilters
             
             // event lists
             ScrollView(.vertical, showsIndicators: false) {
@@ -113,42 +54,13 @@ struct EventsView: View {
                     
                     if showUpcomingEvents {
                         // events joined scrollview
-                        //                        ScrollView(.vertical, showsIndicators: false) {
-                        //                            ForEach(eventViewModel.joinedEvents) { event in
-                        //                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                        //                                    EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
-                        //                                        .padding(.bottom, 8)
-                        //                                }
-                        //                            }
-                        //                        }
-
                         ScrollView(.vertical, showsIndicators: false) {
-                            if selectedFilter != 3 {
-                                ForEach(testFilter(selectedFilter: selectedFilter)) { event in
-                                    if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
-                                        EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
-                                            .padding(.bottom, -2)
-                                            .padding([.horizontal, .top], 10)  // to show shadow around the row
-                                    }
-                                }
-                            }
-                            else {
-                                let currentUserId = Auth.auth().currentUser?.uid ?? ""
-                                ForEach(eventViewModel.allEvents.filter { $0.moderatorId == currentUserId }) { event in
-                                    if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
-                                        EventsRowView(
-                                            bookClub: bookClub,
-                                            event: event,
-                                            coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(),
-                                            isModerator: bookClub.moderatorName == authViewModel.currentUser?.name
-                                        )
-                                        .padding(.bottom, -2)
-                                        .padding([.horizontal, .top], 10)  // to show shadow around the row
-                                    }
-                                }
+                            ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
+                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                    .padding(.bottom, 8)
                             }
                         }
-                        .padding([.horizontal, .top], -10)  // shrink space created with padding for shadows
+                        .scrollClipDisabled()
                     }
                 }
                 
@@ -173,88 +85,97 @@ struct EventsView: View {
                     if showDiscoverEvents {
                         // events haven't joined scrollview
                         ScrollView(.vertical, showsIndicators: false) {
-                            ForEach(eventViewModel.allEvents.filter { event in
-                                // Event is from a joined club AND not already joined
-                                bookClubViewModel.joinedClubs.contains(where: { $0.id == event.bookClubId }) &&
-                                !eventViewModel.joinedEvents.contains(where: { $0.id == event.id })
-                            }) { event in
-                                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                                    EventsRowView(
-                                        bookClub: bookClub,
-                                        event: event,
-                                        coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(),
-                                        isModerator: bookClub.moderatorName == authViewModel.currentUser?.name
-                                    )
-                                    .padding(.bottom, -2)
-                                    .padding([.horizontal, .top], 10)
-                                }
+                            ForEach(eventViewModel.filteredDiscoverEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
+                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                    .padding(.bottom, 8)
                             }
                         }
-                        .padding([.horizontal, .top], -10)
+                        .scrollClipDisabled()
                     }
                 }
             }
             .padding([.bottom, .horizontal])
+            .scrollClipDisabled()
+            .clipShape(.rect)
             
             Spacer()
         }
         .onDisappear {
-            selectedFilter = 0
+            selectedFilter = 0  // show all events
         }
     }
     
-    // for upcoming events atm
-    func testFilter(selectedFilter: Int) -> [Event] {
-        var selectedFilterStr: String = ""
-        var eventArr: [Event] = []
-        
-        // convert selectedFilter into a String value
-        switch selectedFilter {
-        case 1:
-            selectedFilterStr = "In-Person"
-        case 2:
-            selectedFilterStr = "Online"
-        case 3:
-            selectedFilterStr = "Created Events"
-        default:
-            selectedFilterStr = "All"
-        }
-        
-        for event in eventViewModel.joinedEvents {
-            // find events with matching id to joined book clubs
-            if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                if selectedFilterStr == "All" {
-                    eventArr.append(event)
-                } else if bookClub.meetingType == selectedFilterStr {
-                    eventArr.append(event)
+    private var filters: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                Group {
+                    Button("All") {
+                        selectedFilter = 0
+                        selectedClubName = nil
+                    }
+                    .tint(selectedFilter == 0 && selectedClubName == nil ? .accent : .quaternaryHex)
+                    .foregroundStyle(selectedFilter == 0 && selectedClubName == nil ? .white : .black)
+                    
+                    Button("In-Person") {
+                        selectedFilter = 1
+                        selectedClubName = nil
+                    }
+                    .tint(selectedFilter == 1 ? .customYellow : .customYellow.opacity(0.2))
+                    
+                    Button("Online") {
+                        selectedFilter = 2
+                        selectedClubName = nil
+                    }
+                    .tint(selectedFilter == 2 ? .customGreen : .customGreen.opacity(0.2))
+                    
+                    Button("Created Events") {
+                        selectedFilter = 3
+                        selectedClubName = nil
+                    }
+                    .tint(selectedFilter == 3 ? .customPink : .customPink.opacity(0.2))
+                    
+                    // filter by book club - both created and joined clubs
+                    Menu {
+                        Picker("Book Club", selection: $selectedClubName) {
+                            Text("All Book Clubs")
+                                .tag(Optional<String>(nil))
+                            ForEach(bookClubViewModel.joinedAndCreatedClubNames(), id: \.self) {
+                                Text($0)
+                                    .tag(Optional($0))
+                            }
+                        }
+                    } label: {
+                        HStack {
+                            if let selectedClubName {
+                                Text(selectedClubName)
+                            } else {
+                                Text("Book Club")
+                            }
+                            Image(systemName: "chevron.down")
+                        }
+                    }
+                    .tint(selectedClubName == nil ? .quaternaryHex : .accentColor)
+                    .foregroundStyle(selectedClubName == nil ? .black : .white)
                 }
-//                else if selectedFilterStr == "Created Events" {
-//                    let currentUserId = Auth.auth().currentUser?.uid ?? ""
-//                    for event in eventViewModel.allEvents.filter({ $0.moderatorId == currentUserId }) {
-//                        if bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) != nil {
-//                            eventArr.append(event)
-//                        }
-//                    }
-//                }
+                .font(.footnote)
+                .fontWeight(.medium)
+                .foregroundStyle(.black)
+                .buttonStyle(.borderedProminent)
+                .buttonBorderShape(.capsule)
             }
+            .padding(.horizontal)
         }
-        
-        return eventArr
     }
-    
-    
-    
-    // not working atm
-    func createdEvents() -> [Event] {
-        var eventArr: [Event] = []
-        
-        for event in eventViewModel.allEvents {
-            if event.moderatorId == Auth.auth().currentUser?.uid {
-                eventArr.append(event)
+    private var dateFilters: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack {
+                ForEach(1..<8) { index in
+                    EventDatesView(dateStr: "Mon", dateInt: index)
+                }
             }
+            .padding(.horizontal)
         }
-        
-        return eventArr
+        .padding(.bottom, 5)
     }
 }
 

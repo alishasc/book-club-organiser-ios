@@ -11,6 +11,7 @@ import FirebaseCore
 import FirebaseFirestore
 import FirebaseAuth
 import MapKit
+import FirebaseStorage
 
 @MainActor
 class EventViewModel: ObservableObject {
@@ -21,6 +22,9 @@ class EventViewModel: ObservableObject {
     @Published var searchResults: [MKMapItem] = []
     @Published var locationErrorPrompt: String = ""  // error message if invalid search query
     @Published var selectedLocation: MKMapItem?  // when tap location from search result list
+    
+    @Published var clubMemberPics: [UIImage] = []
+    @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
         
     init() {
         Task {
@@ -56,7 +60,6 @@ class EventViewModel: ObservableObject {
         self.allEvents.removeAll()
         self.joinedEvents.removeAll()
         let db = Firestore.firestore()
-        var event: Event
         
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get user ID to fetch details")
@@ -64,9 +67,9 @@ class EventViewModel: ObservableObject {
         }
                 
         do {
-            let querySnapshot = try await db.collection("Event").getDocuments()
+            let querySnapshot = try await db.collection("Event").order(by: "dateAndTime").getDocuments()
             for document in querySnapshot.documents {
-                event = try document.data(as: Event.self)
+                let event = try document.data(as: Event.self)
                 self.allEvents.append(event)
 
                 // filter joined clubs into separate array
@@ -254,7 +257,172 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    // events page
+    func filteredUpcomingEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
+        var filteredEventArr: [(Event, BookClub)] = []
+        let userId = Auth.auth().currentUser?.uid ?? ""
+        
+        switch selectedFilter {
+        case 0:
+            // all events
+            for event in joinedEvents {
+                // find events with matching id to joined book clubs
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+            // add created events - search for events where logged in user is the moderator
+            for event in allEvents.filter({ $0.moderatorId == userId }) {
+                // search all clubs with matching bookClubId
+                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+        case 1:
+            // in-person events
+            for event in joinedEvents {
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    if bookClub.meetingType == "In-Person" {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 2:
+            // online events
+            for event in joinedEvents {
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    if bookClub.meetingType == "Online" {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 3:
+            // created events
+            for event in allEvents.filter({ $0.moderatorId == userId }) {
+                // search all clubs with matching bookClubId
+                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+        default:
+            break
+        }
+        
+        if let selectedClubName {
+            // only show club selected
+            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
+        }
+
+        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
+    }
     
+    // events page
+    func filteredDiscoverEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
+        var filteredEventArr: [(Event, BookClub)] = []
+        
+        switch selectedFilter {
+        case 0:  // all events
+            // get joined book clubs
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 1:  // in-person events
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        if bookClub.meetingType == "In-Person" {
+                            filteredEventArr.append((event, bookClub))
+                        }
+                    }
+                }
+            }
+        case 2:  // online events
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        if bookClub.meetingType == "Online" {
+                            filteredEventArr.append((event, bookClub))
+                        }
+                    }
+                }
+            }
+        default:
+            break
+        }
+        
+        if let selectedClubName {
+            // only show club selected
+            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
+        }
+        
+        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
+    }
+    
+    
+    func getModeratorAndAttendeePics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
+        self.moderatorInfo.removeAll()
+        self.clubMemberPics.removeAll()
+        let db = Firestore.firestore()
+        let storageRef = Storage.storage().reference()
+
+        do {
+            // get attendee pics
+            let querySnapshot = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+
+            for document in querySnapshot.documents {
+                let clubMember = try document.data(as: BookClubMembers.self)
+                let imageRef = storageRef.child(clubMember.profilePictureURL)
+                
+                // get the image
+                imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
+                    if let error = error {
+                        print(
+                            "error occured fetching image: \(error.localizedDescription)"
+                        )
+                    } else if let data = data {
+                        let image = UIImage(data: data)
+                        // save user id and image to dictionary
+                        self.clubMemberPics.append(image ?? UIImage())
+                    }
+                }
+            }
+            
+            // get moderator pic
+            if moderatorId != Auth.auth().currentUser?.uid {
+                let document = try await db.collection("User").document(moderatorId).getDocument()
+                let moderator = try document.data(as: User.self)
+                let imageRef = storageRef.child(moderator.profilePictureURL)
+                
+                // get the image
+                imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
+                    if let error = error {
+                        print(
+                            "error occured fetching image: \(error.localizedDescription)"
+                        )
+                    } else if let data = data {
+                        let image = UIImage(data: data)
+                        // save user id and image to dictionary
+                        self.moderatorInfo[moderator.name] = image ?? UIImage()
+                    }
+                }
+            } else {
+                self.moderatorInfo[authViewModel.currentUser?.name ?? ""] = authViewModel.profilePic ?? UIImage()
+            }
+        } catch {
+            print("Error fetching book club member pictures: \(error.localizedDescription)")
+        }
+    }
+
     
     
     

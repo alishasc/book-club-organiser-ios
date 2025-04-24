@@ -61,14 +61,15 @@ struct EventsRowView: View {
                 Spacer()
                 
                 // checkmark and event type tag
-                VStack {
+                VStack(alignment: .trailing) {
                     Spacer()
                     Spacer()
                     // only show icons if the user isn't the moderator and is part of the club
                     if !isModerator && bookClubViewModel.checkIsMember(bookClub: bookClub) {
                         Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
-                            .font(.system(size: 24))
+                            .font(.system(size: 25))
                             .foregroundStyle(.accent)
+                            .padding(.trailing, 12)
                             .onTapGesture {
                                 isAttendingEvent.toggle()
                                 // call function to un/reserve space for event
@@ -116,8 +117,8 @@ struct EventsRowView: View {
             }
         }
         .onTapGesture {
-            // can only see extra details if member of the club
-            if bookClubViewModel.checkIsMember(bookClub: bookClub) {
+            // can only see extra details if member of the club or moderator
+            if bookClubViewModel.checkIsMember(bookClub: bookClub) || isModerator {
                 isEventSheetPresented = true
             }
         }

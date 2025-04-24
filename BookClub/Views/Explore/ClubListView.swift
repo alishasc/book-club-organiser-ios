@@ -16,7 +16,7 @@ struct ClubListView: View {
     @State private var filteredArray: [BookClub] = []  // looped in ScrollView
     @State private var selectedGenre: String?  // genre Picker
     @State private var selectedSortBy: String?  // sort by Picker
-    let sortByOptions: [String] = ["Name", "Date Created"]
+    let sortByOptions: [String] = ["Name", "Newest"]
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -95,7 +95,7 @@ struct ClubListView: View {
                         }
                     }
                 }
-                .padding([.horizontal, .top])
+                .scrollClipDisabled()
             }
             .padding(.bottom, 5)
                         
@@ -103,14 +103,14 @@ struct ClubListView: View {
                 ForEach(filteredArray) { club in
                     NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                         ViewTemplates.bookClubExploreList(coverImage: coverImages[club.id] ?? UIImage(), clubName: club.name)
-                            .padding(.top, 10)  // to show shadowing
-                            .padding(.bottom, -5)
                     }
+                    .padding(.bottom, 8)
                 }
             }
-            .padding(.top, -10)  // reduce size of padding from showing shadows
-            .padding(.horizontal)
+            .scrollClipDisabled()
+            .clipShape(.rect)
         }
+        .padding([.horizontal, .bottom])
         .navigationTitle("\(clubCategory) Book Clubs")
         .onAppear {
             if filteredArray.isEmpty {

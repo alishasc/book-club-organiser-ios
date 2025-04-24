@@ -113,7 +113,7 @@ struct BookClubDetailsView: View {
         .onDisappear {
             // change this
             bookViewModel.currentRead = nil
-            bookClubViewModel.moderatorPic = UIImage()
+            bookClubViewModel.moderatorInfo = [:]
             bookClubViewModel.clubMemberPics = [UIImage()]
         }
         .toolbar {

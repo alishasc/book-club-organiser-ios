@@ -7,6 +7,7 @@
 
 import Foundation
 import FirebaseFirestore
+import MapKit
 
 struct Event: Identifiable, Codable {
     var id: UUID = UUID()
@@ -19,5 +20,5 @@ struct Event: Identifiable, Codable {
     var attendeesCount: Int = 0
     var eventStatus: String = "upcoming"  // alter this somewhere
     var meetingLink: String?  // if online
-    var location: GeoPoint?  // make not optional?
+    var location: GeoPoint?
 }
