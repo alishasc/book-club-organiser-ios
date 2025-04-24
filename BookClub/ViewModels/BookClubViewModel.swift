@@ -438,4 +438,61 @@ class BookClubViewModel: ObservableObject {
         
         return clubNameString.sorted(by: { $0.lowercased() < $1.lowercased() })
     }
+    
+    
+    func updateBookClubDetails(bookClub: BookClub, clubName: String, description: String, isPublic: Bool, coverImage: UIImage, originalCoverImage: UIImage) async throws {
+        let db = Firestore.firestore()
+        let storageRef = Storage.storage().reference()
+        var updatedData: [String: Any] = [:]
+        
+        if clubName != bookClub.name {
+            updatedData["name"] = clubName
+        }
+        if description != bookClub.description {
+            updatedData["description"] = description
+        }
+        if isPublic != bookClub.isPublic {
+            updatedData["isPublic"] = isPublic
+        }
+        
+        if coverImage != originalCoverImage {
+            let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
+            let fileRef = storageRef.child(imageFilePath)
+            updatedData["coverImageURL"] = imageFilePath  // to save to db
+            
+            // add new image to storage
+            if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
+                _ = fileRef
+                    .putData(imageData, metadata: nil) { (metadata, error) in
+                        if let error = error {
+                            print(
+                                "error saving updated image: \(error.localizedDescription)"
+                            )
+                        }
+                    }
+            }
+            
+            // delete old image
+            let oldImageRef = storageRef.child(bookClub.coverImageURL)
+            do {
+                try await oldImageRef.delete()
+            } catch {
+                print("error deleting old club cover image: \(error.localizedDescription)")
+            }
+
+            self.coverImages[bookClub.id] = coverImage
+        }
+        
+        do {
+            try await db.collection("BookClub").document(bookClub.id.uuidString).setData(updatedData, merge: true)
+        } catch {
+            print("error updating book club details: \(error.localizedDescription)")
+        }
+        
+        // update book club in ui
+        Task {
+            try await fetchBookClubs()
+            try await fetchJoinedClubs()
+        }
+    }
 }

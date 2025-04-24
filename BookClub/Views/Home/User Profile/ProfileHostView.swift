@@ -32,18 +32,6 @@ struct ProfileHostView: View {
                     }
                 }
             }
-//            ToolbarItem(placement: .confirmationAction) {
-//                if editMode?.wrappedValue == .active {
-//                    Button("Save") {
-//                        withAnimation {
-//                            // put function to save to firebase here
-//                            
-//                            dismiss()
-//                        }
-//                    }
-//                    .disabled(<#T##disabled: Bool##Bool#>)
-//                }
-//            }
         }
     }
 }

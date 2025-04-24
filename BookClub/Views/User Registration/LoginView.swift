@@ -90,7 +90,8 @@ struct LoginView: View {
                         // only try login if form is complete
                         if authValidationViewModel.isLoginFormValid() {
                             Task {
-                                try await authViewModel.loginAndLoadData(email: authValidationViewModel.email, password: authValidationViewModel.password, bookClubViewModel: bookClubViewModel, eventViewModel: eventViewModel)
+                                try await authViewModel.login(email: authValidationViewModel.email, password: authValidationViewModel.password)
+                                try await authViewModel.fetchInitInformation(bookClubViewModel: bookClubViewModel, eventViewModel: eventViewModel)
                             }
                         } else {
                             // show any error messages for invalid inputs

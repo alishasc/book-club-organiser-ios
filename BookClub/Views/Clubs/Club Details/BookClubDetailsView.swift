@@ -118,9 +118,7 @@ struct BookClubDetailsView: View {
         .toolbar {
             if isModerator {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Edit") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-                    }
+                    EditButton()
                 }
             } else if !isMemberState {
                 // change to else if condition - check if user has joined club already

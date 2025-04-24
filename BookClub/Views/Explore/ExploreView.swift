@@ -82,16 +82,15 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "Online" {
-                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club), coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage())) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
-                                    .padding(.vertical, 15)  // to see shadows
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
-                    .padding(.vertical, -15)  // reverse padding to see shadows
+                    .scrollClipDisabled()
                 }
                 
                 // in-person book clubs
@@ -112,16 +111,15 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "In-Person" {
-                                    NavigationLink(destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club), coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage())) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
-                                    .padding(.vertical, 15)  // to see shadows
                                 }
                             }
                         }
                         .padding(.horizontal)
                     }
-                    .padding(.vertical, -15)  // reverse padding to see shadows
+                    .scrollClipDisabled()
                 }
             }
             .padding(.bottom)

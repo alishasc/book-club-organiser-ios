@@ -83,7 +83,7 @@ struct ClubsView: View {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                 .background(
                                     // hide navigation link arrows
-                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: false, isMember: true))
+                                    NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: false, isMember: true, coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage()))
                                         .opacity(0)
                                 )
                         }
@@ -101,7 +101,7 @@ struct ClubsView: View {
                             ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                 .background(
                                     // hide navigation link arrows
-                                    NavigationLink("", destination: BookClubDetailsView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false))
+                                    NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false, coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage()))
                                         .opacity(0)
                                 )
                         }

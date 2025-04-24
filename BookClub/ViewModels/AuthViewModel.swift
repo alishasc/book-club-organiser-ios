@@ -72,6 +72,13 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    func fetchInitInformation(bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
+        try await bookClubViewModel.fetchBookClubs()
+        try await bookClubViewModel.fetchJoinedClubs()
+        try await bookClubViewModel.getMessageUserList()
+        try await eventViewModel.fetchEvents()
+    }
+    
     func saveOnboardingDetails(favouriteGenres: [String], location: String) async throws {
         // create instances of db and storage
         let db = Firestore.firestore()
@@ -115,17 +122,11 @@ class AuthViewModel: ObservableObject {
         }
     }
     
-    func loginAndLoadData(email: String, password: String, bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
+    func login(email: String, password: String) async throws {
         do {
             let result = try await Auth.auth().signIn(withEmail: email, password: password)
             self.userSession = result.user
             await fetchUser()
-            
-            // fetch data after logging in
-            try await bookClubViewModel.fetchBookClubs()
-            try await bookClubViewModel.fetchJoinedClubs()
-            try await eventViewModel.fetchEvents()
-            try await bookClubViewModel.getMessageUserList()
         } catch {
             print("Could not log in user: \(error.localizedDescription)")
         }
@@ -231,7 +232,7 @@ class AuthViewModel: ObservableObject {
             
             // delete old image
             let oldImageRef = storageRef.child(self.currentUser?.profilePictureURL ?? "")
-
+            
             do {
                 try await oldImageRef.delete()
             } catch {
@@ -247,10 +248,89 @@ class AuthViewModel: ObservableObject {
         } catch {
             print("error updating user details: \(error.localizedDescription)")
         }
-                
+        
         // update currentUser
         Task {
             await fetchUser()
         }
+    }
+    
+    func deleteUserAccount() async throws {
+        let db = Firestore.firestore()
+        let storageRef = Storage.storage().reference()
+        guard let currentUser else { return }
+        
+        if let user = Auth.auth().currentUser {
+            user.delete { error in
+                if let error = error {
+                    print("error deleting user account: \(error.localizedDescription)")
+                } else {
+                    print("user account successfully deleted")
+                }
+            }
+        }
+        
+        // delete user and profile pic
+        do {
+            try await db.collection("User").document(currentUser.id).delete()
+            print("User document successfully removed!")
+            try await storageRef.child(currentUser.profilePictureURL).delete()
+            print("Profile picture successfully removed!")
+        } catch {
+            print("Error removing User document: \(error.localizedDescription)")
+        }
+        
+        // delete book clubs and cover image
+        do {
+            let querySnapshot = try await db.collection("BookClub").whereField("moderatorId", isEqualTo: currentUser.id).getDocuments()
+            for doc in querySnapshot.documents {
+                let bookClub = try doc.data(as: BookClub.self)
+                try await storageRef.child(bookClub.coverImageURL).delete()
+                try await doc.reference.delete()
+            }
+            print("deleted book club and cover image")
+        } catch {
+            print("Error removing document: \(error)")
+        }
+        
+        // delete user from book club members
+        do {
+            let querySnapshot = try await db.collection("BookClubMembers").whereField("userId", isEqualTo: currentUser.id).getDocuments()
+            for doc in querySnapshot.documents {
+                try await doc.reference.delete()
+            }
+            print("deleted user from BookClubMembers")
+        } catch {
+            print("Error removing document: \(error)")
+        }
+        
+        // delete event made by user
+        do {
+            let querySnapshot = try await db.collection("Event").whereField("moderatorId", isEqualTo: currentUser.id).getDocuments()
+            for doc in querySnapshot.documents {
+                try await doc.reference.delete()
+            }
+            print("deleted doc from Event")
+        } catch {
+            print("Error removing document: \(error)")
+        }
+        
+        // delete user from EventAttendees
+        do {
+            let querySnapshot = try await db.collection("EventAttendees").whereField("userId", isEqualTo: currentUser.id).getDocuments()
+            for doc in querySnapshot.documents {
+                let eventAttendee = try doc.data(as: EventAttendee.self)
+                try await db.collection("Event").document(eventAttendee.eventId.uuidString).updateData([
+                    "attendeesCount": FieldValue.increment(Int64(-1))
+                ])
+                print("incremented event")
+                try await doc.reference.delete()
+            }
+            print("deleted attendee")
+        } catch {
+            print("Error removing document: \(error)")
+        }
+        
+        logOut()
     }
 }
