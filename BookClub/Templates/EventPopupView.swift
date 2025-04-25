@@ -89,7 +89,7 @@ struct EventPopupView: View {
             // checkmark icon
             if !isModerator {
                 Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
-                    .font(.system(size: 24))
+                    .font(.system(size: 25))
                     .foregroundStyle(.accent)
                     .onTapGesture {
                         isAttendingEvent.toggle()

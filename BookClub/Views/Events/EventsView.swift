@@ -18,7 +18,11 @@ struct EventsView: View {
     @State private var showDiscoverEvents: Bool = true
     @State private var selectedClubName: String?
     
-    //    @State private var selectedDate: Date = Date()
+    @Namespace var animation
+    
+    //        @State private var selectedDate: Date = Date()
+    
+    @State private var isSelected = false
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -27,12 +31,12 @@ struct EventsView: View {
                 .font(.largeTitle).bold()
                 .padding([.top, .horizontal])
             
-            filters  // event type filters
+            filters  // event type/book club
             dateFilters
             
             // event lists
             ScrollView(.vertical, showsIndicators: false) {
-                // your upcoming events
+                //                 your upcoming events
                 VStack(spacing: 10) {
                     HStack {
                         Text("Your Upcoming Events")
@@ -99,6 +103,7 @@ struct EventsView: View {
         }
         .onDisappear {
             selectedFilter = 0  // show all events
+            eventViewModel.currentDay = nil
         }
     }
     
@@ -165,9 +170,55 @@ struct EventsView: View {
     }
     private var dateFilters: some View {
         ScrollView(.horizontal, showsIndicators: false) {
-            HStack {
-                ForEach(1..<8) { index in
-                    EventDatesView(dateStr: "Mon", dateInt: index)
+            HStack(spacing: 8) {
+                ForEach(eventViewModel.currentWeek, id: \.self) { day in
+                    VStack(spacing: 10) {
+                        Text(eventViewModel.extractDate(date: day, format: "EEE"))
+                            .font(.subheadline)
+                            .fontWeight(.medium)
+                        Text(eventViewModel.extractDate(date: day, format: "dd"))
+                            .font(.subheadline)
+                        
+                        HStack(spacing: 3) {
+                            let colors = eventViewModel.eventColors(date: day)
+                            
+                            ForEach(colors.indices, id: \.self) { index in
+                                Circle()
+                                    .fill(colors[index])
+                                    .frame(width: 8, height: 8)
+                            }
+                            if colors.count == 0 {
+                                Circle()
+                                    .fill(.clear)
+                                    .frame(width: 8, height: 8)
+                            }
+                        }
+                    }
+                    .foregroundStyle(eventViewModel.currentDay == day ? .white : .black)
+                    .foregroundStyle(.black)
+                    // capsule shape
+                    .frame(width: 45, height: 90)
+                    .background(
+                        ZStack {
+                            if eventViewModel.currentDay == day {
+                                Capsule()
+                                    .fill(.accent)
+                                    .matchedGeometryEffect(id: "CURRENTDAY", in: animation)
+                            }
+                            else {
+                                Capsule()
+                                    .fill(Color(.systemGray6))
+                            }
+                        }
+                    )
+                    .contentShape(Capsule())
+                    .onTapGesture {
+                        if eventViewModel.currentDay == day {
+                            eventViewModel.currentDay = nil
+                        } else {
+                            eventViewModel.currentDay = day
+                        }
+                    }
                 }
             }
             .padding(.horizontal)
@@ -179,3 +230,5 @@ struct EventsView: View {
 #Preview {
     EventsView()
 }
+
+// EventDatesView(dateStr: eventViewModel.extractDate(date: day, format: "EEE"), dateInt: eventViewModel.extractDate(date: day, format: "dd"))
