@@ -78,7 +78,7 @@ struct EventPopupView: View {
                 Text(event.eventTitle)
                     .fontWeight(.medium)
                 Text(ViewTemplates.eventSheetDateFormatter(dateAndTime: event.dateAndTime))
-                Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime))
+                Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime, duration: event.duration))
                     .foregroundStyle(.gray)
                 Text("\(spacesLeft) spaces left")
                     .font(.subheadline)

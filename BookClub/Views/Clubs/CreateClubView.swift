@@ -213,7 +213,7 @@ struct CreateClubView: View {
                 }
                 Text("You won’t be able to change the club’s genre later.")
                     .font(.footnote)
-                    .foregroundColor(.customBlue)
+                    .foregroundColor(.accent)
             }
                 
             VStack(alignment: .leading, spacing: 5) {
@@ -231,7 +231,7 @@ struct CreateClubView: View {
                 }
                 Text("You won’t be able to change the meeting type after creating the club.")
                     .font(.footnote)
-                    .foregroundColor(.customBlue)
+                    .foregroundColor(.accent)
             }
         }
     }

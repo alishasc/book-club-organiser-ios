@@ -443,8 +443,6 @@ class BookClubViewModel: ObservableObject {
     
     
     func updateBookClubDetails(bookClub: BookClub, clubName: String, description: String, isPublic: Bool, coverImage: UIImage) async throws {
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
         var updatedData: [String: Any] = [:]
         
         if clubName != bookClub.name {
