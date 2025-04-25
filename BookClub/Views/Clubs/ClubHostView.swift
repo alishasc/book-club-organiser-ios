@@ -13,7 +13,6 @@ struct ClubHostView: View {
     var bookClub: BookClub
     var isModerator: Bool
     var isMember: Bool
-    var coverImage: UIImage
     
     var body: some View {
         VStack {
@@ -21,7 +20,7 @@ struct ClubHostView: View {
             if editMode?.wrappedValue == .inactive {
                 BookClubDetailsView(bookClub: bookClub, isModerator: isModerator, isMember: isMember)
             } else {
-                EditClubView(bookClub: bookClub, coverImage: coverImage)
+                EditClubView(bookClub: bookClub)
             }
         }
         .toolbar {

@@ -15,9 +15,7 @@ struct EditClubView: View {
     @Environment(\.dismiss) var dismiss
     @FocusState private var focusedField: Field?  // navigate between textfields
     var bookClub: BookClub
-    var coverImage: UIImage
     // form fields
-    @State private var coverImageCopy: UIImage = UIImage()
     @State private var name: String = ""
     @State private var description: String = ""
     @State private var wordCount: Int = 0
@@ -47,24 +45,29 @@ struct EditClubView: View {
             .padding()
             .background(.quaternary)
             .clipShape(RoundedRectangle(cornerRadius: 10))
-            
-//            Spacer()
 
-            Button {
-                showAlert = true
-            } label: {
-                Text("Delete Club")
-                    .foregroundStyle(.red)
-                    .fontWeight(.medium)
-            }
-            .alert("Are you sure you want to delete \(bookClub.name)?", isPresented: $showAlert) {
-                Button("Delete \(bookClub.name)", role: .destructive) {
-                    Task {
-//                        try await bookClubViewModel.leaveClub(bookClubId: bookClub.id, eventViewModel: eventViewModel)
-//                        bookClubViewModel.clubMemberPics.removeAll(where: { $0 == authViewModel.profilePic })
-                    }
+            Spacer()
+            
+            HStack() {
+                Spacer()
+                Button {
+                    showAlert = true
+                } label: {
+                    Text("Delete Club")
+                        .foregroundStyle(.red)
+                        .fontWeight(.medium)
                 }
-                Button("Cancel", role: .cancel) { }
+                .alert("Are you sure you want to delete \(bookClub.name)?", isPresented: $showAlert) {
+                    Button("Delete \(bookClub.name)", role: .destructive) {
+                        Task {
+                            try await bookClubViewModel.deleteClub(bookClubId: bookClub.id)
+                            // go back to clubs page
+                            dismiss()
+                        }
+                    }
+                    Button("Cancel", role: .cancel) { }
+                }
+                Spacer()
             }
         }
         .padding()
@@ -73,7 +76,7 @@ struct EditClubView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             // make copies of stored data
-            coverImageCopy = coverImage
+//            coverImageCopy = coverImage
             name = bookClub.name
             description = bookClub.description
             wordCount = bookClubViewModel.getWordCount(str: bookClub.description)
@@ -85,7 +88,7 @@ struct EditClubView: View {
                     withAnimation {
                         // put function to update data in db
                         Task {
-                            try await bookClubViewModel.updateBookClubDetails(bookClub: bookClub, clubName: name, description: description, isPublic: isPublic, coverImage: photosPickerViewModel.selectedImage ?? coverImage, originalCoverImage: coverImage)
+                            try await bookClubViewModel.updateBookClubDetails(bookClub: bookClub, clubName: name, description: description, isPublic: isPublic, coverImage: photosPickerViewModel.selectedImage ?? UIImage())
                         }
                         dismiss()
                     }
@@ -144,7 +147,7 @@ struct EditClubView: View {
             // show photo picker or the selected image
             if photosPickerViewModel.selectedImage == nil {
                 GeometryReader { geometry in
-                    Image(uiImage: coverImageCopy)
+                    Image(uiImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage())
                         .resizable()
                         .scaledToFill()
                         .frame(width: geometry.size.width, height: 180)  // of image

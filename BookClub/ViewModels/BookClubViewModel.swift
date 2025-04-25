@@ -12,6 +12,9 @@ import FirebaseStorage
 
 @MainActor
 class BookClubViewModel: ObservableObject {
+    let db = Firestore.firestore()
+    let storageRef = Storage.storage().reference()
+    
     @Published var allClubs: [BookClub] = []
     @Published var createdClubs: [BookClub] = []
     @Published var joinedClubs: [BookClub] = []
@@ -284,7 +287,7 @@ class BookClubViewModel: ObservableObject {
     // rename to getUserMessagingList() ??
     func getMessageUserList() async throws {
         let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()  // get profile pic
+        let storageRef = Storage.storage().reference()
         var members: [BookClubMembers] = []
         
         do {
@@ -326,7 +329,7 @@ class BookClubViewModel: ObservableObject {
         
         self.messageUsers = members
     }
-
+    
     // change to get the moderators name and picture from 'User'
     func getModeratorAndMemberPics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
         self.moderatorInfo.removeAll()
@@ -406,14 +409,13 @@ class BookClubViewModel: ObservableObject {
         } catch {
             print("Error deleting BookClubMembers document: \(error.localizedDescription)")
         }
-        
+
         // remove from eventAttendees
         do {
             let querySnapshot = try await db.collection("EventAttendees")
                 .whereField("bookClubId", isEqualTo: bookClubId.uuidString)
                 .whereField("userId", isEqualTo: userId)
                 .getDocuments()
-                        
             if let document = querySnapshot.documents.first {
                 try await db.collection("EventAttendees").document(document.documentID).delete()
             }
@@ -440,7 +442,7 @@ class BookClubViewModel: ObservableObject {
     }
     
     
-    func updateBookClubDetails(bookClub: BookClub, clubName: String, description: String, isPublic: Bool, coverImage: UIImage, originalCoverImage: UIImage) async throws {
+    func updateBookClubDetails(bookClub: BookClub, clubName: String, description: String, isPublic: Bool, coverImage: UIImage) async throws {
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
         var updatedData: [String: Any] = [:]
@@ -454,8 +456,7 @@ class BookClubViewModel: ObservableObject {
         if isPublic != bookClub.isPublic {
             updatedData["isPublic"] = isPublic
         }
-        
-        if coverImage != originalCoverImage {
+        if coverImage != coverImages[bookClub.id] {
             let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
             let fileRef = storageRef.child(imageFilePath)
             updatedData["coverImageURL"] = imageFilePath  // to save to db
@@ -493,6 +494,21 @@ class BookClubViewModel: ObservableObject {
         Task {
             try await fetchBookClubs()
             try await fetchJoinedClubs()
+        }
+    }
+    
+    func deleteClub(bookClubId: UUID) async throws {
+        do {
+            let doc = try await db.collection("BookClub").document(bookClubId.uuidString).getDocument()
+            let bookClub = try doc.data(as: BookClub.self)
+            try await storageRef.child(bookClub.coverImageURL).delete()
+            try await doc.reference.delete()
+            
+            self.allClubs.removeAll { $0.id == bookClubId }
+            self.createdClubs.removeAll { $0.id == bookClubId }
+            print("deleted book club and cover image")
+        } catch {
+            print("Error removing document: \(error)")
         }
     }
 }

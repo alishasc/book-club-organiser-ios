@@ -97,7 +97,7 @@ struct HomeView: View {
                         HStack {
                             // show both joined and created clubs (max 3)
                             ForEach((bookClubViewModel.joinedClubs + bookClubViewModel.createdClubs).prefix(3).sorted { $0.name < $1.name }) { club in
-                                NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club), coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage())) {
+                                NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                     ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                 }
                             }

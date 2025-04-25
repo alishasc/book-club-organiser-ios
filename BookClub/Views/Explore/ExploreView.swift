@@ -82,7 +82,7 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "Online" {
-                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club), coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage())) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
                                 }
@@ -111,7 +111,7 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "In-Person" {
-                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club), coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage())) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
                                 }
