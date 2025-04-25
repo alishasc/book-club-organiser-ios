@@ -10,7 +10,6 @@ import PhotosUI
 
 struct ProfileView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @Environment(\.editMode) var editMode
     var profile: User
     var profilePic: UIImage
     var joinedClubs: Int

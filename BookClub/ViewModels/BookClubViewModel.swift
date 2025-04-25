@@ -12,6 +12,9 @@ import FirebaseStorage
 
 @MainActor
 class BookClubViewModel: ObservableObject {
+    let db = Firestore.firestore()
+    let storageRef = Storage.storage().reference()
+    
     @Published var allClubs: [BookClub] = []
     @Published var createdClubs: [BookClub] = []
     @Published var joinedClubs: [BookClub] = []
@@ -20,9 +23,7 @@ class BookClubViewModel: ObservableObject {
     
     @Published var messageUsers: [BookClubMembers] = []
     @Published var memberPics: [String: UIImage] = [:]  // userId : UIImage
-    
-    @Published var allUserPictures: [String: UIImage] = [:]  // remove this
-    
+        
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
@@ -71,7 +72,6 @@ class BookClubViewModel: ObservableObject {
         Task {
             try await fetchBookClubs()
             try await fetchJoinedClubs()
-            try await getAllUserPictures()
             try await getMessageUserList()
         }
     }
@@ -287,7 +287,7 @@ class BookClubViewModel: ObservableObject {
     // rename to getUserMessagingList() ??
     func getMessageUserList() async throws {
         let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()  // get profile pic
+        let storageRef = Storage.storage().reference()
         var members: [BookClubMembers] = []
         
         do {
@@ -329,37 +329,7 @@ class BookClubViewModel: ObservableObject {
         
         self.messageUsers = members
     }
-        
-    // not being used?
-    func getAllUserPictures() async throws {
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
-        
-        do {
-            let querySnapshot = try await db.collection("User").getDocuments()
-            
-            for document in querySnapshot.documents {
-                let user = try document.data(as: User.self)
-                let imageRef = storageRef.child(user.profilePictureURL)
-                
-                // get the image
-                imageRef.getData(maxSize: 5 * 1024 * 1024) { data, error in
-                    if let error = error {
-                        print(
-                            "error occured fetching image: \(error.localizedDescription)"
-                        )
-                    } else if let data = data {
-                        let image = UIImage(data: data)
-                        // save user id and image to dictionary
-                        self.allUserPictures[user.id] = image
-                    }
-                }
-            }
-        } catch {
-            print("Couldn't load user profile pictures: \(error.localizedDescription)")
-        }
-    }
-
+    
     // change to get the moderators name and picture from 'User'
     func getModeratorAndMemberPics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
         self.moderatorInfo.removeAll()
@@ -439,14 +409,13 @@ class BookClubViewModel: ObservableObject {
         } catch {
             print("Error deleting BookClubMembers document: \(error.localizedDescription)")
         }
-        
+
         // remove from eventAttendees
         do {
             let querySnapshot = try await db.collection("EventAttendees")
                 .whereField("bookClubId", isEqualTo: bookClubId.uuidString)
                 .whereField("userId", isEqualTo: userId)
                 .getDocuments()
-                        
             if let document = querySnapshot.documents.first {
                 try await db.collection("EventAttendees").document(document.documentID).delete()
             }
@@ -458,6 +427,7 @@ class BookClubViewModel: ObservableObject {
         eventViewModel.joinedEvents.removeAll(where: { $0.bookClubId == bookClubId })
     }
     
+    // for the book club filter on events page
     func joinedAndCreatedClubNames() -> [String] {
         var clubNameString: [String] = []
         
@@ -472,121 +442,71 @@ class BookClubViewModel: ObservableObject {
     }
     
     
+    func updateBookClubDetails(bookClub: BookClub, clubName: String, description: String, isPublic: Bool, coverImage: UIImage) async throws {
+        var updatedData: [String: Any] = [:]
+        
+        if clubName != bookClub.name {
+            updatedData["name"] = clubName
+        }
+        if description != bookClub.description {
+            updatedData["description"] = description
+        }
+        if isPublic != bookClub.isPublic {
+            updatedData["isPublic"] = isPublic
+        }
+        if coverImage != coverImages[bookClub.id] {
+            let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
+            let fileRef = storageRef.child(imageFilePath)
+            updatedData["coverImageURL"] = imageFilePath  // to save to db
+            
+            // add new image to storage
+            if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
+                _ = fileRef
+                    .putData(imageData, metadata: nil) { (metadata, error) in
+                        if let error = error {
+                            print(
+                                "error saving updated image: \(error.localizedDescription)"
+                            )
+                        }
+                    }
+            }
+            
+            // delete old image
+            let oldImageRef = storageRef.child(bookClub.coverImageURL)
+            do {
+                try await oldImageRef.delete()
+            } catch {
+                print("error deleting old club cover image: \(error.localizedDescription)")
+            }
+
+            self.coverImages[bookClub.id] = coverImage
+        }
+        
+        do {
+            try await db.collection("BookClub").document(bookClub.id.uuidString).setData(updatedData, merge: true)
+        } catch {
+            print("error updating book club details: \(error.localizedDescription)")
+        }
+        
+        // update book club in ui
+        Task {
+            try await fetchBookClubs()
+            try await fetchJoinedClubs()
+        }
+    }
     
-    
-    
-    
-    //    func fetchMemberPics() async throws {
-    //        self.memberPics.removeAll()
-    //
-    //        let db = Firestore.firestore()
-    //        let storageRef = Storage.storage().reference()
-    //
-    //
-    //    }
-    
-    // fetch cover image for one club
-    //    func fetchCoverImage(bookClubId: UUID) async throws {
-    //        let db = Firestore.firestore()
-    //
-    //        // get book club doc that matches the bookClubId
-    //        let docRef = db.collection("BookClub").document(bookClubId.uuidString)
-    //        let storageRef = Storage.storage().reference()
-    //
-    //        do {
-    //            // new instance of BookClub
-    //            let bookClub = try await docRef.getDocument(as: BookClub.self)
-    //            let imageRef = storageRef.child(
-    //                bookClub.coverImageURL
-    //            )  // file to look for
-    //
-    //            // try and get the image
-    //            imageRef.getData(maxSize: 5 * 1024 * 1024) {
-    // data,
-    // error in
-    //                if let error = error {
-    //                    print(
-    //                        "error occured fetching image: \(error.localizedDescription)"
-    //                    )
-    //                } else if let data = data {
-    //                    let image = UIImage(data: data)
-    //                    // bookClubId and matching cover image to dictionary
-    //                    self.coverImages[bookClub.id] = image
-    //                }
-    //            }
-    //        } catch {
-    //            print("error: \(error.localizedDescription)")
-    //        }
-    //    }
-    
-    // get club and moderator details of selected book club
-    //        func fetchBookClubDetails(bookClubId: UUID) async throws {
-    //            print("fetch book club details")
-    //
-    //            let db = Firestore.firestore()
-    //            let clubDocRef = db.collection("BookClub").document(bookClubId.uuidString)
-    //
-    //            // try get selected book club from BookClub collection
-    //            do {
-    //                let document = try await clubDocRef.getDocument()
-    //                if document.exists {
-    //                    // create BookClub object from retrieved data
-    //                    let bookClub = try document.data(as: BookClub.self)
-    //                    self.bookClub = bookClub  // update @Published var with the book club
-    //                } else {
-    //                    print("document for book club \(bookClubId) doesn't exist")
-    //                }
-    //            } catch {
-    //                print("error getting book club document: \(error.localizedDescription)")
-    //            }
-    //
-    //            // try get moderator name from User collection
-    //            if let bookClub = self.bookClub {
-    //                let userDocRef = db.collection("User").document(bookClub.moderatorId)
-    //
-    //                do {
-    //                    let document = try await userDocRef.getDocument()
-    //                    if document.exists {
-    //                        // create user object from doc data
-    //                        let user = try document.data(as: User.self)
-    //                        // save the moderator name for ui
-    //                        self.moderatorName = user.name
-    //                    } else {
-    //                        print("user document doesn't exist for this moderatorId: \(bookClub.moderatorId)")
-    //                    }
-    //                } catch {
-    //                    print("error getting moderatorId: \(error.localizedDescription)")
-    //                }
-    //            }
-    //        }
-    
-    // add image to storage and its ref to Firestore
-    //    func uploadPhoto(bookClubId: UUID, coverImage: UIImage) async throws {
-    //        // location for storing image
-    //        let storageRef = Storage.storage().reference()
-    //        let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"
-    //        let fileRef = storageRef.child(imageFilePath)
-    //
-    //        // try and save image to firebase storage
-    //        if let imageData = coverImage.jpegData(compressionQuality: 0.8) {
-    //            _ = fileRef.putData(imageData, metadata: nil) { (metadata, error) in
-    //                if error != nil {
-    //                    print("error saving image: \(error!.localizedDescription)")
-    //                } else {
-    //                    print("successfully uploaded image")
-    //                }
-    //            }
-    //        }
-    //
-    //        // save image ref to firestore - in doc for selected book club
-    //        let db = Firestore.firestore()
-    //        let bookClubRef = db.collection("BookClub").document(bookClubId.uuidString)
-    //
-    //        do {
-    //            try await bookClubRef.setData(["coverImageURL": imageFilePath], merge: true)
-    //            print("image ref added to firebase")
-    //        } catch {
-    //            print("error saving image ref: \(error.localizedDescription)")
-    //        }
-    //    }
+    func deleteClub(bookClubId: UUID) async throws {
+        do {
+            let doc = try await db.collection("BookClub").document(bookClubId.uuidString).getDocument()
+            let bookClub = try doc.data(as: BookClub.self)
+            try await storageRef.child(bookClub.coverImageURL).delete()
+            try await doc.reference.delete()
+            
+            self.allClubs.removeAll { $0.id == bookClubId }
+            self.createdClubs.removeAll { $0.id == bookClubId }
+            print("deleted book club and cover image")
+        } catch {
+            print("Error removing document: \(error)")
+        }
+    }
 }

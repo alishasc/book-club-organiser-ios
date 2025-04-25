@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BookDetailsView: View {
+    @Environment(\.dismiss) var dismiss
     var book: Book
     
     private var tidyDescription: String {
@@ -24,7 +25,7 @@ struct BookDetailsView: View {
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
-            VStack/*(alignment: .leading)*/ {
+            VStack {
                 ZStack(alignment: .bottom) {
                     // background
                     GeometryReader { geometry in
@@ -70,38 +71,22 @@ struct BookDetailsView: View {
 //        .padding()
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .navigationTitle(book.title)
-        
-
-//        ScrollView(.vertical, showsIndicators: false) {
-//            VStack(alignment: .leading) {
-//                // book cover
-//                AsyncImage(url: URL(string: book.cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: ""))) { image in
-//                    image
-//                        .resizable()
-//                        .scaledToFit()
-//                } placeholder: {
-//                    ProgressView()
-//                }
-//                .frame(width: 120, height: 160)
-//                
-//                Text(book.title)
-//                    .font(.title2)
-//                    .fontWeight(.semibold)
-//                Text(book.author)
-//                    .font(.subheadline)
-//                
-//                Text("Genre:")
-//                    .font(.subheadline)
-//                    .fontWeight(.medium)
-//                StaticTagView(tags: genresArr.map { TagViewItem(title: $0, isSelected: false) })
-//                
-//                Text("Description:")
-//                    .font(.subheadline)
-//                    .fontWeight(.medium)
-//                Text(tidyDescription)
-//            }
-//        }
-//        .padding()
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.subheadline)
+                }
+                .buttonStyle(.borderedProminent)
+                .clipShape(Capsule())
+            }
+        }
     }
 }
 

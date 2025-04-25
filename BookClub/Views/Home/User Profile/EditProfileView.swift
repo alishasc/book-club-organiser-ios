@@ -24,6 +24,7 @@ struct EditProfileView: View {
     // trigger sheets
     @State private var showGenreList: Bool = false
     @State private var showLocationSearch: Bool = false
+    @State private var showAlert: Bool = false
     
     var body: some View {
         VStack(spacing: 15) {
@@ -59,7 +60,6 @@ struct EditProfileView: View {
                         Task {
                             try await authViewModel.updateDetails(name: name, email: email, favouriteGenres: favouriteGenres, location: location, profilePicture: photosPickerViewModel.selectedImage ?? profilePicture)
                         }
-                        
                         dismiss()
                     }
                 }
@@ -184,16 +184,26 @@ struct EditProfileView: View {
             RoundedRectangle(cornerRadius: 10)
                 .frame(width: 350, height: 45)
                 .foregroundStyle(.quinary)
-            
-            Button("Delete Account") {
-                //
+
+            Button {
+                showAlert = true
+            } label: {
+                Text("Delete Account")
+                    .foregroundStyle(.red)
+                    .fontWeight(.medium)
+                    .padding(.leading)
             }
-            .foregroundStyle(.red)
-            .padding(.leading)
+            .alert("Are you sure you want to delete your account?", isPresented: $showAlert) {
+                Button("Delete account", role: .destructive) {
+                    Task {
+                        try await authViewModel.deleteUserAccount()
+                    }
+                }
+                Button("Cancel", role: .cancel) { }
+            }
         }
     }
 }
-
 
 
 func toggleGenre(favouriteGenres: [String], genre: String) -> [String] {

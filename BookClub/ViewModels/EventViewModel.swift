@@ -183,18 +183,7 @@ class EventViewModel: ObservableObject {
             }
         })
     }
-    
-//    func fetchUpdatedEvent(eventId: UUID) async throws {
-//        let db = Firestore.firestore()
-//        self.allEvents.removeAll(where: { $0.id == eventId })
-//        self.joinedEvents.removeAll(where: { $0.id == eventId })
-//        
-//        let document = try await db.collection("Event").document(eventId.uuidString).getDocument()
-//        let event = try document.data(as: Event.self)
-//        self.allEvents.append(event)
-//        self.joinedEvents.append(event)
-//    }
-    
+
     // update db when join/leave event
     func attendEvent(isAttending: Bool, event: Event, bookClub: BookClub) async throws {
         let db = Firestore.firestore()

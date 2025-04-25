@@ -16,10 +16,9 @@ struct EventsView: View {
     @State private var selectedFilter: Int = 0
     @State private var showUpcomingEvents: Bool = true
     @State private var showDiscoverEvents: Bool = true
+    @State private var selectedClubName: String?
     
     //    @State private var selectedDate: Date = Date()
-    
-    @State private var selectedClubName: String?
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -28,9 +27,7 @@ struct EventsView: View {
                 .font(.largeTitle).bold()
                 .padding([.top, .horizontal])
             
-            // event type filters
-            filters
-            // dates
+            filters  // event type filters
             dateFilters
             
             // event lists

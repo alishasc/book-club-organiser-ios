@@ -12,6 +12,7 @@ struct BookClubDetailsView: View {
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var bookViewModel: BookViewModel
+    @Environment(\.dismiss) var dismiss
     var bookClub: BookClub
     var isModerator: Bool
     var isMember: Bool
@@ -91,6 +92,7 @@ struct BookClubDetailsView: View {
             }
         }
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
+        .navigationBarBackButtonHidden(true)
         .onAppear {
             Task {
                 if bookClub.currentBookId != nil {
@@ -118,9 +120,10 @@ struct BookClubDetailsView: View {
         .toolbar {
             if isModerator {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Edit") {
-                        /*@START_MENU_TOKEN@*//*@PLACEHOLDER=Action@*/ /*@END_MENU_TOKEN@*/
-                    }
+                    EditButton()
+                        .font(.subheadline)
+                        .buttonStyle(.borderedProminent)
+                        .clipShape(Capsule())
                 }
             } else if !isMemberState {
                 // change to else if condition - check if user has joined club already
@@ -132,7 +135,33 @@ struct BookClubDetailsView: View {
                         }
                         isMemberState = true
                     }
+                    .font(.subheadline)
+                    .buttonStyle(.borderedProminent)
+                    .clipShape(Capsule())
                 }
+            }
+            ToolbarItem(placement: .topBarLeading) {
+                Button {
+                    dismiss()
+                } label: {
+                    HStack {
+                        Image(systemName: "chevron.left")
+                        Text("Back")
+                    }
+                    .font(.subheadline)
+                }
+                .buttonStyle(.borderedProminent)
+                .clipShape(Capsule())
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    //
+                } label: {
+                    Image(systemName: "square.and.arrow.up")
+                        .font(.subheadline)
+                }
+                .buttonStyle(.borderedProminent)
+                .clipShape(Circle())
             }
         }
     }

@@ -17,13 +17,12 @@ struct EventPopupView: View {
     var coverImage: UIImage
     var isModerator: Bool
     @Binding var isAttendingEvent: Bool
+    @Binding private var spacesLeft: Int
     private var position: MapCameraPosition
     // for location Text
     @State private var locationName: String = "Loading..."
     @State private var city: String = "Loading..."
     @State private var postcode: String = "Loading..."
-    
-    @Binding private var spacesLeft: Int
         
     init(bookClub: BookClub, event: Event, coverImage: UIImage, isModerator: Bool, isAttendingEvent: Binding<Bool>, spacesLeft: Binding<Int>) {
         self.bookClub = bookClub
@@ -31,8 +30,8 @@ struct EventPopupView: View {
         self.coverImage = coverImage
         self.isModerator = isModerator
         self._isAttendingEvent = isAttendingEvent
-        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
         self._spacesLeft = spacesLeft
+        self.position = .region(MKCoordinateRegion(center: CLLocationCoordinate2D(latitude: event.location?.latitude ?? 0, longitude: event.location?.longitude ?? 0), span: MKCoordinateSpan(latitudeDelta: 0.001, longitudeDelta: 0.001)))
     }
     
     var body: some View {
@@ -79,7 +78,7 @@ struct EventPopupView: View {
                 Text(event.eventTitle)
                     .fontWeight(.medium)
                 Text(ViewTemplates.eventSheetDateFormatter(dateAndTime: event.dateAndTime))
-                Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime))
+                Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime, duration: event.duration))
                     .foregroundStyle(.gray)
                 Text("\(spacesLeft) spaces left")
                     .font(.subheadline)

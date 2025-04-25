@@ -15,9 +15,7 @@ class ViewTemplates {
             TextField("", text: input)
             Divider()
         }
-        .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
-        .submitLabel(.next)
     }
     
     static func signupTextField(placeholder: String, input: Binding<String>, isSecureField: Bool, prompt: String) -> some View {
@@ -30,9 +28,7 @@ class ViewTemplates {
                 .foregroundStyle(.red)
                 .font(.footnote)
         }
-        .textInputAutocapitalization(.never)
         .disableAutocorrection(true)
-        .submitLabel(.next)
     }
     
     static func passwordSecureField(placeholder: String, input: Binding<String>, showPassword: Binding<Bool>) -> some View {
@@ -124,10 +120,14 @@ class ViewTemplates {
         return formatter.string(from: dateAndTime)
     }
     
-    static func eventSheetTimeFormatter(dateAndTime: Date) -> String {
+    static func eventSheetTimeFormatter(dateAndTime: Date, duration: Int) -> String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "hh:mm a"  // 03:44 pm
-        return formatter.string(from: dateAndTime)
+        formatter.dateFormat = "hh:mma"  // 03:44pm
+        // add duration to time to get end time
+        let startTime = formatter.string(from: dateAndTime)
+        let endTime = formatter.string(from: dateAndTime.adding(minutes: duration))
+        
+        return "\(startTime) - \(endTime)"
     }
 }
 
@@ -140,5 +140,16 @@ extension View {
 extension View {
     func onboardingButtonStyle() -> some View {
         modifier(ViewTemplates.onboardingButtonModifier())
+    }
+}
+
+// code ref: https://www.hackingwithswift.com/forums/swiftui/adding-time-in-swiftui/12178
+extension Date {
+    func adding(minutes: Int) -> Date {
+        Calendar.current.date(byAdding: .minute, value: minutes, to: self)!
+    }
+
+    func adding(hours: Int) -> Date {
+        Calendar.current.date(byAdding: .hour, value: hours, to: self)!
     }
 }

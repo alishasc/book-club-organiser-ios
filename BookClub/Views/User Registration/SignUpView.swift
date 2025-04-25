@@ -9,6 +9,8 @@ import SwiftUI
 
 struct SignUpView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var bookClubViewModel: BookClubViewModel
+    @EnvironmentObject var eventViewModel: EventViewModel
     @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var showPassword: Bool = false
@@ -88,6 +90,7 @@ struct SignUpView: View {
                             Task {
                                 // if form's valid try create new user with Firebase Auth
                                 try await authViewModel.signUp(name: authValidationViewModel.name, email: authValidationViewModel.email, password: authValidationViewModel.password)
+                                try await authViewModel.fetchInitInformation(bookClubViewModel: bookClubViewModel, eventViewModel: eventViewModel)
                             }
                         } else {
                             // show any error prompts for invalid field inputs

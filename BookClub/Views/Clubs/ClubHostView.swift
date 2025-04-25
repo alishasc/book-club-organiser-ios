@@ -1,27 +1,26 @@
 //
-//  ProfileHostView.swift
+//  ClubHostView.swift
 //  BookClub
 //
-//  Created by Alisha Carrington on 19/04/2025.
+//  Created by Alisha Carrington on 24/04/2025.
 //
 
 import SwiftUI
 
-struct ProfileHostView: View {
+struct ClubHostView: View {
     @Environment(\.editMode) var editMode
     @Environment(\.dismiss) var dismiss
-    var profile: User
-    var profilePic: UIImage
-    var joinedClubs: Int
-    var createdClubs: Int
-
+    var bookClub: BookClub
+    var isModerator: Bool
+    var isMember: Bool
+    
     var body: some View {
         VStack {
             // displays the static profile or view for Edit mode
             if editMode?.wrappedValue == .inactive {
-                ProfileView(profile: profile, profilePic: profilePic, joinedClubs: joinedClubs, createdClubs: createdClubs)
+                BookClubDetailsView(bookClub: bookClub, isModerator: isModerator, isMember: isMember)
             } else {
-                EditProfileView(profile: profile, profilePicture: profilePic)
+                EditClubView(bookClub: bookClub)
             }
         }
         .toolbar {
@@ -37,5 +36,5 @@ struct ProfileHostView: View {
 }
 
 //#Preview {
-//    ProfileHostView()
+//    ClubHostView()
 //}
