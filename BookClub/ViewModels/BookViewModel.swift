@@ -90,7 +90,8 @@ class BookViewModel: ObservableObject {
     
     func loadPRBooks(bookClub: BookClub) async throws {
         self.booksRead.removeAll()
-
+        var downloadedBooks: [Book] = []
+        
         do {
             // loop books read array
             if let books = bookClub.booksRead {
@@ -104,13 +105,19 @@ class BookViewModel: ObservableObject {
                         let (data, _) = try await URLSession.shared.data(from: bookUrl)
                         let decoder = JSONDecoder()
                         let book = try decoder.decode(Book.self, from: data)
-                        self.booksRead.append(book)
+                        downloadedBooks.append(book)
                     }
                 }
             }
+            self.booksRead = downloadedBooks
         } catch {
             print("Error loading previously read books: \(error.localizedDescription)")
         }
+    }
+    
+    func deleteBook(bookId: String) async throws {
+        // delete previously read book
+        // remove from PR book array in BookClub collection
     }
     
     
