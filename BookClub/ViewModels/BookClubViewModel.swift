@@ -27,7 +27,6 @@ class BookClubViewModel: ObservableObject {
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
-    
     // options for creating new club
     let genreChoices: [String] = [
         "Art & Design",

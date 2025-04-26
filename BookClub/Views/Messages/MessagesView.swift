@@ -7,6 +7,7 @@
 
 import SwiftUI
 import FirebaseAuth
+import FirebaseCore
 
 struct MessagesView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -93,7 +94,7 @@ struct MessagesView: View {
                                     .shadow(radius: 2)
                             }
                         }
-
+                        
                         VStack(alignment: .leading, spacing: 8) {
                             // get name from bookClubViewModel.contacts - with same id
                             if recentMessage.fromId == Auth.auth().currentUser?.uid {
@@ -121,7 +122,7 @@ struct MessagesView: View {
                         
                         Spacer()
                         
-                        Text(recentMessage.timestamp.description)
+                        Text("\(messageViewModel.getTimeDifference(timestamp: recentMessage.timestamp))")
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .padding(.horizontal)

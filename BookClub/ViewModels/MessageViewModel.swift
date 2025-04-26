@@ -170,4 +170,23 @@ class MessageViewModel: ObservableObject {
             }
         }
     }
+    
+    func getTimeDifference(timestamp: Timestamp) -> String {
+        // get difference between current date and timestamp
+        let currentDate = Date.now
+        let timestamp = timestamp.dateValue()
+            
+        let difference = Calendar.current.dateComponents([.day, .hour, .minute], from: timestamp, to: currentDate)
+        var differenceStr: String = ""
+        
+        if let day = difference.day, day > 0 {
+            differenceStr = "\(day)d ago"
+        } else if let hour = difference.hour, hour > 0 {
+            differenceStr = "\(hour)h ago"
+        } else if let minute = difference.minute {
+            differenceStr = "\(minute)m ago"
+        }
+
+        return differenceStr
+    }
 }
