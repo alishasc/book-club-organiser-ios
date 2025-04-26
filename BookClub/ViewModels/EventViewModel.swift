@@ -389,7 +389,6 @@ class EventViewModel: ObservableObject {
     func filteredUpcomingEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
         var filteredEventArr: [(Event, BookClub)] = []
         let userId = Auth.auth().currentUser?.uid ?? ""
-        
         switch selectedFilter {
         case 0:
             // all events

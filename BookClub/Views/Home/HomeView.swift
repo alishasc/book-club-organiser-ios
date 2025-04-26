@@ -2,19 +2,10 @@
 //  HomeView.swift
 //  BookClub
 //
-//  Created by Alisha Carrington on 26/01/2025.
+//  Created by Alisha Carrington on 26/04/2025.
 //
 
 import SwiftUI
-
-import UIKit
-
-//extension UIScrollView {
-//  open override var clipsToBounds: Bool {
-//    get { false }
-//    set { }
-//  }
-//}
 
 struct HomeView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
@@ -25,14 +16,29 @@ struct HomeView: View {
     var body: some View {
         VStack(spacing: 20) {
             header
-            yourClubs
-            yourEvents
             
-            if bookClubViewModel.joinedClubs.isEmpty && eventViewModel.joinedEvents.isEmpty {
+            // if haven't joined or created a club
+            if bookClubViewModel.joinedClubs.isEmpty && bookClubViewModel.createdClubs.isEmpty {
+                Spacer()
+                ContentUnavailableView {
+                    Label("Find a book club to join", systemImage: "books.vertical.fill")
+                } description: {
+                    Button {
+                        selectedNavBarTab = 3  // clubs tab
+                    } label: {
+                        HStack {
+                            Text("Explore Clubs")
+                            Image(systemName: "arrow.right.circle.fill")
+                        }
+                    }
+                }
                 Spacer()
                 Image("homePageBanner")
                     .resizable()
                     .padding(.bottom, 6)
+            } else {
+                yourClubs
+                yourEvents
             }
         }
     }
@@ -62,71 +68,49 @@ struct HomeView: View {
         }
         .padding([.top, .horizontal])
     }
-    
     private var yourClubs: some View {
         VStack(spacing: 10) {
-            // haven't joined any clubs yet
-            if bookClubViewModel.joinedClubs.isEmpty {
-                ContentUnavailableView {
-                    Label("Find a book club to join", systemImage: "books.vertical.fill")
-                } description: {
-                    Button {
-                        selectedNavBarTab = 3  // clubs tab
-                    } label: {
-                        HStack {
-                            Text("Explore Clubs")
-                            Image(systemName: "arrow.right.circle.fill")
-                        }
-                    }
+            HStack {
+                Text("Your Clubs")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Spacer()
+                Button("View all") {
+                    selectedNavBarTab = 1  // clubs tab
                 }
-            } else {
-                VStack(spacing: 10) {
-                    HStack {
-                        Text("Your Clubs")
-                            .font(.title2)
-                            .fontWeight(.semibold)
-                        Spacer()
-                        Button("View all") {
-                            selectedNavBarTab = 1  // clubs tab
-                        }
-                        .foregroundStyle(.customBlue)
-                    }
-                    .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack {
-                            // show both joined and created clubs (max 3)
-                            ForEach((bookClubViewModel.joinedClubs + bookClubViewModel.createdClubs).prefix(3).sorted { $0.name < $1.name }) { club in
-                                NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
-                                    ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
-                                }
-                            }
-                        }
-                        .padding(.horizontal)
-                    }
-                    .scrollClipDisabled()
-                }
+                .foregroundStyle(.customBlue)
             }
+            .padding(.horizontal)
+            
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack {
+                    // show both joined and created clubs (max 3)
+                    ForEach((bookClubViewModel.joinedClubs + bookClubViewModel.createdClubs).prefix(3).sorted(by: { $0.name.lowercased() < $1.name.lowercased() })) { club in
+                        NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                            ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+            }
+            .scrollClipDisabled()
         }
     }
     private var yourEvents: some View {
         VStack(spacing: 10) {
-            // have joined clubs or events
-            if !bookClubViewModel.joinedClubs.isEmpty || !eventViewModel.joinedEvents.isEmpty {
-                HStack {
-                    Text("Your Upcoming Events")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                    Spacer()
-                    Button("View all") {
-                        selectedNavBarTab = 2  // events tab
-                    }
-                    .foregroundStyle(.customBlue)
+            HStack {
+                Text("Your Upcoming Events")
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                Spacer()
+                Button("View all") {
+                    selectedNavBarTab = 2  // events tab
                 }
+                .foregroundStyle(.customBlue)
             }
-
-            // joined clubs but no events
-            if !bookClubViewModel.joinedClubs.isEmpty && eventViewModel.joinedEvents.isEmpty {
+            
+            // if haven't joined or created any events
+            if eventViewModel.joinedEvents.isEmpty && !eventViewModel.allEvents.contains(where: { $0.moderatorId == authViewModel.currentUser?.id }) {
                 ContentUnavailableView {
                     Label("Find events to join", systemImage: "calendar")
                 } description: {
@@ -139,10 +123,7 @@ struct HomeView: View {
                         }
                     }
                 }
-            }
-            // have joined both clubs and events
-            else if !bookClubViewModel.joinedClubs.isEmpty && !eventViewModel.joinedEvents.isEmpty {
-                // scrollview of events the user is attending/created
+            } else {
                 ScrollView(.vertical, showsIndicators: false) {
                     ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: 0, bookClubViewModel: bookClubViewModel, selectedClubName: nil).prefix(3), id: \.event.id) { event, bookClub in
                         EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
