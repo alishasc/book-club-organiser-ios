@@ -13,8 +13,6 @@ struct ExploreView: View {
     let genreFilter: [String] = ["All", "Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
     @State private var searchInput: String = ""
     
-    @State private var isMember: Bool = false
-    
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
             VStack(alignment: .leading, spacing: 20) {
@@ -22,17 +20,27 @@ struct ExploreView: View {
                     .font(.largeTitle).bold()
                     .padding([.top, .horizontal])
                 
-                // search bar
-                HStack {
-                    Image(systemName: "magnifyingglass")
-                        .padding(.leading, 10)  // inside textfield
-                    TextField("Search club name, genre, location", text: $searchInput)
-                        .padding([.top, .bottom, .trailing], 10)  // inside textfield
-                }
-                .background(.quinary)
-                .cornerRadius(10)
-                .padding(.horizontal)
                 
+                NavigationLink {
+                    ExploreSearchView()
+                } label: {
+                    // search bar
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 10)
+                            .foregroundStyle(.quinary)
+                        HStack {
+                            Image(systemName: "magnifyingglass")
+                                .padding(.leading, 10)
+                            Text("Search club name or genre")
+                                .padding([.top, .bottom, .trailing], 10)
+                                .foregroundStyle(.secondary)
+                            Spacer()
+                        }
+                    }
+                    .padding(.horizontal)
+                }
+                .buttonStyle(.plain)
+
                 // circle genre filters
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
@@ -82,7 +90,7 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "Online" {
-                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
                                 }
@@ -111,7 +119,7 @@ struct ExploreView: View {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
                                 if club.meetingType == "In-Person" {
-                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
                                 }

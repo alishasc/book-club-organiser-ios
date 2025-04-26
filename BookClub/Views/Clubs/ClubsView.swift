@@ -117,7 +117,7 @@ struct ClubsView: View {
                                 ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     .background(
                                         // hide navigation link arrows
-                                        NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false))
+                                        NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: true, isMember: false))
                                             .opacity(0)
                                     )
                             }

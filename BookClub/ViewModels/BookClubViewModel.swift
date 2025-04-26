@@ -481,14 +481,21 @@ class BookClubViewModel: ObservableObject {
         }
         
         do {
+            // update database
             try await db.collection("BookClub").document(bookClub.id.uuidString).setData(updatedData, merge: true)
+            
+            // remove club from arrays and append latest version
+            self.allClubs.removeAll(where: { $0.id == bookClub.id })
+            self.createdClubs.removeAll(where: { $0.id == bookClub.id })
+            let document = try await db.collection("BookClub").document(bookClub.id.uuidString).getDocument()
+            self.allClubs.append(try document.data(as: BookClub.self))
+            self.createdClubs.append(try document.data(as: BookClub.self))
         } catch {
             print("error updating book club details: \(error.localizedDescription)")
         }
         
         // update book club in ui
-        try await fetchBookClubs()
-        try await fetchJoinedClubs()
+//        try await fetchBookClubs()
     }
     
     func deleteClub(bookClubId: UUID) async throws {

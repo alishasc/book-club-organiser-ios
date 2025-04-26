@@ -101,7 +101,7 @@ struct ClubListView: View {
                         
             ScrollView(.vertical, showsIndicators: false) {
                 ForEach(filteredArray) { club in
-                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                    NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                         ViewTemplates.bookClubExploreList(coverImage: coverImages[club.id] ?? UIImage(), clubName: club.name)
                     }
                     .padding(.bottom, 8)
