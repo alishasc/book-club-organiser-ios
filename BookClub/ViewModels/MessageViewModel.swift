@@ -38,7 +38,7 @@ class MessageViewModel: ObservableObject {
                     return
                 }
                 
-                // track new recent message docs in real-time
+                // get new recent message docs in real-time
                 querySnapshot?.documentChanges.forEach { change in
                     let docId = change.document.documentID
                     
@@ -51,18 +51,6 @@ class MessageViewModel: ObservableObject {
                     
                     // add latest recent message to the array - insert at beginning of list
                     self.recentMessages.insert(RecentMessage(documentId: docId, data: change.document.data()), at: 0)
-                    
-                    // remove or fix
-//                    do {
-//                        let recentMessage = try change.document.data(as: RecentMessage.self)
-//                        self.recentMessages.insert(recentMessage, at: 0)
-//                    } catch {
-//                        print(error.localizedDescription)
-//                    }
-                    
-//                    if let recentMessage = try? change.document.data(as: RecentMessage.self) {
-//                        self.recentMessages.insert(recentMessage, at: 0)
-//                    }
                 }
             }
     }
@@ -169,7 +157,6 @@ class MessageViewModel: ObservableObject {
         }
         
         // repeated to dict for recipient of the message
-        // might be wrong :/
         let recipientMessageDocument = db
             .collection("RecentMessages")
             .document(toId)

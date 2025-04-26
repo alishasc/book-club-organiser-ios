@@ -16,7 +16,7 @@ struct NewMessageView: View {
     var body: some View {
         NavigationView {
             ScrollView(.vertical, showsIndicators: false) {
-                ForEach(bookClubViewModel.messageUsers) { user in
+                ForEach(bookClubViewModel.contacts) { user in
                     Button {
                         dismiss()
                         didSelectNewUser(user)
@@ -26,31 +26,40 @@ struct NewMessageView: View {
                                 Image(uiImage: profilePic)
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 50, height: 50)
+                                    .frame(width: 60, height: 60)
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(.black, lineWidth: 2))
+                                    .overlay(Circle().stroke(.black, lineWidth: 1))
+                                    .shadow(radius: 2)
                             } else {
                                 Image("blueIcon")
                                     .resizable()
                                     .scaledToFill()
-                                    .frame(width: 50, height: 50)
-                                    .overlay(Circle().stroke(.black, lineWidth: 2))
+                                    .frame(width: 60, height: 60)
+                                    .overlay(Circle().stroke(.black, lineWidth: 1))
+                                    .shadow(radius: 2)
                             }
                             
-                            VStack(alignment: .leading) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 Text(user.userName)
+                                    .foregroundStyle(.black)
+                                    .font(.system(size: 16, weight: .semibold))
+                                    .fontWeight(.semibold)
+                                    .lineLimit(1)
                                 Text(user.bookClubName)
+                                    .foregroundStyle(Color(.lightGray))
+                                    .lineLimit(1)
                             }
                             .padding([.bottom, .top])
                             Spacer()
                         }
-                        .padding(.leading)
+                        .padding(.horizontal)
                     }
-
                     Divider()
+                        .padding(.vertical, 8)
                 }
             }
-            .padding()
+//            .padding()
+            .scrollClipDisabled()
             .navigationTitle("New Message")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -67,3 +76,4 @@ struct NewMessageView: View {
 //#Preview {
 //    UserListView(users: <#[BookClubMembers]#>)
 //}
+

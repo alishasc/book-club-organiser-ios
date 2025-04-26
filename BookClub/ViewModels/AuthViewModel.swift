@@ -75,7 +75,7 @@ class AuthViewModel: ObservableObject {
     func fetchInitInformation(bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
         try await bookClubViewModel.fetchBookClubs()
         try await bookClubViewModel.fetchJoinedClubs()
-        try await bookClubViewModel.getMessageUserList()
+        try await bookClubViewModel.getContactList()
         try await eventViewModel.fetchEvents()
     }
     

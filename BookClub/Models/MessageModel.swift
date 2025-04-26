@@ -32,7 +32,7 @@ struct RecentMessage: Identifiable, Codable {
     let toId: String
     let text: String
     let userName: String
-    let profilePictureURL: String
+    let profilePictureURL: String // of recipient
     let timestamp: Date
     
     init(documentId: String, data: [String: Any]) {
