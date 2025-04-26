@@ -21,12 +21,11 @@ class BookClubViewModel: ObservableObject {
     @Published var bookClub: BookClub?  // updated when tap club in clubs list
     @Published var coverImages: [UUID: UIImage] = [:]  // bookClubId : UIImage
     
-    @Published var messageUsers: [BookClubMembers] = []
+    @Published var contacts: [BookClubMembers] = []
     @Published var memberPics: [String: UIImage] = [:]  // userId : UIImage
         
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
-    
     
     // options for creating new club
     let genreChoices: [String] = [
@@ -72,7 +71,7 @@ class BookClubViewModel: ObservableObject {
         Task {
             try await fetchBookClubs()
             try await fetchJoinedClubs()
-            try await getMessageUserList()
+            try await getContactList()
         }
     }
     
@@ -284,8 +283,7 @@ class BookClubViewModel: ObservableObject {
         return filteredArray
     }
     
-    // rename to getUserMessagingList() ??
-    func getMessageUserList() async throws {
+    func getContactList() async throws {
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
         var members: [BookClubMembers] = []
@@ -327,7 +325,7 @@ class BookClubViewModel: ObservableObject {
             print("error fetching message user list: \(error.localizedDescription)")
         }
         
-        self.messageUsers = members
+        self.contacts = members
     }
     
     // change to get the moderators name and picture from 'User'
@@ -483,16 +481,21 @@ class BookClubViewModel: ObservableObject {
         }
         
         do {
+            // update database
             try await db.collection("BookClub").document(bookClub.id.uuidString).setData(updatedData, merge: true)
+            
+            // remove club from arrays and append latest version
+            self.allClubs.removeAll(where: { $0.id == bookClub.id })
+            self.createdClubs.removeAll(where: { $0.id == bookClub.id })
+            let document = try await db.collection("BookClub").document(bookClub.id.uuidString).getDocument()
+            self.allClubs.append(try document.data(as: BookClub.self))
+            self.createdClubs.append(try document.data(as: BookClub.self))
         } catch {
             print("error updating book club details: \(error.localizedDescription)")
         }
         
         // update book club in ui
-        Task {
-            try await fetchBookClubs()
-            try await fetchJoinedClubs()
-        }
+//        try await fetchBookClubs()
     }
     
     func deleteClub(bookClubId: UUID) async throws {
@@ -504,9 +507,8 @@ class BookClubViewModel: ObservableObject {
             
             self.allClubs.removeAll { $0.id == bookClubId }
             self.createdClubs.removeAll { $0.id == bookClubId }
-            print("deleted book club and cover image")
         } catch {
-            print("Error removing document: \(error)")
+            print("Error removing document: \(error.localizedDescription)")
         }
     }
 }

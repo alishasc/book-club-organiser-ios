@@ -6,8 +6,11 @@
 //
 
 import SwiftUI
+import FirebaseAuth
+import FirebaseCore
 
 struct MessagesView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @ObservedObject var messageViewModel: MessageViewModel
     
@@ -63,25 +66,54 @@ struct MessagesView: View {
         ScrollView(.vertical, showsIndicators: false) {
             ForEach(messageViewModel.recentMessages) { recentMessage in
                 NavigationLink {
-                    ChatLogView(chatUser: chatUser)
+                    if recentMessage.fromId == Auth.auth().currentUser?.uid {
+                        ChatLogView(chatUser: bookClubViewModel.contacts.first(where: { $0.userId == recentMessage.toId }))
+                    } else {
+                        ChatLogView(chatUser: bookClubViewModel.contacts.first(where: { $0.userId == recentMessage.fromId }))
+                    }
                 } label: {
                     HStack(spacing: 20) {
-                        if let profilePic = bookClubViewModel.memberPics[recentMessage.toId] {
-                            Image(uiImage: profilePic)
-                                .resizable()
-                                .scaledToFill()
-                                .frame(width: 60, height: 60)
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(.black, lineWidth: 1))
-                                .shadow(radius: 2)
+                        if recentMessage.fromId == Auth.auth().currentUser?.uid {
+                            if let profilePic = bookClubViewModel.memberPics[recentMessage.toId] {
+                                Image(uiImage: profilePic)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(.black, lineWidth: 1))
+                                    .shadow(radius: 2)
+                            }
+                        } else {
+                            if let profilePic = bookClubViewModel.memberPics[recentMessage.fromId] {
+                                Image(uiImage: profilePic)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 60, height: 60)
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(.black, lineWidth: 1))
+                                    .shadow(radius: 2)
+                            }
                         }
                         
                         VStack(alignment: .leading, spacing: 8) {
-                            Text(recentMessage.userName)
-                                .foregroundStyle(.black)
-                                .font(.system(size: 16, weight: .semibold))
-                                .fontWeight(.semibold)
-                                .lineLimit(1)
+                            // get name from bookClubViewModel.contacts - with same id
+                            if recentMessage.fromId == Auth.auth().currentUser?.uid {
+                                if let contact = bookClubViewModel.contacts.first(where: { $0.userId == recentMessage.toId }) {
+                                    Text(contact.userName)
+                                        .foregroundStyle(.black)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .fontWeight(.semibold)
+                                        .lineLimit(1)
+                                }
+                            } else {
+                                if let contact = bookClubViewModel.contacts.first(where: { $0.userId == recentMessage.fromId }) {
+                                    Text(contact.userName)
+                                        .foregroundStyle(.black)
+                                        .font(.system(size: 16, weight: .semibold))
+                                        .fontWeight(.semibold)
+                                        .lineLimit(1)
+                                }
+                            }
                             Text(recentMessage.text)
                                 .foregroundStyle(Color(.lightGray))
                                 .multilineTextAlignment(.leading)
@@ -90,7 +122,7 @@ struct MessagesView: View {
                         
                         Spacer()
                         
-                        Text(recentMessage.timestamp.description)
+                        Text("\(messageViewModel.getTimeDifference(timestamp: recentMessage.timestamp))")
                             .font(.system(size: 14, weight: .semibold))
                     }
                     .padding(.horizontal)
@@ -99,6 +131,7 @@ struct MessagesView: View {
                     .padding(.vertical, 8)
             }
         }
+        .scrollClipDisabled()
     }
 }
 

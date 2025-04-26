@@ -17,7 +17,6 @@ struct EventsRowView: View {
     @State private var isAttendingEvent: Bool = false  // checkmark icon ui
     @State private var isEventSheetPresented: Bool = false  // event details pop-up
     @State private var locationName: String = "Loading..."
-    
     @State private var spacesLeft: Int = 0
         
     var body: some View {
@@ -127,7 +126,9 @@ struct EventsRowView: View {
             }
         }
         .sheet(isPresented: $isEventSheetPresented) {
-            EventPopupView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent, spacesLeft: $spacesLeft)
+            NavigationStack {
+                EventPopupHostView(bookClub: bookClub, event: event, coverImage: coverImage, isModerator: isModerator, isAttendingEvent: $isAttendingEvent, spacesLeft: $spacesLeft)
+            }
         }
     }
 }

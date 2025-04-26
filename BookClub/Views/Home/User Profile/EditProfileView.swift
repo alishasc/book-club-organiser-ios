@@ -56,7 +56,6 @@ struct EditProfileView: View {
             ToolbarItem(placement: .confirmationAction) {
                 Button("Save") {
                     withAnimation {
-                        // put function to update data in db
                         Task {
                             try await authViewModel.updateDetails(name: name, email: email, favouriteGenres: favouriteGenres, location: location, profilePicture: photosPickerViewModel.selectedImage ?? profilePicture)
                         }
@@ -204,7 +203,6 @@ struct EditProfileView: View {
         }
     }
 }
-
 
 func toggleGenre(favouriteGenres: [String], genre: String) -> [String] {
     var updatedGenres = favouriteGenres

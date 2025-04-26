@@ -18,12 +18,6 @@ struct EventsView: View {
     @State private var showDiscoverEvents: Bool = true
     @State private var selectedClubName: String?
     
-    @Namespace var animation
-    
-    //        @State private var selectedDate: Date = Date()
-    
-    @State private var isSelected = false
-    
     var body: some View {
         VStack(alignment: .leading) {
             // title
@@ -57,7 +51,7 @@ struct EventsView: View {
                         // events joined scrollview
                         ScrollView(.vertical, showsIndicators: false) {
                             ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
-                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorId == authViewModel.currentUser?.id)
                                     .padding(.bottom, 8)
                             }
                         }
@@ -87,7 +81,7 @@ struct EventsView: View {
                         // events haven't joined scrollview
                         ScrollView(.vertical, showsIndicators: false) {
                             ForEach(eventViewModel.filteredDiscoverEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
-                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                                EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorId == authViewModel.currentUser?.id)
                                     .padding(.bottom, 8)
                             }
                         }
@@ -203,7 +197,6 @@ struct EventsView: View {
                             if eventViewModel.currentDay == day {
                                 Capsule()
                                     .fill(.accent)
-                                    .matchedGeometryEffect(id: "CURRENTDAY", in: animation)
                             }
                             else {
                                 Capsule()

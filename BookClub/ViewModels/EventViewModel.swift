@@ -14,6 +14,8 @@ import FirebaseStorage
 
 @MainActor
 class EventViewModel: ObservableObject {
+    let db = Firestore.firestore()
+
     @Published var allEvents: [Event] = []
     @Published var joinedEvents: [Event] = []
     
@@ -53,12 +55,60 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    func updateEventDetails(event: Event, title: String, dateAndTime: Date, duration: Int, meetingLink: String, location: GeoPoint?) async throws {        
+        var updatedData: [String: Any] = [:]
+
+        if title != event.eventTitle {
+            updatedData["eventTitle"] = title
+        }
+        if dateAndTime != event.dateAndTime {
+            updatedData["dateAndTime"] = dateAndTime
+        }
+        if duration != event.duration {
+            updatedData["duration"] = duration
+        }
+        if !meetingLink.isEmpty {
+            if meetingLink != event.meetingLink {
+                updatedData["meetingLink"] = meetingLink
+            }
+        }
+
+        if let originalLocation = event.location,
+           let newLocation = location {
+            if !originalLocation.latitude.isEqual(to: newLocation.latitude) || !originalLocation.longitude.isEqual(to: newLocation.longitude) {
+                updatedData["location"] = location
+            }
+        }
+
+        do {
+            try await db.collection("Event").document(event.id.uuidString).setData(updatedData, merge: true)
+        } catch {
+            print("failed to save new event details: \(error.localizedDescription)")
+        }
+        
+        self.selectedLocation = nil
+        self.searchResults = []
+        try await fetchEvents()
+    }
+
+    func deleteEvent(eventId: UUID) async throws {
+        do {
+            let doc = try await db.collection("Event").document(eventId.uuidString).getDocument()
+            let event = try doc.data(as: Event.self)
+            try await doc.reference.delete()
+            
+            self.allEvents.removeAll { $0.id == event.id }
+            print("deleted event")
+        } catch {
+            print("Error deleting event: \(error.localizedDescription)")
+        }
+    }
+    
     // fetches all events from database
     func fetchEvents() async throws {
         // empty arrays when fetch information again - no duplicates
         self.allEvents.removeAll()
         self.joinedEvents.removeAll()
-        let db = Firestore.firestore()
         
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get user ID to fetch details")
@@ -165,6 +215,21 @@ class EventViewModel: ObservableObject {
         } else {
             self.searchResults = []  // don't show any search results in list view
             locationErrorPrompt = "No search results found. Please try again."
+        }
+    }
+    
+    func formatDurationToInt(minutes: String) -> Int {
+        switch minutes {
+        case "30 minutes":
+            return 30
+        case "1 hour":
+            return 60
+        case "1 hour 30 minutes":
+            return 90
+        case "2 hours":
+            return 120
+        default:
+            return 0
         }
     }
     

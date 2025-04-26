@@ -66,8 +66,20 @@ struct EventPopupView: View {
                 try await eventViewModel.getModeratorAndAttendeePics(bookClubId: bookClub.id, eventId: event.id, moderatorId: bookClub.moderatorId, authViewModel: authViewModel)
             }
         }
+        .ignoresSafeArea(edges: .top)
+        .toolbar {
+            if isModerator {
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                        .font(.subheadline)
+                        .buttonStyle(.borderedProminent)
+                        .clipShape(Capsule())
+                }
+            }
+        }
+        .toolbarBackground(.hidden)
     }
-
+    
     private var eventInfo: some View {
         HStack {
             // text

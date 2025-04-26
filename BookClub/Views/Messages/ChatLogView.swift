@@ -70,6 +70,7 @@ struct ChatLogView: View {
         }
         .background(Color(.init(white: 0.95, alpha: 1)))
     }
+    
     private var chatBottomBar: some View {
         HStack(spacing: 16) {
             Image(systemName: "photo.on.rectangle")
@@ -88,7 +89,6 @@ struct ChatLogView: View {
             .padding(.vertical, 8)
             .background(.customBlue)
             .cornerRadius(4)
-
         }
         .padding(.horizontal)
         .padding(.vertical, 8)

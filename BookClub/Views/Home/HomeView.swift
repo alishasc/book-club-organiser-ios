@@ -86,7 +86,7 @@ struct HomeView: View {
                 HStack {
                     // show both joined and created clubs (max 3)
                     ForEach((bookClubViewModel.joinedClubs + bookClubViewModel.createdClubs).prefix(3).sorted(by: { $0.name.lowercased() < $1.name.lowercased() })) { club in
-                        NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
+                        NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                             ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                         }
                     }
@@ -126,7 +126,7 @@ struct HomeView: View {
             } else {
                 ScrollView(.vertical, showsIndicators: false) {
                     ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: 0, bookClubViewModel: bookClubViewModel, selectedClubName: nil).prefix(3), id: \.event.id) { event, bookClub in
-                        EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorName == authViewModel.currentUser?.name)
+                        EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorId == authViewModel.currentUser?.id)
                             .padding(.bottom, 8)
                     }
                 }
