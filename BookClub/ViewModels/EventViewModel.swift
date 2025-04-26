@@ -27,6 +27,7 @@ class EventViewModel: ObservableObject {
     init() {
         Task {
             try await fetchEvents()
+            fetchCurrentWeek()
         }
     }
     
@@ -262,119 +263,7 @@ class EventViewModel: ObservableObject {
             return false
         }
     }
-    
-    // events page
-    func filteredUpcomingEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
-        var filteredEventArr: [(Event, BookClub)] = []
-        let userId = Auth.auth().currentUser?.uid ?? ""
-        
-        switch selectedFilter {
-        case 0:
-            // all events
-            for event in joinedEvents {
-                // find events with matching id to joined book clubs
-                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                    filteredEventArr.append((event, bookClub))
-                }
-            }
-            // add created events - search for events where logged in user is the moderator
-            for event in allEvents.filter({ $0.moderatorId == userId }) {
-                // search all clubs with matching bookClubId
-                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
-                    filteredEventArr.append((event, bookClub))
-                }
-            }
-        case 1:
-            // in-person events
-            for event in joinedEvents {
-                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                    if bookClub.meetingType == "In-Person" {
-                        filteredEventArr.append((event, bookClub))
-                    }
-                }
-            }
-        case 2:
-            // online events
-            for event in joinedEvents {
-                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
-                    if bookClub.meetingType == "Online" {
-                        filteredEventArr.append((event, bookClub))
-                    }
-                }
-            }
-        case 3:
-            // created events
-            for event in allEvents.filter({ $0.moderatorId == userId }) {
-                // search all clubs with matching bookClubId
-                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
-                    filteredEventArr.append((event, bookClub))
-                }
-            }
-        default:
-            break
-        }
-        
-        if let selectedClubName {
-            // only show club selected
-            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
-        }
-        
-        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
-    }
-    
-    // events page
-    func filteredDiscoverEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
-        var filteredEventArr: [(Event, BookClub)] = []
-        
-        switch selectedFilter {
-        case 0:  // all events
-            // get joined book clubs
-            for bookClub in bookClubViewModel.joinedClubs {
-                // find events for the clubs joined
-                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
-                    // filter out events already joined
-                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
-                        filteredEventArr.append((event, bookClub))
-                    }
-                }
-            }
-        case 1:  // in-person events
-            for bookClub in bookClubViewModel.joinedClubs {
-                // find events for the clubs joined
-                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
-                    // filter out events already joined
-                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
-                        if bookClub.meetingType == "In-Person" {
-                            filteredEventArr.append((event, bookClub))
-                        }
-                    }
-                }
-            }
-        case 2:  // online events
-            for bookClub in bookClubViewModel.joinedClubs {
-                // find events for the clubs joined
-                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
-                    // filter out events already joined
-                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
-                        if bookClub.meetingType == "Online" {
-                            filteredEventArr.append((event, bookClub))
-                        }
-                    }
-                }
-            }
-        default:
-            break
-        }
-        
-        if let selectedClubName {
-            // only show club selected
-            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
-        }
-        
-        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
-    }
-    
-    
+
     func getModeratorAndAttendeePics(bookClubId: UUID, eventId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
         self.eventAttendeePics.removeAll()
         let db = Firestore.firestore()
@@ -431,6 +320,208 @@ class EventViewModel: ObservableObject {
         }
     }
     
+    // MARK: ref: https://www.youtube.com/watch?v=nKHrsrmA4lM
+    @Published var currentWeek: [Date] = []
+    @Published var currentDay: Date?
+    @Published var filteredEvents: [Event]?
+    
+    func fetchCurrentWeek() {
+        let today = Date()
+        let calendar = Calendar.current
+        
+        let week = calendar.dateInterval(of: .weekOfYear, for: today)
+        guard let firstWeekDay = week?.start else { return }
+        
+        (1...7).forEach { day in
+            if let weekday = calendar.date(byAdding: .day, value: day, to: firstWeekDay) {
+                currentWeek.append(weekday)
+            }
+        }
+    }
+    
+    func extractDate(date: Date, format: String) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = format
+        
+        return formatter.string(from: date)
+    }
+    
+    func isToday(date: Date) -> Bool {
+        return Calendar.current.isDate(currentDay ?? Date.distantPast, inSameDayAs: date)
+    }
+    
+    func hasEventsToday(date: Date) -> Bool {
+        let createdEvents = allEvents.filter({ $0.moderatorId == Auth.auth().currentUser?.uid })
+        let combinedEvents = self.joinedEvents + createdEvents
+        
+        return combinedEvents.contains {
+            Calendar.current.isDate($0.dateAndTime, inSameDayAs: date)
+        }
+    }
+    
+    // colors of the dots on the date filter - events page
+    func eventColors(date: Date) -> [Color] {
+        let createdEvents = allEvents.filter({ $0.moderatorId == Auth.auth().currentUser?.uid })
+        let combinedEvents = self.joinedEvents + createdEvents
+        
+        var eventTypes: Set<Color> = []  // only one of each colour will be added
+        
+        for _ in combinedEvents {
+            // created events - pink
+            if combinedEvents.contains(where: { $0.moderatorId == Auth.auth().currentUser?.uid && Calendar.current.isDate($0.dateAndTime, inSameDayAs: date)}) {
+                eventTypes.insert(.customPink)
+                continue
+            }
+            // online events - green
+            if combinedEvents.contains(where: { $0.meetingLink != nil && Calendar.current.isDate($0.dateAndTime, inSameDayAs: date)}) {
+                eventTypes.insert(.customGreen)
+            }
+            // in-person events - yellow
+            if combinedEvents.contains(where: { $0.location != GeoPoint(latitude: 0, longitude: 0) && Calendar.current.isDate($0.dateAndTime, inSameDayAs: date) }) {
+                eventTypes.insert(.customYellow)
+            }
+        }
+
+        return Array(eventTypes)
+    }
+    
+    // events page
+    func filteredUpcomingEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
+        var filteredEventArr: [(Event, BookClub)] = []
+        let userId = Auth.auth().currentUser?.uid ?? ""
+        switch selectedFilter {
+        case 0:
+            // all events
+            for event in joinedEvents {
+                // find events with matching id to joined book clubs
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+            // add created events - search for events where logged in user is the moderator
+            for event in allEvents.filter({ $0.moderatorId == userId }) {
+                // search all clubs with matching bookClubId
+                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+        case 1:
+            // in-person events
+            for event in joinedEvents {
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    if bookClub.meetingType == "In-Person" {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 2:
+            // online events
+            for event in joinedEvents {
+                if let bookClub = bookClubViewModel.joinedClubs.first(where: { $0.id == event.bookClubId }) {
+                    if bookClub.meetingType == "Online" {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 3:
+            // created events
+            for event in allEvents.filter({ $0.moderatorId == userId }) {
+                // search all clubs with matching bookClubId
+                if let bookClub = bookClubViewModel.allClubs.first(where: { $0.id == event.bookClubId }) {
+                    filteredEventArr.append((event, bookClub))
+                }
+            }
+        default:
+            break
+        }
+        
+        if let selectedClubName {
+            // only show club selected
+            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
+        }
+
+        if self.currentDay != nil {
+            for event in filteredEventArr {
+                if !Calendar.current.isDate(event.0.dateAndTime, inSameDayAs: self.currentDay ?? Date.distantPast) {
+                    filteredEventArr.removeAll(where: { $0.0.id == event.0.id })
+                }
+            }
+        }
+
+        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
+    }
+    
+    // events page
+    func filteredDiscoverEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
+        var filteredEventArr: [(Event, BookClub)] = []
+        
+        switch selectedFilter {
+        case 0:  // all events
+            // get joined book clubs
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        filteredEventArr.append((event, bookClub))
+                    }
+                }
+            }
+        case 1:  // in-person events
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        if bookClub.meetingType == "In-Person" {
+                            filteredEventArr.append((event, bookClub))
+                        }
+                    }
+                }
+            }
+        case 2:  // online events
+            for bookClub in bookClubViewModel.joinedClubs {
+                // find events for the clubs joined
+                for event in allEvents.filter({ $0.bookClubId.uuidString == bookClub.id.uuidString }) {
+                    // filter out events already joined
+                    if !joinedEvents.contains(where: { $0.id.uuidString == event.id.uuidString }) {
+                        if bookClub.meetingType == "Online" {
+                            filteredEventArr.append((event, bookClub))
+                        }
+                    }
+                }
+            }
+        default:
+            break
+        }
+        
+        if let selectedClubName {
+            // only show club selected
+            filteredEventArr = filteredEventArr.filter { $0.1.name == selectedClubName }
+        }
+        
+        if self.currentDay != nil {
+            for event in filteredEventArr {
+                if !Calendar.current.isDate(event.0.dateAndTime, inSameDayAs: self.currentDay ?? Date.distantPast) {
+                    filteredEventArr.removeAll(where: { $0.0.id == event.0.id })
+                }
+            }
+        }
+        
+        return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
+    }
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     //    func attendingMemberCount(eventId: UUID) async throws {
     //        let db = Firestore.firestore()
     //
@@ -441,76 +532,6 @@ class EventViewModel: ObservableObject {
     //            } else {
     //                self.totalAttending.removeValue(forKey: eventId)
     //            }
-    //        }
-    //    }
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //    func checkIsAttending(bookClub: BookClub) -> Bool {
-    //        let db = Firestore.firestore()
-    //        guard let userId = Auth.auth().currentUser?.uid else {
-    //            print("couldn't get user ID to fetch details")
-    //            return false
-    //        }
-    //
-    //        return joinedClubs.contains(where: { $0.id.uuidString == bookClub.id.uuidString })
-    //        return true
-    //    }
-    
-    
-    //    func fetchAttendingEvents() async throws -> [Event] {
-    //        let db = Firestore.firestore()
-    //        var events: [Event] = []
-    //
-    //        guard let userId = Auth.auth().currentUser?.uid else {
-    //            print("couldn't get user ID to fetch details")
-    //            return []
-    //        }
-    //
-    //        do {
-    //            let querySnapshot = try await db.collection("EventAttendees")
-    //                .whereField("userId", isEqualTo: userId).getDocuments()
-    //
-    //            for document in querySnapshot.documents {
-    //                let eventAttendee = try document.data(as: EventAttendee.self)
-    //
-    //                let querySnapshot2 = try await db.collection("Event").whereField("eventId", isEqualTo: eventAttendee.eventId.uuidString).getDocuments()
-    //                for document in querySnapshot2.documents {
-    //                    let event = try document.data(as: Event.self)
-    //                    events.append(event)
-    //                }
-    //            }
-    //        } catch {
-    //            print("error fetching events attending: \(error.localizedDescription)")
-    //        }
-    //
-    //        print("events: \(events)")
-    //
-    //        return events
-    //    }
-    
-    
-    // fetch events only for selected club
-    //    func fetchSelectedClubEvents(bookClubId: UUID) async throws {
-    //        print("fetch selected club events")
-    //        self.selectedClubEvents.removeAll()
-    //
-    //        let db = Firestore.firestore()
-    //
-    //        do {
-    //            let querySnapshot = try await db.collection("Event").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
-    //            for document in querySnapshot.documents {
-    //                let event = try document.data(as: Event.self)
-    //                self.selectedClubEvents.append(event)
-    //            }
-    //        } catch {
-    //            print("error getting events: \(error.localizedDescription)")
     //        }
     //    }
 }

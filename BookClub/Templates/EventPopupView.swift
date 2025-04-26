@@ -89,7 +89,7 @@ struct EventPopupView: View {
             // checkmark icon
             if !isModerator {
                 Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
-                    .font(.system(size: 24))
+                    .font(.system(size: 25))
                     .foregroundStyle(.accent)
                     .onTapGesture {
                         isAttendingEvent.toggle()
@@ -101,7 +101,6 @@ struct EventPopupView: View {
             }
         }
     }
-    
     private var membersAttending: some View {
         HStack(alignment: .top, spacing: 60) {
             // host info
@@ -146,7 +145,6 @@ struct EventPopupView: View {
             Spacer()
         }
     }
-    
     private var meetingLocation: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
