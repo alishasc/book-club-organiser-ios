@@ -27,6 +27,8 @@ class BookClubViewModel: ObservableObject {
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
+    @Published var searchExplorePage: String = ""
+    
     // options for creating new club
     let genreChoices: [String] = [
         "Art & Design",
@@ -72,6 +74,15 @@ class BookClubViewModel: ObservableObject {
             try await fetchBookClubs()
             try await fetchJoinedClubs()
             try await getContactList()
+        }
+    }
+
+    // for explore page search bar
+    var searchExploreClubs: [BookClub] {
+        guard !searchExplorePage.isEmpty else { return allClubs.sorted { $0.name.lowercased() < $1.name.lowercased() } }
+        return allClubs.filter { club in
+            club.name.lowercased().contains(searchExplorePage.lowercased()) ||
+            club.genre.lowercased().contains(searchExplorePage.lowercased())
         }
     }
     
@@ -493,9 +504,6 @@ class BookClubViewModel: ObservableObject {
         } catch {
             print("error updating book club details: \(error.localizedDescription)")
         }
-        
-        // update book club in ui
-//        try await fetchBookClubs()
     }
     
     func deleteClub(bookClubId: UUID) async throws {
