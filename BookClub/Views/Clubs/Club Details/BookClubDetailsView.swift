@@ -62,7 +62,7 @@ struct BookClubDetailsView: View {
                 .padding(.horizontal)
                 
                 // previously read books
-                ClubDetailsPRView(isModerator: isModerator, booksRead: bookViewModel.booksRead)
+                ClubDetailsPRView(bookClub: bookClub, isModerator: isModerator, booksRead: bookViewModel.booksRead)
                 
                 // upcoming events scheduled
                 VStack {

@@ -11,6 +11,8 @@ import UIKit
 
 @MainActor
 class BookViewModel: ObservableObject {
+    let db = Firestore.firestore()
+
     @Published var currentRead: Book?  // loaded from api
     @Published var booksRead: [Book] = []  // previously read books
     // when search for books
@@ -52,8 +54,6 @@ class BookViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let book = try decoder.decode(Book.self, from: data)
             
-            let db = Firestore.firestore()
-
             // save as current read in BookClub collection
             try await db.collection("BookClub").document(bookClubId.uuidString).setData([
                 "currentBookId": book.id
@@ -115,9 +115,18 @@ class BookViewModel: ObservableObject {
         }
     }
     
-    func deleteBook(bookId: String) async throws {
+    func deleteBook(bookClubId: UUID, bookId: String) async throws {
         // delete previously read book
-        // remove from PR book array in BookClub collection
+        do {
+            try await db.collection("BookClub").document(bookClubId.uuidString).updateData([
+                "booksRead": FieldValue.arrayRemove([bookId])
+            ])
+            
+            // remove from booksRead array - update ui
+            self.booksRead.removeAll(where: { $0.id == bookId })
+        } catch {
+            print("Error removing book from book club: \(error.localizedDescription)")
+        }
     }
     
     
