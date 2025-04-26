@@ -19,6 +19,7 @@ struct ClubsView: View {
     @State private var selectedFilter: Int = 0  // for club type filters
     @State private var selectedClub: BookClub?  // when tap on a club in list
     @State private var showClubDetails: Bool = false
+    @Binding var selectedNavBarTab: Int  // from NavBarView()
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -74,43 +75,63 @@ struct ClubsView: View {
             .foregroundStyle(.black)
             .buttonStyle(.borderedProminent)
             .buttonBorderShape(.capsule)
-            
             if selectedItem == 0 {
                 // joined clubs list
-                List {
-                    ForEach(bookClubViewModel.joinedClubs.sorted(by: { $0.name < $1.name })) { club in
-                        if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
-                            ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
-                                .background(
-                                    // hide navigation link arrows
-                                    NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: false, isMember: true))
-                                        .opacity(0)
-                                )
+                if !bookClubViewModel.joinedClubs.isEmpty {
+                    List {
+                        ForEach(bookClubViewModel.joinedClubs.sorted(by: { $0.name < $1.name })) { club in
+                            if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
+                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    .background(
+                                        // hide navigation link arrows
+                                        NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: false, isMember: true))
+                                            .opacity(0)
+                                    )
+                            }
+                        }
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))
+                        .listRowSeparator(.hidden)
+                    }
+                    .listStyle(.plain)
+                } else {
+                    ContentUnavailableView {
+                        Label("Find a book club to join", systemImage: "books.vertical.fill")
+                    } description: {
+                        Button {
+                            selectedNavBarTab = 3  // clubs tab
+                        } label: {
+                            HStack {
+                                Text("Explore Clubs")
+                                Image(systemName: "arrow.right.circle.fill")
+                            }
                         }
                     }
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))
-                    .listRowSeparator(.hidden)
                 }
-                .listStyle(.plain)
             } else {
                 // created clubs list
-                List {
-                    ForEach(bookClubViewModel.createdClubs.sorted(by: { $0.name < $1.name })) { club in
-                        // check what club filter is selected
-                        if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
-                            ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
-                                .background(
-                                    // hide navigation link arrows
-                                    NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false))
-                                        .opacity(0)
-                                )
+                if !bookClubViewModel.createdClubs.isEmpty {
+                    List {
+                        ForEach(bookClubViewModel.createdClubs.sorted(by: { $0.name < $1.name })) { club in
+                            // check what club filter is selected
+                            if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
+                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                    .background(
+                                        // hide navigation link arrows
+                                        NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: club.moderatorName == authViewModel.currentUser?.name ? true : false, isMember: false))
+                                            .opacity(0)
+                                    )
+                            }
                         }
+                        .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))  // set padding of each row
+                        .listRowSeparator(.hidden)
                     }
-                    .listRowInsets(.init(top: 0, leading: 0, bottom: 12, trailing: 0))  // set padding of each row
-                    .listRowSeparator(.hidden)
+                    .listStyle(.plain)
+                    .scrollIndicators(.hidden)
+                } else {
+                    ContentUnavailableView {
+                        Label("You haven't created any clubs yet", systemImage: "books.vertical.fill")
+                    }
                 }
-                .listStyle(.plain)
-                .scrollIndicators(.hidden)
             }
         }
         .padding()
@@ -118,7 +139,7 @@ struct ClubsView: View {
 }
 
 #Preview {
-    ClubsView()
+    ClubsView(selectedNavBarTab: .constant(1))
         .environmentObject(BookClubViewModel())
         .environmentObject(EventViewModel())
 }

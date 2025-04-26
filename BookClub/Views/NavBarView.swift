@@ -21,7 +21,7 @@ struct NavBarView: View {
                         Label("Home", systemImage: "house")
                     }
                     .tag(0)
-                ClubsView()
+                ClubsView(selectedNavBarTab: $selectedNavBarTab)
                     .tabItem {
                         Label("Clubs", systemImage: "book")
                     }

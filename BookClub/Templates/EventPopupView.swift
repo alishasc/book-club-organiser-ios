@@ -101,7 +101,6 @@ struct EventPopupView: View {
             }
         }
     }
-    
     private var membersAttending: some View {
         HStack(alignment: .top, spacing: 60) {
             // host info
@@ -146,7 +145,6 @@ struct EventPopupView: View {
             Spacer()
         }
     }
-    
     private var meetingLocation: some View {
         VStack(alignment: .leading) {
             if bookClub.meetingType == "Online" {
