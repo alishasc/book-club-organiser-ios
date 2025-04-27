@@ -10,8 +10,10 @@ import SwiftUI
 struct ExploreView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
-    let genreFilter: [String] = ["All", "Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"]
-    @State private var searchInput: String = ""
+    @State var genres: [String] = []
+    
+    @State private var selectedGenre: String = "All"
+    private var defaultIconStr: [String] = ["fantasyIcon", "mysteryIcon", "romanceIcon", "scifiIcon"]
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
@@ -19,7 +21,6 @@ struct ExploreView: View {
                 Text("Explore")
                     .font(.largeTitle).bold()
                     .padding([.top, .horizontal])
-                
                 
                 NavigationLink {
                     ExploreSearchView()
@@ -44,13 +45,34 @@ struct ExploreView: View {
                 // circle genre filters
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
-                        ForEach(genreFilter.indices, id: \.self) { filter in
+                        ForEach(genres, id: \.self) { genre in
                             VStack {
-                                Circle()
-                                    .frame(width: 90, height: 90)
-                                    .foregroundStyle(.quinary)
-                                Text(genreFilter[filter])
+                                if let uiImage = UIImage(named: "\(genre.lowercased())Icon") {
+                                    Image(uiImage: uiImage)
+                                        .resizable()
+                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .clipShape(Circle())
+                                        .shadow(radius: 2)
+                                } else if genre == "All" {
+                                    Image("starIcon")
+                                        .resizable()
+                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .clipShape(Circle())
+                                        .shadow(radius: 2)
+                                } else {
+                                    Image("heartIcon")
+                                        .resizable()
+                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .clipShape(Circle())
+                                        .shadow(radius: 2)
+                                }
+                                Text(genre)
                                     .font(.footnote)
+                            }
+                            .onTapGesture {
+                                withAnimation {
+                                    selectedGenre = genre
+                                }
                             }
                         }
                     }
@@ -79,7 +101,8 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" && $0.isPublic }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
+                        //  && $0.genre == selectedGenre}
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" && $0.isPublic && (selectedGenre != "All" ? $0.genre == selectedGenre : true) }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
                             Text("View all")
                                 .foregroundStyle(.customBlue)
                         }
@@ -89,7 +112,8 @@ struct ExploreView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
-                                if club.meetingType == "Online" && club.isPublic == true {
+                                if club.meetingType == "Online" && club.isPublic == true &&
+                                    (selectedGenre != "All" ? club.genre == selectedGenre : true) {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
@@ -118,7 +142,8 @@ struct ExploreView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
-                                if club.meetingType == "In-Person" && club.isPublic == true {
+                                if club.meetingType == "In-Person" && club.isPublic == true &&
+                                    (selectedGenre != "All" ? club.genre == selectedGenre : true) {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
@@ -132,9 +157,18 @@ struct ExploreView: View {
             }
             .padding(.bottom)
         }
+        .onAppear {
+            if let favouriteGenres = authViewModel.currentUser?.favouriteGenres.sorted(by: { $0.lowercased() < $1.lowercased() }) {
+                var genreSet: Set<String> = []  // so only one of each genre
+                for genre in ["All"] + favouriteGenres + ["Contemporary", "Fantasy", "Mystery", "Romance", "Thriller"] {
+                    genreSet.insert(genre)
+                }
+                genres = Array(genreSet.sorted(by: { $0.lowercased() < $1.lowercased() }))
+            }
+        }
     }
 }
 
-#Preview {
-    ExploreView()
-}
+//#Preview {
+//    ExploreView()
+//}

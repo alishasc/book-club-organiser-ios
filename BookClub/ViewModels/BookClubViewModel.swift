@@ -23,7 +23,7 @@ class BookClubViewModel: ObservableObject {
     
     @Published var contacts: [BookClubMembers] = []
     @Published var memberPics: [String: UIImage] = [:]  // userId : UIImage
-        
+    
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
@@ -76,13 +76,13 @@ class BookClubViewModel: ObservableObject {
             try await getContactList()
         }
     }
-
+    
     // for explore page search bar
     var searchExploreClubs: [BookClub] {
         guard !searchExplorePage.isEmpty else { return allClubs.filter( { $0.isPublic }).sorted { $0.name.lowercased() < $1.name.lowercased() } }
         return allClubs.filter { club in
             (club.name.lowercased().contains(searchExplorePage.lowercased()) ||
-            club.genre.lowercased().contains(searchExplorePage.lowercased())) &&
+             club.genre.lowercased().contains(searchExplorePage.lowercased())) &&
             club.isPublic
         }
     }
@@ -332,7 +332,6 @@ class BookClubViewModel: ObservableObject {
                     }
                 }
             }
-            print("successfully fetched message user list")
         } catch {
             print("error fetching message user list: \(error.localizedDescription)")
         }
@@ -346,11 +345,11 @@ class BookClubViewModel: ObservableObject {
         self.clubMemberPics.removeAll()
         let db = Firestore.firestore()
         let storageRef = Storage.storage().reference()
-
+        
         do {
             // get member pics
             let querySnapshot = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
-
+            
             for document in querySnapshot.documents {
                 let clubMember = try document.data(as: BookClubMembers.self)
                 let imageRef = storageRef.child(clubMember.profilePictureURL)
@@ -403,7 +402,7 @@ class BookClubViewModel: ObservableObject {
         self.joinedClubs.removeAll { $0.id == bookClubId }
         
         // remove from joinedClubs field in User collection
-       try await db.collection("User").document(userId)
+        try await db.collection("User").document(userId)
             .updateData(["joinedClubs": FieldValue.arrayRemove([bookClubId.uuidString])])
         
         // delete document from BookClubMembers with matching bookClubId and userId
@@ -412,14 +411,14 @@ class BookClubViewModel: ObservableObject {
                 .whereField("bookClubId", isEqualTo: bookClubId.uuidString)
                 .whereField("userId", isEqualTo: userId)
                 .getDocuments()
-                        
+            
             if let document = querySnapshot.documents.first {
                 try await db.collection("BookClubMembers").document(document.documentID).delete()
             }
         } catch {
             print("Error deleting BookClubMembers document: \(error.localizedDescription)")
         }
-
+        
         // remove from eventAttendees
         do {
             let querySnapshot = try await db.collection("EventAttendees")
@@ -488,7 +487,7 @@ class BookClubViewModel: ObservableObject {
             } catch {
                 print("error deleting old club cover image: \(error.localizedDescription)")
             }
-
+            
             self.coverImages[bookClub.id] = coverImage
         }
         

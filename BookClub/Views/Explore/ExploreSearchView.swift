@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 26/04/2025.
 //
 
+// MARK: ref - https://www.swiftyplace.com/blog/swiftui-search-bar-best-practices-and-examples#Creating_a_Scope_Bar_to_Filter_Results
+
 import SwiftUI
 
 struct ExploreSearchView: View {
