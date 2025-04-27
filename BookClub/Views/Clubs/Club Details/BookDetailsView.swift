@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct BookDetailsView: View {
+    @EnvironmentObject var bookViewModel: BookViewModel
     @Environment(\.dismiss) var dismiss
     var book: Book
     
@@ -31,7 +32,7 @@ struct BookDetailsView: View {
                     GeometryReader { geometry in
                         Rectangle()
                             .frame(width: geometry.size.width, height: 300)
-                            .foregroundStyle(.customPink.opacity(0.3))
+                            .foregroundStyle(Color(bookViewModel.bookBGColors[book.id] ?? UIColor.quaternaryHex)).opacity(0.3)
                     }
                     .frame(height: 300)
                     
@@ -68,7 +69,6 @@ struct BookDetailsView: View {
                 .padding([.horizontal, .bottom])
             }
         } // scrollview
-//        .padding()
         .ignoresSafeArea(SafeAreaRegions.all, edges: .top)
         .navigationTitle(book.title)
         .navigationBarBackButtonHidden(true)

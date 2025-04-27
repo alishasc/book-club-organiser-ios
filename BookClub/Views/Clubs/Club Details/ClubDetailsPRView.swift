@@ -48,7 +48,9 @@ struct ClubDetailsPRView: View {
                                         .padding(15)
                                         .background(
                                             RoundedRectangle(cornerRadius: 10)
-                                                .fill(Color.customYellow.opacity(0.3))
+                                                .fill(Color(bookViewModel.bookBGColors[book.id] ?? UIColor.quaternaryHex)
+                                                    .opacity(0.3)
+                                                )
                                         )
                                 } placeholder: {
                                     ProgressView()

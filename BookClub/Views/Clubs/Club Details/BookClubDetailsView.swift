@@ -57,7 +57,6 @@ struct BookClubDetailsView: View {
                     
                     // current read
                     ClubDetailsCRView(bookClub: bookClub, currentRead: bookViewModel.currentRead, isModerator: isModerator)
-//                    ClubDetailsCRView(bookClub: bookClub, currentRead: bookViewModel.currentRead, currentReadImage: bookViewModel.currentReadImage ?? UIImage(), isModerator: isModerator)
                 }
                 .padding(.horizontal)
                 
@@ -99,23 +98,14 @@ struct BookClubDetailsView: View {
                     try await bookViewModel.fetchBook(bookId: bookClub.currentBookId ?? "")
                 }
                 
-//                if bookClub.currentBookId != nil {
-//                    if let currentReadId = bookClub.currentBookId {
-//                        await bookViewModel.loadImage(from: currentReadId)
-//                    }
-//                }
-                
                 try await bookClubViewModel.getModeratorAndMemberPics(bookClubId: bookClub.id, moderatorId: bookClub.moderatorId, authViewModel: authViewModel)
-                try await bookViewModel.loadPRBooks(bookClub: bookClub)
+                
+                if bookViewModel.booksRead.isEmpty {
+                    try await bookViewModel.loadPRBooks(bookClub: bookClub)
+                }
             }
             
             isMemberState = isMember
-        }
-        .onDisappear {
-            // change this
-            bookViewModel.currentRead = nil
-            bookClubViewModel.moderatorInfo = [:]
-            bookClubViewModel.clubMemberPics = [UIImage()]
         }
         .toolbar {
             if isModerator {
@@ -142,6 +132,10 @@ struct BookClubDetailsView: View {
             }
             ToolbarItem(placement: .topBarLeading) {
                 Button {
+                    bookViewModel.currentRead = nil
+                    bookViewModel.booksRead.removeAll()
+                    bookClubViewModel.moderatorInfo = [:]
+                    bookClubViewModel.clubMemberPics = [UIImage()]
                     dismiss()
                 } label: {
                     HStack {
