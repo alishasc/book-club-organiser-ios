@@ -58,19 +58,19 @@ struct ExploreView: View {
                 }
                 
                 // popular clubs
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Popular Clubs")
-                        .font(.title2)
-                        .fontWeight(.semibold)
-                        .padding(.horizontal)
-                    
-                    ScrollView(.horizontal, showsIndicators: false) {
-//                        HStack {
-//                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
-//                        }
+//                VStack(alignment: .leading, spacing: 10) {
+//                    Text("Popular Clubs")
+//                        .font(.title2)
+//                        .fontWeight(.semibold)
 //                        .padding(.horizontal)
-                    }
-                }
+//                    
+//                    ScrollView(.horizontal, showsIndicators: false) {
+////                        HStack {
+////                            ViewTemplates.bookClubRow(clubName: "Book Club Name")
+////                        }
+////                        .padding(.horizontal)
+//                    }
+//                }
                 
                 // online book clubs
                 VStack(spacing: 10) {
@@ -79,7 +79,7 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" && $0.isPublic }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
                             Text("View all")
                                 .foregroundStyle(.customBlue)
                         }
@@ -89,7 +89,7 @@ struct ExploreView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
-                                if club.meetingType == "Online" {
+                                if club.meetingType == "Online" && club.isPublic == true {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }
@@ -108,7 +108,7 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "In-Person" }), coverImages: bookClubViewModel.coverImages, clubCategory: "In-Person")) {
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "In-Person" && $0.isPublic }), coverImages: bookClubViewModel.coverImages, clubCategory: "In-Person")) {
                             Text("View all")
                                 .foregroundStyle(.customBlue)
                         }
@@ -118,7 +118,7 @@ struct ExploreView: View {
                     ScrollView(.horizontal, showsIndicators: false) {
                         HStack {
                             ForEach(bookClubViewModel.allClubs) { club in
-                                if club.meetingType == "In-Person" {
+                                if club.meetingType == "In-Person" && club.isPublic == true {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
                                         ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
                                     }

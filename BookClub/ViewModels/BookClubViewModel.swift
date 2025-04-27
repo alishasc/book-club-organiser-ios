@@ -79,10 +79,11 @@ class BookClubViewModel: ObservableObject {
 
     // for explore page search bar
     var searchExploreClubs: [BookClub] {
-        guard !searchExplorePage.isEmpty else { return allClubs.sorted { $0.name.lowercased() < $1.name.lowercased() } }
+        guard !searchExplorePage.isEmpty else { return allClubs.filter( { $0.isPublic }).sorted { $0.name.lowercased() < $1.name.lowercased() } }
         return allClubs.filter { club in
-            club.name.lowercased().contains(searchExplorePage.lowercased()) ||
-            club.genre.lowercased().contains(searchExplorePage.lowercased())
+            (club.name.lowercased().contains(searchExplorePage.lowercased()) ||
+            club.genre.lowercased().contains(searchExplorePage.lowercased())) &&
+            club.isPublic
         }
     }
     
