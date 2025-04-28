@@ -54,7 +54,9 @@ struct CreateClubView: View {
             }
         }
         .padding()
+        .padding(.bottom)
         .ignoresSafeArea(.keyboard)
+        .ignoresSafeArea(edges: .bottom)
         .navigationTitle("Create a New Club")
         .navigationBarBackButtonHidden(true)
         .toolbar {

@@ -10,6 +10,7 @@ import SwiftUI
 struct ClubsCardView: View {
     var coverImage: UIImage
     var clubName: String
+    var clubGenre: String
     
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -24,15 +25,23 @@ struct ClubsCardView: View {
             }
             .frame(height: 160)  // constrict GeometryReader height
             
-            Text(clubName)
-                .font(.title)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding([.leading, .bottom], 15)
+            VStack(alignment: .leading) {
+                Text(clubName)
+                    .font(.title2)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.leading)
+                
+                Text(clubGenre)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+            }
+            .padding([.leading, .bottom], 15)
         }
     }
 }
 
 #Preview {
-    ClubsCardView(coverImage: UIImage(), clubName: "Romance Book Club")
+    ClubsCardView(coverImage: UIImage(), clubName: "Romance Book Club", clubGenre: "Romance")
 }

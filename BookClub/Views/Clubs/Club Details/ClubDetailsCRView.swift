@@ -9,7 +9,6 @@ import SwiftUI
 
 struct ClubDetailsCRView: View {
     @EnvironmentObject var bookViewModel: BookViewModel
-    
     var bookClub: BookClub
     var currentRead: Book?
     var isModerator: Bool

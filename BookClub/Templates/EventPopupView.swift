@@ -139,7 +139,8 @@ struct EventPopupView: View {
                 if eventViewModel.eventAttendeePics.count > 0 {
                     // member profile pics
                     HStack(spacing: -5) {
-                        ForEach(eventViewModel.eventAttendeePics, id: \.self) { image in
+                        // show max 4 images
+                        ForEach(eventViewModel.eventAttendeePics.prefix(4), id: \.self) { image in
                             Image(uiImage: image)
                                 .resizable()
                                 .scaledToFill()

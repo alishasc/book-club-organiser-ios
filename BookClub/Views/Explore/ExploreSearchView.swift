@@ -16,8 +16,8 @@ struct ExploreSearchView: View {
     var body: some View {
         NavigationStack {
             List {
-                ForEach(bookClubViewModel.searchExploreClubs) { club in
-                    ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                ForEach(bookClubViewModel.searchExplorePage) { club in
+                    ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                         .background(
                             // hide navigation link arrows
                             NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club)))
@@ -31,7 +31,7 @@ struct ExploreSearchView: View {
             .listStyle(.plain)
             .scrollIndicators(.hidden)
             .navigationTitle("Search Book Clubs")
-            .searchable(text: $bookClubViewModel.searchExplorePage, placement: .navigationBarDrawer(displayMode:.always), prompt: "Search club name or genre")
+            .searchable(text: $bookClubViewModel.explorePageQuery, placement: .navigationBarDrawer(displayMode:.always), prompt: "Search club name or genre")
         }
         .padding(.horizontal)
     }

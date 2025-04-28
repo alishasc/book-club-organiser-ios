@@ -52,7 +52,6 @@ class BookViewModel: ObservableObject {
             let book = try decoder.decode(Book.self, from: data)
 
             self.currentRead = book
-            print("currentRead 1: \(String(describing: self.currentRead))")
             
             if let book = self.currentRead {
                 await self.loadImage(from: book)
@@ -70,8 +69,6 @@ class BookViewModel: ObservableObject {
         } catch {
             print("failed to save book to db: \(error.localizedDescription)")
         }
-        
-        print("currentRead 2: \(String(describing: self.currentRead))")
     }
     
     func fetchBook(bookId: String) async throws {
@@ -136,9 +133,6 @@ class BookViewModel: ObservableObject {
             print("Error removing book from book club: \(error.localizedDescription)")
         }
     }
-    
-
-    
     
     // MARK: ref - https://medium.com/@nani.monish/swift-concurrency-async-await-download-images-8d91fe654982
     enum ImageError: Error {

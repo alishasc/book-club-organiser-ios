@@ -15,6 +15,7 @@ import FirebaseStorage
 @MainActor
 class EventViewModel: ObservableObject {
     let db = Firestore.firestore()
+    let storageRef = Storage.storage().reference()
 
     @Published var allEvents: [Event] = []
     @Published var joinedEvents: [Event] = []
@@ -32,6 +33,19 @@ class EventViewModel: ObservableObject {
             fetchCurrentWeek()
         }
     }
+
+    func isURLValid(url: String) -> Bool {
+        // MARK: ref - https://stackoverflow.com/questions/3809401/what-is-a-good-regular-expression-to-match-a-url
+        let urlHttpRegex = "https?:\\/\\/(www\\.)?[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
+        // url without HTTP protocol
+        let urlRegex = "[-a-zA-Z0-9@:%._\\+~#=]{1,256}\\.[a-zA-Z0-9()]{1,6}\\b([-a-zA-Z0-9()@:%_\\+.~#?&//=]*)"
+        
+        if NSPredicate(format: "SELF MATCHES %@", urlHttpRegex).evaluate(with: url) {
+            return NSPredicate(format: "SELF MATCHES %@", urlHttpRegex).evaluate(with: url)
+        } else {
+            return NSPredicate(format: "SELF MATCHES %@", urlRegex).evaluate(with: url)
+        }
+    }
     
     // add event to database
     func saveNewEvent(bookClubId: UUID, eventTitle: String, dateAndTime: Date, duration: Int, maxCapacity: Int, meetingLink: String, location: CLLocationCoordinate2D) async throws {
@@ -41,7 +55,6 @@ class EventViewModel: ObservableObject {
             return
         }
         
-        let db = Firestore.firestore()
         // convert swift coords to Firebase GeoPoint
         let geopoint = GeoPoint(latitude: location.latitude, longitude: location.longitude)
         
@@ -95,10 +108,16 @@ class EventViewModel: ObservableObject {
         do {
             let doc = try await db.collection("Event").document(eventId.uuidString).getDocument()
             let event = try doc.data(as: Event.self)
+            // delete from db
             try await doc.reference.delete()
             
-            self.allEvents.removeAll { $0.id == event.id }
-            print("deleted event")
+            self.allEvents.removeAll { $0.id == event.id }  // update ui
+            
+            // remove EventAttendees linked to the event
+            let eventAttendeeDocs = try await db.collection("EventAttendees").whereField("eventId", isEqualTo: eventId.uuidString).getDocuments()
+            for doc in eventAttendeeDocs.documents {
+                try await doc.reference.delete()
+            }
         } catch {
             print("Error deleting event: \(error.localizedDescription)")
         }
@@ -252,11 +271,10 @@ class EventViewModel: ObservableObject {
 
     // update db when join/leave event
     func attendEvent(isAttending: Bool, event: Event, bookClub: BookClub) async throws {
-        let db = Firestore.firestore()
         // logged in user's id
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
-        // if icon toggled to true
+        // if icon toggled to true - filled checkmark icon
         if isAttending {
             // save attendee info to db
             do {
@@ -272,7 +290,7 @@ class EventViewModel: ObservableObject {
                 // update joinedEvents array
                 self.joinedEvents.append(updatedEvent)
             } catch {
-                print("failed to save event space: \(error.localizedDescription)")
+                print("Failed to save event space: \(error.localizedDescription)")
             }
         }
         else {
@@ -297,7 +315,7 @@ class EventViewModel: ObservableObject {
                 // update joinedEvents array
                 self.joinedEvents.removeAll(where: { event.id == $0.id })
             } catch {
-                print("failed to unreserve event space: \(error.localizedDescription)")
+                print("Failed to unreserve event space: \(error.localizedDescription)")
             }
         }
         
@@ -309,7 +327,6 @@ class EventViewModel: ObservableObject {
     
     // check if user is attending shown events. passed as var to change ui
     func isAttendingEvent(eventId: UUID) async throws -> Bool {
-        let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get user ID to fetch details")
             return false
@@ -331,8 +348,6 @@ class EventViewModel: ObservableObject {
 
     func getModeratorAndAttendeePics(bookClubId: UUID, eventId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
         self.eventAttendeePics.removeAll()
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
         
         do {
             // get attendee pics
@@ -454,6 +469,7 @@ class EventViewModel: ObservableObject {
     func filteredUpcomingEvents(selectedFilter: Int, bookClubViewModel: BookClubViewModel, selectedClubName: String?) -> [(event: Event, bookClub: BookClub)] {
         var filteredEventArr: [(Event, BookClub)] = []
         let userId = Auth.auth().currentUser?.uid ?? ""
+        
         switch selectedFilter {
         case 0:
             // all events
@@ -588,7 +604,6 @@ class EventViewModel: ObservableObject {
     
     
     //    func attendingMemberCount(eventId: UUID) async throws {
-    //        let db = Firestore.firestore()
     //
     //        let querySnapshot = try await db.collection("EventAttendees").whereField("eventId", isEqualTo: eventId.uuidString).getDocuments()
     //        for _ in querySnapshot.documents {

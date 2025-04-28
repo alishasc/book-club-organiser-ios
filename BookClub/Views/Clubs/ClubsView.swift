@@ -81,7 +81,7 @@ struct ClubsView: View {
                     List {
                         ForEach(bookClubViewModel.joinedClubs.sorted(by: { $0.name < $1.name })) { club in
                             if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
-                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                                     .background(
                                         // hide navigation link arrows
                                         NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: false, isMember: true))
@@ -114,7 +114,7 @@ struct ClubsView: View {
                         ForEach(bookClubViewModel.createdClubs.sorted(by: { $0.name < $1.name })) { club in
                             // check what club filter is selected
                             if selectedFilter == 0 || selectedFilter == 1 && club.meetingType == "In-Person" || selectedFilter == 2 && club.meetingType == "Online" {
-                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                ClubsCardView(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                                     .background(
                                         // hide navigation link arrows
                                         NavigationLink("", destination: ClubHostView(bookClub: club, isModerator: true, isMember: false))

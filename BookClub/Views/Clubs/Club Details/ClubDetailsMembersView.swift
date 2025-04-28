@@ -7,8 +7,6 @@
 
 import SwiftUI
 
-// moderator and members info
-
 struct ClubDetailsMembersView: View {
     var moderatorInfo: [String:UIImage]
     var memberPics: [UIImage]
@@ -51,7 +49,8 @@ struct ClubDetailsMembersView: View {
                 
                 // member profile pics
                 HStack(spacing: -5) {
-                    ForEach(memberPics, id: \.self) { image in
+                    // show max 4 images
+                    ForEach(memberPics.prefix(4), id: \.self) { image in
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()

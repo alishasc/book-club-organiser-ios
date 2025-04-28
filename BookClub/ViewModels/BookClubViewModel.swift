@@ -18,7 +18,7 @@ class BookClubViewModel: ObservableObject {
     @Published var allClubs: [BookClub] = []
     @Published var createdClubs: [BookClub] = []
     @Published var joinedClubs: [BookClub] = []
-    @Published var bookClub: BookClub?  // updated when tap club in clubs list
+    @Published var bookClub: BookClub?  // used for triggering new club to be shown after creation
     @Published var coverImages: [UUID: UIImage] = [:]  // bookClubId : UIImage
     
     @Published var contacts: [BookClubMembers] = []
@@ -27,7 +27,7 @@ class BookClubViewModel: ObservableObject {
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
-    @Published var searchExplorePage: String = ""
+    @Published var explorePageQuery: String = ""
     
     // options for creating new club
     let genreChoices: [String] = [
@@ -78,11 +78,11 @@ class BookClubViewModel: ObservableObject {
     }
     
     // for explore page search bar
-    var searchExploreClubs: [BookClub] {
-        guard !searchExplorePage.isEmpty else { return allClubs.filter( { $0.isPublic }).sorted { $0.name.lowercased() < $1.name.lowercased() } }
+    var searchExplorePage: [BookClub] {
+        guard !explorePageQuery.isEmpty else { return allClubs.filter( { $0.isPublic }).sorted { $0.name.lowercased() < $1.name.lowercased() } }
         return allClubs.filter { club in
-            (club.name.lowercased().contains(searchExplorePage.lowercased()) ||
-             club.genre.lowercased().contains(searchExplorePage.lowercased())) &&
+            (club.name.lowercased().contains(explorePageQuery.lowercased()) ||
+             club.genre.lowercased().contains(explorePageQuery.lowercased())) &&
             club.isPublic
         }
     }
@@ -90,13 +90,11 @@ class BookClubViewModel: ObservableObject {
     // when a user creates a new book club - save to database and cloud storage
     func saveNewClub(name: String, moderatorName: String, coverImage: UIImage, description: String, genre: String, meetingType: String, isPublic: Bool) async throws {
         let bookClubId = UUID()
-        let db = Firestore.firestore()
-        // cover image storage
-        let storageRef = Storage.storage().reference()
         let imageFilePath = "clubCoverImages/\(UUID().uuidString).jpg"  // ref to save to database
+        // to save image to storage
         let fileRef = storageRef.child(
             imageFilePath
-        )  // to save image to storage
+        )
         
         guard let userId = Auth.auth().currentUser?.uid else {
             print("couldn't get the user id")
@@ -131,14 +129,14 @@ class BookClubViewModel: ObservableObject {
                     .putData(imageData, metadata: nil) { (metadata, error) in
                         if let error = error {
                             print(
-                                "error saving image: \(error.localizedDescription)"
+                                "Error saving club cover image: \(error.localizedDescription)"
                             )
                         }
                     }
             }
         } catch {
             print(
-                "failed to save new club details: \(error.localizedDescription)"
+                "Failed to save new club details: \(error.localizedDescription)"
             )
         }
         
@@ -159,9 +157,6 @@ class BookClubViewModel: ObservableObject {
             print("couldn't get the id to fetch details")
             return
         }
-        
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
         
         do {
             // fetch docs where moderatorId is the same as current userId
@@ -194,37 +189,28 @@ class BookClubViewModel: ObservableObject {
                 }
             }
         } catch {
-            print("error getting book club documents: \(error)")
+            print("Error fetching book club documents: \(error)")
         }
     }
     
     func fetchJoinedClubs() async throws {
         self.joinedClubs.removeAll()
-        let db = Firestore.firestore()
         
         // get logged in user's id
         guard let userId = Auth.auth().currentUser?.uid else { return }
-        let snapshot = try? await Firestore.firestore().collection("User").document(userId).getDocument()
-        // new instance of User
-        let user = try snapshot?.data(as: User.self)
         
         do {
-            // check if User has joinedClubs array
-            if let joinedClubs = user?.joinedClubs {
-                for id in joinedClubs {
-                    // look for BookClub ids in db matching ones in the array
-                    let querySnapshot = try await db.collection("BookClub").whereField("id", isEqualTo: id).getDocuments()
-                    
-                    // loop matching docs
-                    for document in querySnapshot.documents {
-                        // new BookClub object
-                        let bookClub = try document.data(as: BookClub.self)
+            let querySnapshot = try await db.collection("BookClubMembers").whereField("userId", isEqualTo: userId).getDocuments()
+            for document in querySnapshot.documents {
+                let bookClubMember = try document.data(as: BookClubMembers.self)
+                for bookClub in allClubs {
+                    if bookClub.id == bookClubMember.bookClubId {
                         self.joinedClubs.append(bookClub)
                     }
                 }
             }
         } catch {
-            print("error fetching joined clubs: \(error.localizedDescription)")
+            print("Error fetching joined clubs: \(error.localizedDescription)")
         }
     }
     
@@ -233,24 +219,14 @@ class BookClubViewModel: ObservableObject {
             print("couldn't get user's id to join club")
             return
         }
-        
-        let db = Firestore.firestore()
-        let userRef = db.collection("User").document(userId)
+        self.joinedClubs.append(bookClub)  // add to local array - update ui
         
         do {
-            // update 'joinedClubs' array in 'User'
-            try await userRef.setData([
-                "joinedClubs": FieldValue.arrayUnion([bookClub.id.uuidString])
-            ], merge: true)
-            self.joinedClubs.append(bookClub)
-            
             if let currentUser {
                 let bookClubMember = BookClubMembers(bookClubId: bookClub.id, bookClubName: bookClub.name, userId: userId, userName: currentUser.name, profilePictureURL: currentUser.profilePictureURL)
                 // add member info to db
                 try db.collection("BookClubMembers").document(bookClubMember.id.uuidString).setData(from: bookClubMember)
             }
-            
-            print("success joining club")
         } catch {
             print("error joining club: \(error.localizedDescription)")
         }
@@ -296,8 +272,6 @@ class BookClubViewModel: ObservableObject {
     }
     
     func getContactList() async throws {
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
         var members: [BookClubMembers] = []
         
         do {
@@ -343,8 +317,6 @@ class BookClubViewModel: ObservableObject {
     func getModeratorAndMemberPics(bookClubId: UUID, moderatorId: String, authViewModel: AuthViewModel) async throws {
         self.moderatorInfo.removeAll()
         self.clubMemberPics.removeAll()
-        let db = Firestore.firestore()
-        let storageRef = Storage.storage().reference()
         
         do {
             // get member pics
@@ -395,7 +367,6 @@ class BookClubViewModel: ObservableObject {
     }
     
     func leaveClub(bookClubId: UUID, eventViewModel: EventViewModel) async throws {
-        let db = Firestore.firestore()
         guard let userId = Auth.auth().currentUser?.uid else { return }
         
         // remove club from joined clubs array
@@ -502,7 +473,7 @@ class BookClubViewModel: ObservableObject {
             self.allClubs.append(try document.data(as: BookClub.self))
             self.createdClubs.append(try document.data(as: BookClub.self))
         } catch {
-            print("error updating book club details: \(error.localizedDescription)")
+            print("Error updating book club details: \(error.localizedDescription)")
         }
     }
     
@@ -515,6 +486,24 @@ class BookClubViewModel: ObservableObject {
             
             self.allClubs.removeAll { $0.id == bookClubId }
             self.createdClubs.removeAll { $0.id == bookClubId }
+            
+            // delete events for the club
+            let eventDocs = try await db.collection("Event").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+            for doc in eventDocs.documents {
+                try await doc.reference.delete()
+            }
+            
+            // remove docs with matching bookClubId from BookClubMembers collection
+            let bookClubMemberDocs = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+            for doc in bookClubMemberDocs.documents {
+                try await doc.reference.delete()
+            }
+            
+            // remove docs with matching bookClubId from EventAttendees collection
+            let eventAttendeeDocs = try await db.collection("EventAttendees").whereField("bookClubId", isEqualTo: bookClubId.uuidString).getDocuments()
+            for doc in eventAttendeeDocs.documents {
+                try await doc.reference.delete()
+            }
         } catch {
             print("Error removing document: \(error.localizedDescription)")
         }

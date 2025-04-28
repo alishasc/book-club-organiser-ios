@@ -16,6 +16,7 @@ struct CreateEventView: View {
     let durationChoices: [String] = ["30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     @State private var searchInput: String = ""  // in textfield
     @State private var isLocationSelected: Bool = false  // when tap search result
+    @State private var isUrlValid: Bool = true  // for online events
     
     // textfields
     enum Field: Hashable {
@@ -59,16 +60,22 @@ struct CreateEventView: View {
             }
             
             // choose number of spaces
-            HStack {
-                Text("Number of spaces available")
-                    .fontWeight(.medium)
-                Spacer()
-                Picker("Number of spaces available", selection: $maxCapacity) {
-                    ForEach(1..<51) {
-                        Text($0, format: .number)
+            VStack(alignment: .leading, spacing: 5) {
+                HStack {
+                    Text("Number of spaces available")
+                        .fontWeight(.medium)
+                    Spacer()
+                    Picker("Number of spaces available", selection: $maxCapacity) {
+                        ForEach(1..<51) {
+                            Text($0, format: .number)
+                        }
                     }
+                    .offset(x: 10)
                 }
-                .offset(x: 10)
+                Text("You won’t be able to change the number of spaces later.")
+                    .font(.footnote)
+                    .foregroundColor(.accent)
+                    .padding(.bottom, 5)
             }
             
             if meetingType == "Online" {
@@ -77,7 +84,16 @@ struct CreateEventView: View {
                     .focused($focusedField, equals: .location)
                     .onSubmit {
                         focusedField = nil
+                        isUrlValid = eventViewModel.isURLValid(url: meetingLink)  // show error message if false
                     }
+                    .onChange(of: meetingLink) {
+                        isUrlValid = true
+                    }
+                if meetingLink != "" && !isUrlValid {
+                    Text("Invalid URL format")
+                        .foregroundStyle(.red)
+                        .font(.footnote)
+                }
             } else {
                 // tfield to search event address
                 VStack(alignment: .leading) {
@@ -154,7 +170,8 @@ struct CreateEventView: View {
                 }
                 .disabled(
                     (meetingType == "Online" && (title.isEmpty || meetingLink.isEmpty)) ||
-                    (meetingType == "In-Person" && (title.isEmpty || eventViewModel.selectedLocation == nil))
+                    (meetingType == "In-Person" && (title.isEmpty || eventViewModel.selectedLocation == nil)) ||
+                    !isUrlValid  // don't continue if url is invalid
                 )
             }
         }

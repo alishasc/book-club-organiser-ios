@@ -323,7 +323,6 @@ class AuthViewModel: ObservableObject {
                 try await db.collection("Event").document(eventAttendee.eventId.uuidString).updateData([
                     "attendeesCount": FieldValue.increment(Int64(-1))
                 ])
-                print("incremented event")
                 try await doc.reference.delete()
             }
             print("deleted attendee")

@@ -13,10 +13,10 @@ struct EventsView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    @State private var selectedFilter: Int = 0
-    @State private var showUpcomingEvents: Bool = true
-    @State private var showDiscoverEvents: Bool = true
-    @State private var selectedClubName: String?
+    @State private var selectedCategory: Int = 0
+    @State private var showUpcomingEvents: Bool = true  // chevron icon
+    @State private var showDiscoverEvents: Bool = true  // chevron icon
+    @State private var selectedClubName: String?  // filter by book club
     
     var body: some View {
         VStack(alignment: .leading) {
@@ -50,7 +50,7 @@ struct EventsView: View {
                     if showUpcomingEvents {
                         // events joined scrollview
                         ScrollView(.vertical, showsIndicators: false) {
-                            ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
+                            ForEach(eventViewModel.filteredUpcomingEvents(selectedFilter: selectedCategory, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
                                 EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorId == authViewModel.currentUser?.id)
                                     .padding(.bottom, 8)
                             }
@@ -80,7 +80,7 @@ struct EventsView: View {
                     if showDiscoverEvents {
                         // events haven't joined scrollview
                         ScrollView(.vertical, showsIndicators: false) {
-                            ForEach(eventViewModel.filteredDiscoverEvents(selectedFilter: selectedFilter, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
+                            ForEach(eventViewModel.filteredDiscoverEvents(selectedFilter: selectedCategory, bookClubViewModel: bookClubViewModel, selectedClubName: selectedClubName), id: \.event.id) { event, bookClub in
                                 EventsRowView(bookClub: bookClub, event: event, coverImage: bookClubViewModel.coverImages[bookClub.id] ?? UIImage(), isModerator: bookClub.moderatorId == authViewModel.currentUser?.id)
                                     .padding(.bottom, 8)
                             }
@@ -96,8 +96,15 @@ struct EventsView: View {
             Spacer()
         }
         .onDisappear {
-            selectedFilter = 0  // show all events
+            // reset all filters when leave page
+            selectedCategory = 0  // show all events
             eventViewModel.currentDay = nil
+        }
+        .onChange(of: selectedClubName) {
+            // unselect other categories if a club is selected
+            if selectedClubName != nil {
+                selectedCategory = 0
+            }
         }
     }
     
@@ -106,29 +113,29 @@ struct EventsView: View {
             HStack {
                 Group {
                     Button("All") {
-                        selectedFilter = 0
+                        selectedCategory = 0
                         selectedClubName = nil
                     }
-                    .tint(selectedFilter == 0 && selectedClubName == nil ? .accent : .quaternaryHex)
-                    .foregroundStyle(selectedFilter == 0 && selectedClubName == nil ? .white : .black)
+                    .tint(selectedCategory == 0 && selectedClubName == nil ? .accent : .quaternaryHex)
+                    .foregroundStyle(selectedCategory == 0 && selectedClubName == nil ? .white : .black)
                     
                     Button("In-Person") {
-                        selectedFilter = 1
+                        selectedCategory = 1
                         selectedClubName = nil
                     }
-                    .tint(selectedFilter == 1 ? .customYellow : .customYellow.opacity(0.2))
+                    .tint(selectedCategory == 1 ? .customYellow : .customYellow.opacity(0.2))
                     
                     Button("Online") {
-                        selectedFilter = 2
+                        selectedCategory = 2
                         selectedClubName = nil
                     }
-                    .tint(selectedFilter == 2 ? .customGreen : .customGreen.opacity(0.2))
+                    .tint(selectedCategory == 2 ? .customGreen : .customGreen.opacity(0.2))
                     
                     Button("Created Events") {
-                        selectedFilter = 3
+                        selectedCategory = 3
                         selectedClubName = nil
                     }
-                    .tint(selectedFilter == 3 ? .customPink : .customPink.opacity(0.2))
+                    .tint(selectedCategory == 3 ? .customPink : .customPink.opacity(0.2))
                     
                     // filter by book club - both created and joined clubs
                     Menu {
