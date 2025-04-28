@@ -10,10 +10,8 @@ import SwiftUI
 struct ExploreView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
-    @State var genres: [String] = []
-    
-    @State private var selectedGenre: String = "All"
-    private var defaultIconStr: [String] = ["fantasyIcon", "mysteryIcon", "romanceIcon", "scifiIcon"]
+    @State var genres: [String] = []  // displayed filters
+    @State private var selectedGenre: String = "All"  // selected filter
     
     var body: some View {
         ScrollView(.vertical, showsIndicators: false) {
