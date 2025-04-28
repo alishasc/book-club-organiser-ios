@@ -6,3 +6,9 @@
 //
 
 import Foundation
+
+struct SearchHistory: Identifiable, Codable {
+    var id: UUID = UUID()
+    let clubName: String
+    let clubGenre: String
+}
