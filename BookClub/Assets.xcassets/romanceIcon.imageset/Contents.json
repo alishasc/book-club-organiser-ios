@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "romance icon.png",
+      "filename" : "romanceIcon.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "romance icon@2x.png",
+      "filename" : "romanceIcon 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "romance icon@3x.png",
+      "filename" : "romanceIcon 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }
