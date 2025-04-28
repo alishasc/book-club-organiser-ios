@@ -76,7 +76,6 @@ struct EditClubView: View {
         .navigationBarBackButtonHidden(true)
         .onAppear {
             // make copies of stored data
-//            coverImageCopy = coverImage
             name = bookClub.name
             description = bookClub.description
             wordCount = bookClubViewModel.getWordCount(str: bookClub.description)
@@ -88,7 +87,7 @@ struct EditClubView: View {
                     withAnimation {
                         // put function to update data in db
                         Task {
-                            try await bookClubViewModel.updateBookClubDetails(bookClub: bookClub, clubName: name, description: description, isPublic: isPublic, coverImage: photosPickerViewModel.selectedImage ?? UIImage())
+                            try await bookClubViewModel.updateBookClubDetails(bookClub: bookClub, clubName: name, description: description, isPublic: isPublic, coverImage: (photosPickerViewModel.selectedImage ?? bookClubViewModel.coverImages[bookClub.id]) ?? UIImage())
                         }
                         dismiss()
                     }

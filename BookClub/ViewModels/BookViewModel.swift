@@ -11,16 +11,15 @@ import UIKit
 
 @MainActor
 class BookViewModel: ObservableObject {
+    let db = Firestore.firestore()
+
     @Published var currentRead: Book?  // loaded from api
     @Published var booksRead: [Book] = []  // previously read books
     // when search for books
     @Published var booksList: [Book] = []
     @Published var selectedBook: Book?
-    
-    
-//    @Published var currentReadImage: UIImage?
+    @Published var bookBGColors: [String:UIColor] = [:]
 
-    
     // search results
     func fetchBooksList(searchQuery: String) async throws {
         let bookUrlString = "https://www.googleapis.com/books/v1/volumes?q=\(searchQuery)&maxResults=15&key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
@@ -51,16 +50,18 @@ class BookViewModel: ObservableObject {
             let (data, _) = try await URLSession.shared.data(from: bookUrl)
             let decoder = JSONDecoder()
             let book = try decoder.decode(Book.self, from: data)
+
+            self.currentRead = book
             
-            let db = Firestore.firestore()
+            if let book = self.currentRead {
+                await self.loadImage(from: book)
+            }
 
             // save as current read in BookClub collection
             try await db.collection("BookClub").document(bookClubId.uuidString).setData([
                 "currentBookId": book.id
             ], merge: true)
-            
-            self.currentRead = book
-            
+                        
             // save old book to previously read - [booksRead]
             try await db.collection("BookClub").document(bookClubId.uuidString).updateData([
                 "booksRead": FieldValue.arrayUnion([oldBookId])
@@ -75,17 +76,18 @@ class BookViewModel: ObservableObject {
         guard let bookUrl = URL(string: bookUrlString) else {
             fatalError("Invalid URL: \(bookUrlString)")
         }
-        var book: Book?
-        
+
         do {
             let (data, _) = try await URLSession.shared.data(from: bookUrl)
             let decoder = JSONDecoder()
-            book = try decoder.decode(Book.self, from: data)
+            self.currentRead = try decoder.decode(Book.self, from: data)
         } catch {
             print("failed to load book: \(error.localizedDescription)")
         }
         
-        self.currentRead = book
+        if let book = self.currentRead {
+            await self.loadImage(from: book)
+        }
     }
     
     func loadPRBooks(bookClub: BookClub) async throws {
@@ -110,45 +112,115 @@ class BookViewModel: ObservableObject {
                 }
             }
             self.booksRead = downloadedBooks
+            for book in self.booksRead {
+                await loadImage(from: book)
+            }
         } catch {
             print("Error loading previously read books: \(error.localizedDescription)")
         }
     }
     
-    func deleteBook(bookId: String) async throws {
+    func deleteBook(bookClubId: UUID, bookId: String) async throws {
         // delete previously read book
-        // remove from PR book array in BookClub collection
+        do {
+            try await db.collection("BookClub").document(bookClubId.uuidString).updateData([
+                "booksRead": FieldValue.arrayRemove([bookId])
+            ])
+            
+            // remove from booksRead array - update ui
+            self.booksRead.removeAll(where: { $0.id == bookId })
+        } catch {
+            print("Error removing book from book club: \(error.localizedDescription)")
+        }
     }
     
+    // MARK: ref - https://medium.com/@nani.monish/swift-concurrency-async-await-download-images-8d91fe654982
+    enum ImageError: Error {
+        case invalidData
+    }
     
+    func loadImage(from book: Book) async {
+        do {
+            if let imageURL = URL(string: book.cover.replacingOccurrences(of: "http", with: "https").replacingOccurrences(of: "&edge=curl", with: "")) {
+                let image = try await downloadImage(from: imageURL)
+                self.bookBGColors[book.id] = image.dominantBackgroundColor()
+            }
+        } catch {
+            print("Error loading image: \(error.localizedDescription)")
+        }
+    }
     
-    
-    
-    
-    
-    // code ref: https://medium.com/@nani.monish/swift-concurrency-async-await-download-images-8d91fe654982
-//    enum ImageError: Error {
-//        case invalidData
-//    }
-//
-//    func loadImage(from bookId: String) async {
-//        do {
-//            let imageURL = URL(string: "https://books.google.com/books/publisher/content?id=J4QUEAAAQBAJ&printsec=frontcover&img=1&zoom=1&edge=curl&imgtk=AFLRE73Lq1ARR_mM_y-5ZI44P3udrPPUrvugON9M8R2-OYlD5mTahJMeCNHEXwo6-gD82VUpEbUEgZ3q3bRsXoZ_Px1Bp4SyUOU5aTM1Bow1kHY_SPIbbfqDM_jegPlDFvgvEdm6576u&source=gbs_api")!
-//            let image = try await downloadImage(from: imageURL)
-//            self.currentReadImage = image
-//            // Display or use the downloaded image
-//        } catch {
-//            // Handle the error
-//            print("error loading image: \(error.localizedDescription)")
-//        }
-//    }
-//    
-//    func downloadImage(from url: URL) async throws -> UIImage {
-//        let (data, _) = try await URLSession.shared.data(from: url)
-//        guard let image = UIImage(data: data) else {
-//            throw ImageError.invalidData
-//        }
-//        return image
-//    }
+    func downloadImage(from url: URL) async throws -> UIImage {
+        let (data, _) = try await URLSession.shared.data(from: url)
+        guard let image = UIImage(data: data) else {
+            throw ImageError.invalidData
+        }
+        return image
+    }
 }
 
+// MARK: ref - https://medium.com/@shanukumar302/extracting-the-dominant-background-color-from-an-image-a-step-by-step-walkthrough-in-swift-e33694350b0d
+extension UIImage {
+    func dominantBackgroundColor() -> UIColor? {
+        let rect = CGRect(x: 0, y: 0, width: size.width, height: size.height)
+        guard let cgImage = cgImage,
+              let context = CGContext(
+                data: nil,
+                width: Int(size.width),
+                height: Int(size.height),
+                bitsPerComponent: 8,
+                bytesPerRow: 0,
+                space: CGColorSpaceCreateDeviceRGB(),
+                bitmapInfo: CGImageAlphaInfo.premultipliedLast.rawValue
+              ) else { return nil }
+        
+        context.draw(cgImage, in: rect)
+   
+        guard let data = context.data else { return nil }
+        let pixels = data.assumingMemoryBound(to: UInt8.self)
+
+        let samplePoints = [
+            (0, 0),
+            (Int(size.width) - 1, 0),
+            (0, Int(size.height) - 1),
+            (Int(size.width) - 1, Int(size.height) - 1)
+        ]
+        
+        var colors: [UIColor] = []
+        
+        for (x, y) in samplePoints {
+            let offset = 4 * (y * Int(size.width) + x)
+            let color = UIColor(
+                red: CGFloat(pixels[offset]) / 255.0,
+                green: CGFloat(pixels[offset + 1]) / 255.0,
+                blue: CGFloat(pixels[offset + 2]) / 255.0,
+                alpha: CGFloat(pixels[offset + 3]) / 255.0
+            )
+            colors.append(color)
+        }
+        return findMostCommonColor(colors)
+    }
+    
+    private func findMostCommonColor(_ colors: [UIColor]) -> UIColor {
+        var colorCounts: [String: (UIColor, Int)] = [:]
+        
+        for color in colors {
+            var red: CGFloat = 0
+            var green: CGFloat = 0
+            var blue: CGFloat = 0
+            var alpha: CGFloat = 0
+            
+            color.getRed(&red, green: &green, blue: &blue, alpha: &alpha)
+            let key = "\(Int(red * 255))-\(Int(green * 255))-\(Int(blue * 255))"
+            
+            if let (_, count) = colorCounts[key] {
+                colorCounts[key] = (color, count + 1)
+            } else {
+                colorCounts[key] = (color, 1)
+            }
+        }
+        
+        let mostCommon = colorCounts.max(by: { $0.value.1 < $1.value.1 })
+        return mostCommon?.value.0 ?? .white
+    }
+}

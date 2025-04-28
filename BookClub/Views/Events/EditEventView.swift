@@ -14,16 +14,15 @@ struct EditEventView: View {
     @Environment(\.dismiss) var dismiss
     var bookClub: BookClub
     var event: Event
-    // copied data
+    // copied data below
     @State private var title: String = ""
     @State private var dateAndTime = Date()
     @State private var duration: String = ""
-    @State private var location: GeoPoint?  // remove?
     @State private var locationName: String = "Loading..."
     @State private var meetingLink: String = ""
-    @State private var searchInput: String = ""  // in textfield
+    @State private var searchInput: String = ""  // for textfield
     @State private var isLocationSelected: Bool = false  // when tap search result
-    @State private var showAlert: Bool = false
+    @State private var showAlert: Bool = false  // to delete the event
     
     let durationChoices: [String] = ["", "30 minutes", "1 hour", "1 hour 30 minutes", "2 hours"]
     
@@ -162,8 +161,6 @@ struct EditEventView: View {
             if bookClub.meetingType == "Online" {
                 meetingLink = event.meetingLink ?? ""
             } else {
-                //                location = event.location  // coords
-                
                 if let coords = event.location {
                     eventViewModel.getLocationPlacemark(location: coords, completionHandler: { placemark in
                         // get name from placemark
@@ -207,7 +204,5 @@ struct EditEventView: View {
 }
 
 //#Preview {
-//    @Previewable @EnvironmentObject var eventViewModel: EventViewModel
-//    @Previewable @EnvironmentObject var bookClubViewModel: BookClubViewModel
 //    EditEventView(bookClub: bookClubViewModel.allClubs[0], event: eventViewModel.allEvents[0])
 //}

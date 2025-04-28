@@ -8,11 +8,13 @@
 import SwiftUI
 
 struct ClubDetailsPRView: View {
+    @EnvironmentObject var bookViewModel: BookViewModel
+    var bookClub: BookClub
     var isModerator: Bool
     var booksRead: [Book]
     @State var showBookDetails: Bool = false
     @State var bookToView: Book?
-        
+    
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Text("Previously Read")
@@ -23,7 +25,7 @@ struct ClubDetailsPRView: View {
             if !booksRead.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
-                        ForEach(booksRead) { book in
+                        ForEach(booksRead.reversed()) { book in
                             Menu {
                                 Button("View Book") {
                                     showBookDetails = true
@@ -31,8 +33,10 @@ struct ClubDetailsPRView: View {
                                 }
                                 if isModerator {
                                     Button("Delete") {
-                                        // call function here
-                                        print("delete book")
+                                        // MARK: call function here
+                                        Task {
+                                            try await bookViewModel.deleteBook(bookClubId: bookClub.id, bookId: book.id)
+                                        }
                                     }
                                 }
                             } label: {
@@ -44,7 +48,9 @@ struct ClubDetailsPRView: View {
                                         .padding(15)
                                         .background(
                                             RoundedRectangle(cornerRadius: 10)
-                                                .fill(Color.customYellow.opacity(0.3))
+                                                .fill(Color(bookViewModel.bookBGColors[book.id] ?? UIColor.quaternaryHex)
+                                                    .opacity(0.3)
+                                                )
                                         )
                                 } placeholder: {
                                     ProgressView()
