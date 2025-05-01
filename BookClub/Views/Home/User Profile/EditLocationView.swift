@@ -35,7 +35,6 @@ struct EditLocationView: View {
                     .onSubmit {
                         Task {
                             // check input is valid and get search results
-//                            try await onboardingViewModel.locationFieldValidation(query: searchInput)
                             try await onboardingViewModel.getSearchResults(query: searchInput)
                         }
                     }
@@ -60,8 +59,15 @@ struct EditLocationView: View {
                             .padding()
                         }
                         .onTapGesture {
-                            isLocationSelected = true
-                            onboardingViewModel.selectedLocation = location
+                            if onboardingViewModel.selectedLocation == location {
+                                // unselect location
+                                isLocationSelected = false
+                                onboardingViewModel.selectedLocation = nil
+                            } else {
+                                // highlight selection
+                                isLocationSelected = true
+                                onboardingViewModel.selectedLocation = location
+                            }
                         }
                         .onChange(of: searchInput) {
                             // unselect location

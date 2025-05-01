@@ -201,11 +201,12 @@ struct EventsView: View {
                     .frame(width: 45, height: 90)
                     .background(
                         ZStack {
+                            // highlight selected date
                             if eventViewModel.currentDay == day {
                                 Capsule()
                                     .fill(.accent)
-                            }
-                            else {
+                            } else {
+                                // unselect date
                                 Capsule()
                                     .fill(Color(.systemGray6))
                             }
