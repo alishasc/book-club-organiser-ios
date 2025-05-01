@@ -18,7 +18,7 @@ struct EventsRowView: View {
     @State private var isEventSheetPresented: Bool = false  // event details pop-up
     @State private var locationName: String = "Loading..."
     @State private var spacesLeft: Int = 0
-        
+    
     var body: some View {
         ZStack {
             // for line along bottom - in background
@@ -54,9 +54,16 @@ struct EventsRowView: View {
                     Text(ViewTemplates.dateFormatter(dateAndTime: event.dateAndTime))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
-                    Text("\(spacesLeft) spaces left")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
+                    if spacesLeft > 0 {
+                        Text("\(spacesLeft) spaces left")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    } else {
+                        // change text if event is full
+                        Text("Full")
+                            .font(.footnote)
+                            .foregroundStyle(.secondary)
+                    }
                 }
                 
                 Spacer()
@@ -67,23 +74,30 @@ struct EventsRowView: View {
                     Spacer()
                     // only show icons if the user isn't the moderator and is part of the club
                     if !isModerator && bookClubViewModel.checkIsMember(bookClub: bookClub) {
-                        Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
-                            .font(.system(size: 25))
-                            .foregroundStyle(.accent)
-                            .padding(.trailing, 12)
-                            .onTapGesture {
-                                isAttendingEvent.toggle()
-                                // call function to un/reserve space for event
-                                Task {
-                                    try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
+                        
+                        // MARK: no spaces left for event -
+                        // if attending the event - keep filled checkmark visible
+                        // if not attending the event - hide checkmark icon completely
+                        
+                        if eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
+                            Image(systemName: eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
+                                .font(.system(size: 25))
+                                .foregroundStyle(.accent)
+                                .padding(.trailing, 12)
+                                .onTapGesture {
+                                    isAttendingEvent.toggle()
+                                    // call function to un/reserve space for event
+                                    Task {
+                                        try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
+                                    }
                                 }
-                            }
-                            .onAppear {
-                                Task {
-                                    // check whether user is already attending event - sets ui
-                                    isAttendingEvent = try await eventViewModel.isAttendingEvent(eventId: event.id)
+                                .onAppear {
+                                    Task {
+                                        // check whether user is already attending event - sets ui
+                                        isAttendingEvent = try await eventViewModel.isAttendingEvent(eventId: event.id)
+                                    }
                                 }
-                            }
+                        }
                     }
                     
                     Spacer()
@@ -132,6 +146,20 @@ struct EventsRowView: View {
         }
     }
 }
+
+func eventCheckmarkIcon(isAttending: Bool, hasSpacesLeft: Bool) -> String {
+    if isAttending {
+        return "checkmark.circle.fill"
+    } else if !isAttending && hasSpacesLeft {
+        // not attending and has spaces left
+        return "checkmark.circle"
+    } else {
+        // not attending and no spaces left
+        return ""
+    }
+}
+
+// "checkmark.circle.fill" : "checkmark.circle"
 
 //#Preview {
 //    EventsRowView(bookClub: BookClub(name: "", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date.now, currentBookId: "", booksRead: []), event: Event(moderatorId: "", bookClubId: UUID(), eventTitle: "event title", dateAndTime: Date.now, duration: 30, maxCapacity: 10), coverImage: UIImage(named: "banner") ?? UIImage(), isModerator: false)

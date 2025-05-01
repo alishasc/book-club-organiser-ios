@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "mystery icon.png",
+      "filename" : "mysteryIcon.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "mystery icon@2x.png",
+      "filename" : "mysteryIcon 1.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "mystery icon@3x.png",
+      "filename" : "mysteryIcon 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

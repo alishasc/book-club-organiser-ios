@@ -22,7 +22,7 @@ class AuthViewModel: ObservableObject {
     @Published var isNewUser: Bool = false  // trigger onboarding
     
     // choose random asset for default profile pic
-    private var defaultIconStr: [String] = ["fantasyIcon", "mysteryIcon", "romanceIcon", "scifiIcon"]
+    private var defaultIconStr: [String] = ["fantasyProfile", "mysteryProfile", "romanceProfile", "scifiProfile"]
     @Published var profilePic: UIImage?  // loaded profile pic for logged in user - fetchUser()
     
     init() {
@@ -103,7 +103,7 @@ class AuthViewModel: ObservableObject {
             ], merge: true)
             
             // choose random image to set as default
-            let profilePic = UIImage(named: defaultIconStr.randomElement() ?? "fantasyIcon")
+            let profilePic = UIImage(named: defaultIconStr.randomElement() ?? "fantasyProfile")
             
             // add default image to storage
             if let imageData = profilePic?.jpegData(compressionQuality: 0.8) {
@@ -158,7 +158,7 @@ class AuthViewModel: ObservableObject {
             imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                 if let error = error {
                     print(
-                        "error occured fetching user's profile picture: \(error.localizedDescription)"
+                        "Error occured fetching user's profile picture: \(error.localizedDescription)"
                     )
                 } else if let data = data {
                     let image = UIImage(data: data)
@@ -192,6 +192,12 @@ class AuthViewModel: ObservableObject {
         
         if name != currentUser?.name {
             updatedData["name"] = name
+            
+            // update users name in the BookClubMembers collection
+            let bookMemberDocs = try await db.collection("BookClubMembers").whereField("userId", isEqualTo: id).getDocuments()
+            for doc in bookMemberDocs.documents {
+                try await db.collection("BookClubMembers").document(doc.documentID).setData(["userName": name], merge: true)
+            }
         }
         if email != currentUser?.email {
             updatedData["email"] = email
@@ -199,7 +205,7 @@ class AuthViewModel: ObservableObject {
             Auth.auth().currentUser?.sendEmailVerification(beforeUpdatingEmail: email) { error in
                 if let error = error {
                     print(
-                        "error sending email verification: \(error.localizedDescription)"
+                        "Error sending email verification: \(error.localizedDescription)"
                     )
                     return
                 }
@@ -224,10 +230,16 @@ class AuthViewModel: ObservableObject {
                     .putData(imageData, metadata: nil) { (metadata, error) in
                         if let error = error {
                             print(
-                                "error saving updated image: \(error.localizedDescription)"
+                                "Error saving updated image: \(error.localizedDescription)"
                             )
                         }
                     }
+            }
+            
+            // update profile pic url stored in BookClubMembers
+            let bookMemberDocs = try await db.collection("BookClubMembers").whereField("userId", isEqualTo: id).getDocuments()
+            for doc in bookMemberDocs.documents {
+                try await db.collection("BookClubMembers").document(doc.documentID).setData(["profilePictureURL": imageFilePath], merge: true)
             }
             
             // delete old image
@@ -236,7 +248,7 @@ class AuthViewModel: ObservableObject {
             do {
                 try await oldImageRef.delete()
             } catch {
-                print("error deleting old image: \(error.localizedDescription)")
+                print("Error deleting old image: \(error.localizedDescription)")
             }
             
             self.profilePic = profilePicture
@@ -246,7 +258,7 @@ class AuthViewModel: ObservableObject {
             // update info in db
             try await db.collection("User").document(id).setData(updatedData, merge: true)
         } catch {
-            print("error updating user details: \(error.localizedDescription)")
+            print("Error updating user details: \(error.localizedDescription)")
         }
         
         // update currentUser

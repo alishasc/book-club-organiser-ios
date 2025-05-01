@@ -48,24 +48,23 @@ struct ExploreView: View {
                                 if let uiImage = UIImage(named: "\(genre.lowercased())Icon") {
                                     Image(uiImage: uiImage)
                                         .resizable()
-                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .frame(width: genre == selectedGenre ? 100 : 85, height: genre == selectedGenre ? 100 : 85)
                                         .clipShape(Circle())
-                                        .shadow(radius: 2)
                                 } else if genre == "All" {
-                                    Image("starIcon")
+                                    Image("allGenres")
                                         .resizable()
-                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .frame(width: genre == selectedGenre ? 100 : 85, height: genre == selectedGenre ? 100 : 85)
                                         .clipShape(Circle())
-                                        .shadow(radius: 2)
                                 } else {
-                                    Image("heartIcon")
+                                    Image("favouriteGenres")
                                         .resizable()
-                                        .frame(width: genre == selectedGenre ? 100 : 90, height: genre == selectedGenre ? 100 : 90)
+                                        .frame(width: genre == selectedGenre ? 100 : 85, height: genre == selectedGenre ? 100 : 85)
                                         .clipShape(Circle())
-                                        .shadow(radius: 2)
                                 }
                                 Text(genre)
                                     .font(.footnote)
+                                    .scaleEffect(genre == selectedGenre ? 1.1 : 1)
+                                    .fontWeight(genre == selectedGenre ? .semibold : .regular)
                             }
                             .onTapGesture {
                                 withAnimation {
@@ -76,6 +75,7 @@ struct ExploreView: View {
                     }
                     .padding(.horizontal)
                 }
+                .scrollClipDisabled()
                 
                 // popular clubs
 //                VStack(alignment: .leading, spacing: 10) {

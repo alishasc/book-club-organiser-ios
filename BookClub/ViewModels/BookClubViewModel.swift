@@ -28,7 +28,7 @@ class BookClubViewModel: ObservableObject {
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
     @Published var explorePageQuery: String = ""
-    
+        
     // options for creating new club
     let genreChoices: [String] = [
         "Art & Design",
@@ -228,11 +228,11 @@ class BookClubViewModel: ObservableObject {
                 try db.collection("BookClubMembers").document(bookClubMember.id.uuidString).setData(from: bookClubMember)
             }
         } catch {
-            print("error joining club: \(error.localizedDescription)")
+            print("Error joining club: \(error.localizedDescription)")
         }
     }
     
-    // ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
+    // MARK: ref: https://stackoverflow.com/questions/42822838/how-to-get-the-number-of-real-words-in-a-text-in-swift
     // to get word count of book club description
     func getWordCount(str: String) -> Int {
         let chararacterSet = CharacterSet.whitespacesAndNewlines.union(
@@ -296,7 +296,7 @@ class BookClubViewModel: ObservableObject {
                     imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                         if let error = error {
                             print(
-                                "error occured fetching image: \(error.localizedDescription)"
+                                "Error occured fetching image: \(error.localizedDescription)"
                             )
                         } else if let data = data {
                             let image = UIImage(data: data)
@@ -307,7 +307,7 @@ class BookClubViewModel: ObservableObject {
                 }
             }
         } catch {
-            print("error fetching message user list: \(error.localizedDescription)")
+            print("Error fetching message user list: \(error.localizedDescription)")
         }
         
         self.contacts = members
@@ -330,7 +330,7 @@ class BookClubViewModel: ObservableObject {
                 imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                     if let error = error {
                         print(
-                            "error occured fetching image: \(error.localizedDescription)"
+                            "Error occured fetching image: \(error.localizedDescription)"
                         )
                     } else if let data = data {
                         let image = UIImage(data: data)
@@ -427,6 +427,12 @@ class BookClubViewModel: ObservableObject {
         
         if clubName != bookClub.name {
             updatedData["name"] = clubName
+            
+            // update club name in BookClubMembers
+            let bookClubMemberDocs = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: bookClub.id.uuidString).getDocuments()
+            for doc in bookClubMemberDocs.documents {
+                try await db.collection("BookClubMembers").document(doc.documentID).setData(["bookClubName": clubName], merge: true)
+            }
         }
         if description != bookClub.description {
             updatedData["description"] = description
