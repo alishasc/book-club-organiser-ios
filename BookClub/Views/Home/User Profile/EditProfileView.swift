@@ -59,8 +59,6 @@ struct EditProfileView: View {
                         Task {
                             try await authViewModel.updateDetails(name: name, email: email, favouriteGenres: favouriteGenres, location: location, profilePicture: photosPickerViewModel.selectedImage ?? profilePicture)
                         }
-                        photosPickerViewModel.selectedImage = nil
-                        photosPickerViewModel.pickerItem = nil
                         dismiss()
                     }
                 }

@@ -258,7 +258,7 @@ class AuthViewModel: ObservableObject {
             // update info in db
             try await db.collection("User").document(id).setData(updatedData, merge: true)
         } catch {
-            print("error updating user details: \(error.localizedDescription)")
+            print("Error updating user details: \(error.localizedDescription)")
         }
         
         // update currentUser

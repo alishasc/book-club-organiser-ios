@@ -43,7 +43,8 @@ struct OnboardingLocationView: View {
                             .onSubmit {
                                 Task {
                                     // check input is valid and get search results
-                                    try await onboardingViewModel.locationFieldValidation(query: searchInput)
+//                                    try await onboardingViewModel.locationFieldValidation(query: searchInput)
+                                    try await onboardingViewModel.getSearchResults(query: searchInput)
                                 }
                             }
                     }

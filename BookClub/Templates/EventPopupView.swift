@@ -91,25 +91,34 @@ struct EventPopupView: View {
                     .fontWeight(.medium)
                 Text(ViewTemplates.eventSheetDateFormatter(dateAndTime: event.dateAndTime))
                 Text(ViewTemplates.eventSheetTimeFormatter(dateAndTime: event.dateAndTime, duration: event.duration))
-                    .foregroundStyle(.gray)
-                Text("\(spacesLeft) spaces left")
-                    .font(.subheadline)
-                    .foregroundStyle(.gray)
+                    .foregroundStyle(.secondary)
+                if spacesLeft > 0 {
+                    Text("\(spacesLeft) spaces left")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                } else {
+                    // change text if event is full
+                    Text("Full")
+                        .font(.footnote)
+                        .foregroundStyle(.secondary)
+                }
             }
             Spacer()
             
             // checkmark icon
             if !isModerator {
-                Image(systemName: isAttendingEvent ? "checkmark.circle.fill" : "checkmark.circle")
-                    .font(.system(size: 25))
-                    .foregroundStyle(.accent)
-                    .onTapGesture {
-                        isAttendingEvent.toggle()
-                        // call function to un/reserve space for event
-                        Task {
-                            try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
+                if eventCheckmarkIcon2(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
+                    Image(systemName: eventCheckmarkIcon2(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
+                        .font(.system(size: 25))
+                        .foregroundStyle(.accent)
+                        .onTapGesture {
+                            isAttendingEvent.toggle()
+                            // call function to un/reserve space for event
+                            Task {
+                                try await eventViewModel.attendEvent(isAttending: isAttendingEvent, event: event, bookClub: bookClub)
+                            }
                         }
-                    }
+                }
             }
         }
     }
@@ -218,6 +227,20 @@ struct EventPopupView: View {
     }
 }
 
+func eventCheckmarkIcon2(isAttending: Bool, hasSpacesLeft: Bool) -> String {
+    print("isAttending: \(isAttending)")
+    print("hasSpacesLeft: \(hasSpacesLeft)")
+    
+    if isAttending {
+        return "checkmark.circle.fill"
+    } else if !isAttending && hasSpacesLeft {
+        // not attending and has spaces left
+        return "checkmark.circle"
+    } else {
+        // not attending and no spaces left
+        return ""
+    }
+}
 
 //#Preview {
 //    EventPopupView(bookClub: BookClub(name: "Fantasy Book Club", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date(), currentBookId: "", booksRead: [""]))

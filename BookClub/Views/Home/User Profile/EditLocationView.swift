@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 20/04/2025.
 //
 
+// for user profile
+
 import SwiftUI
 
 struct EditLocationView: View {
@@ -33,7 +35,8 @@ struct EditLocationView: View {
                     .onSubmit {
                         Task {
                             // check input is valid and get search results
-                            try await onboardingViewModel.locationFieldValidation(query: searchInput)
+//                            try await onboardingViewModel.locationFieldValidation(query: searchInput)
+                            try await onboardingViewModel.getSearchResults(query: searchInput)
                         }
                     }
             }

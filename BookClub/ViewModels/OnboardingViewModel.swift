@@ -21,30 +21,30 @@ class OnboardingViewModel: ObservableObject {
     let nonFictionGenres: [String] = ["Art & Design", "Biography", "Business", "Education", "Food", "History", "Humour", "Music", "Nature & Environment", "Personal Growth", "Politics", "Psychology", "Religion & Spirituality", "Science", "Technology", "Sports", "Travel", "True Crime", "Wellness"]
     
     // check whether location search query is valid before calling getSearchResults()
-    func locationFieldValidation(query: String) async throws {
-        self.searchResults = []
-
-        if query.isEmpty {
-            // reset results and error message
-            locationErrorPrompt = ""
-            return
-        } else {
-            // remove trailing & leading whitespace
-            let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
-            
-            // check string only has letters, numbers, hyphens, apostrophes and spaces
-            let queryTest = NSPredicate(format: "SELF MATCHES %@", "^[a-zA-Z0-9\\-\\'\\’\\s]+$")
-            
-            // check the now trimmed query matches the regex pattern
-            if queryTest.evaluate(with: trimmedQuery) {
-                try await getSearchResults(query: trimmedQuery)
-            } else {
-                // invalid search query
-                locationErrorPrompt = "No search results found. Please try again."
-                return
-            }
-        }
-    }
+//    func locationFieldValidation(query: String) async throws {
+//        self.searchResults = []
+//
+//        if query.isEmpty {
+//            // reset results and error message
+//            locationErrorPrompt = ""
+//            return
+//        } else {
+//            // remove trailing & leading whitespace
+//            let trimmedQuery = query.trimmingCharacters(in: .whitespacesAndNewlines)
+//            
+//            // check string only has letters, numbers, hyphens, apostrophes and spaces
+////            let queryTest = NSPredicate(format: "SELF MATCHES %@", "^[a-zA-Z0-9\\-\\'\\’\\s]+$")
+//            
+//            // check the now trimmed query matches the regex pattern
+//            do {
+//                try await getSearchResults(query: trimmedQuery)
+//            } catch {
+//                // invalid search query
+//                locationErrorPrompt = "No search results found. Please try again."
+//                return
+//            }
+//        }
+//    }
     
     func getSearchResults(query: String) async throws {
         let request = MKLocalSearch.Request()
