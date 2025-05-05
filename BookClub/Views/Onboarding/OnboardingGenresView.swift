@@ -11,7 +11,7 @@ import SwiftUI
 
 struct OnboardingGenresView: View {
     @StateObject var onboardingViewModel: OnboardingViewModel
-    
+      
     var body: some View {
         NavigationStack {
             VStack(spacing: 15) {

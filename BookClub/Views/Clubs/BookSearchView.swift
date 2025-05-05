@@ -83,8 +83,8 @@ struct BookSearchView: View {
                             try await bookViewModel.fetchBookFromAPI(bookClubId: bookClub.id, selectedBook: selectedBook, oldBookId: bookClub.currentBookId ?? "")
                             try await bookClubViewModel.fetchBookClubs()
                         }
-                        dismiss()
                     }
+                    dismiss()
                 }
                 .disabled(bookViewModel.selectedBook == nil)
             }

@@ -99,7 +99,6 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        //  && $0.genre == selectedGenre}
                         NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "Online" && $0.isPublic && (selectedGenre != "All" ? $0.genre == selectedGenre : true) }), coverImages: bookClubViewModel.coverImages, clubCategory: "Online")) {
                             Text("View all")
                                 .foregroundStyle(.customBlue)
@@ -113,7 +112,7 @@ struct ExploreView: View {
                                 if club.meetingType == "Online" && club.isPublic == true &&
                                     (selectedGenre != "All" ? club.genre == selectedGenre : true) {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
-                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                                     }
                                 }
                             }
@@ -130,7 +129,7 @@ struct ExploreView: View {
                             .font(.title2)
                             .fontWeight(.semibold)
                         Spacer()
-                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "In-Person" && $0.isPublic }), coverImages: bookClubViewModel.coverImages, clubCategory: "In-Person")) {
+                        NavigationLink(destination: ClubListView(clubsArr: bookClubViewModel.allClubs.filter({ $0.meetingType == "In-Person" && $0.isPublic && (selectedGenre != "All" ? $0.genre == selectedGenre : true) }), coverImages: bookClubViewModel.coverImages, clubCategory: "In-Person")) {
                             Text("View all")
                                 .foregroundStyle(.customBlue)
                         }
@@ -143,7 +142,7 @@ struct ExploreView: View {
                                 if club.meetingType == "In-Person" && club.isPublic == true &&
                                     (selectedGenre != "All" ? club.genre == selectedGenre : true) {
                                     NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
-                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                                        ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                                     }
                                 }
                             }

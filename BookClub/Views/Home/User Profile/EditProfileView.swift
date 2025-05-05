@@ -15,6 +15,7 @@ struct EditProfileView: View {
     @Environment(\.dismiss) var dismiss
     var profile: User
     var profilePicture: UIImage
+    @State private var isEmailValid: Bool = true
     // copy existing data
     @State private var profilePictureCopy: UIImage = UIImage()
     @State private var name: String = ""
@@ -62,13 +63,14 @@ struct EditProfileView: View {
                         dismiss()
                     }
                 }
-                // button disabled if nothing's changed
+                // button disabled if nothing's changed and new email is invalid
                 .disabled(
                     photosPickerViewModel.selectedImage == nil &&
                     name == profile.name &&
                     email == profile.email &&
-                    favouriteGenres == profile.favouriteGenres &&
-                    location == profile.location
+                    favouriteGenres.sorted() == profile.favouriteGenres.sorted() &&
+                    location == profile.location ||
+                    isEmailValid == false
                 )
             }
         }
@@ -115,9 +117,19 @@ struct EditProfileView: View {
         }
     }
     private var textfields: some View {
-        VStack(spacing: 15) {
+        VStack(alignment: .leading, spacing: 15) {
             ViewTemplates.textField(placeholder: "Name", input: $name, isSecureField: false)
             ViewTemplates.textField(placeholder: "Email", input: $email, isSecureField: false)
+                .onChange(of: email) {
+                    isEmailValid = authViewModel.isEmailValid(email: email)
+                }
+            // error message for invalid password
+            if !isEmailValid {
+                Text("Invalid email address")
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+                    .padding(.top, -5)
+            }
         }
     }
     private var genresAndLocation: some View {
@@ -132,7 +144,7 @@ struct EditProfileView: View {
                             Text("Favourite Genres")
                                 .fontWeight(.semibold)
                                 .foregroundStyle(.black)
-                            Text(favouriteGenres.joined(separator: ", "))
+                            Text(favouriteGenres.sorted().joined(separator: ", "))
                                 .font(.subheadline)
                                 .foregroundStyle(.black)
                                 .multilineTextAlignment(.leading)
@@ -193,7 +205,7 @@ struct EditProfileView: View {
                     .padding(.leading)
             }
             .alert("Are you sure you want to delete your account?", isPresented: $showAlert) {
-                Button("Delete account", role: .destructive) {
+                Button("Delete Account", role: .destructive) {
                     Task {
                         try await authViewModel.deleteUserAccount()
                     }
@@ -204,21 +216,6 @@ struct EditProfileView: View {
     }
 }
 
-func toggleGenre(favouriteGenres: [String], genre: String) -> [String] {
-    var updatedGenres = favouriteGenres
-    
-    if updatedGenres.contains(genre) {
-        updatedGenres.removeAll { $0 == genre }
-    } else {
-        if updatedGenres.count < 5 {
-            updatedGenres.append(genre)
-        }
-    }
-    
-    return updatedGenres
-}
-
 //#Preview {
 //    EditProfileView()
 //}
-

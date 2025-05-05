@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 26/01/2025.
 //
 
+// MARK: ref- https://www.youtube.com/playlist?list=PL0dzCUj1L5JEN2aWYFCpqfTBeVHcGZjGw
+
 import SwiftUI
 import FirebaseAuth
 import FirebaseCore
@@ -13,7 +15,6 @@ struct MessagesView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var bookClubViewModel: BookClubViewModel
     @ObservedObject var messageViewModel: MessageViewModel
-    
     @State private var showNewMessageScreen: Bool = false
     @State private var showChatLogView: Bool = false
     @State var chatUser: BookClubMembers?
@@ -40,6 +41,7 @@ struct MessagesView: View {
     }
     
     private var messageHeader: some View {
+        
         HStack {
             Text("Messages")
                 .font(.largeTitle).bold()
@@ -61,7 +63,6 @@ struct MessagesView: View {
         }
         .padding()
     }
-    
     private var messageList: some View {
         ScrollView(.vertical, showsIndicators: false) {
             ForEach(messageViewModel.recentMessages) { recentMessage in
@@ -122,6 +123,7 @@ struct MessagesView: View {
                         
                         Spacer()
                         
+                        // time since last message
                         Text("\(messageViewModel.getTimeDifference(timestamp: recentMessage.timestamp))")
                             .font(.system(size: 14, weight: .semibold))
                     }

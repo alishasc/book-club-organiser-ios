@@ -13,6 +13,8 @@ struct HomeView: View {
     @EnvironmentObject var eventViewModel: EventViewModel
     @Binding var selectedNavBarTab: Int  // from NavBarView()
     
+    @EnvironmentObject var messageViewModel: MessageViewModel
+    
     var body: some View {
         VStack(spacing: 20) {
             header
@@ -35,6 +37,7 @@ struct HomeView: View {
                 Spacer()
                 Image("homePageBanner")
                     .resizable()
+                    .scaledToFill()
                     .padding(.bottom, 6)
             } else {
                 yourClubs
@@ -45,7 +48,8 @@ struct HomeView: View {
     
     private var header: some View {
         HStack(spacing: 15) {
-            Text("Hello \(authViewModel.currentUser?.name ?? "")")
+            // only display first name if user added more than one
+            Text("Hello \(authViewModel.currentUser?.name.components(separatedBy: " ").first ?? "")")
                 .font(.largeTitle).bold()
             Spacer()
             // profile page
@@ -87,7 +91,7 @@ struct HomeView: View {
                     // show both joined and created clubs (max 3)
                     ForEach((bookClubViewModel.joinedClubs + bookClubViewModel.createdClubs).prefix(3).sorted(by: { $0.name.lowercased() < $1.name.lowercased() })) { club in
                         NavigationLink(destination: ClubHostView(bookClub: club, isModerator: club.moderatorId == authViewModel.currentUser?.id, isMember: bookClubViewModel.checkIsMember(bookClub: club))) {
-                            ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name)
+                            ViewTemplates.bookClubRow(coverImage: bookClubViewModel.coverImages[club.id] ?? UIImage(), clubName: club.name, clubGenre: club.genre)
                         }
                     }
                 }

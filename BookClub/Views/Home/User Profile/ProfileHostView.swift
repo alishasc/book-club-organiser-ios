@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct ProfileHostView: View {
+    @EnvironmentObject var photosPickerViewModel: PhotosPickerViewModel
     @Environment(\.editMode) var editMode
     @Environment(\.dismiss) var dismiss
     var profile: User
@@ -29,6 +30,9 @@ struct ProfileHostView: View {
                 if editMode?.wrappedValue == .active {
                     Button("Cancel", role: .cancel) {
                         editMode?.animation().wrappedValue = .inactive
+                        // remove new profile pic if selected
+                        photosPickerViewModel.selectedImage = nil
+                        photosPickerViewModel.pickerItem = nil
                     }
                 }
             }

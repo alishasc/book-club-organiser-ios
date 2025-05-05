@@ -107,8 +107,8 @@ struct EventPopupView: View {
             
             // checkmark icon
             if !isModerator {
-                if eventCheckmarkIcon2(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
-                    Image(systemName: eventCheckmarkIcon2(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
+                if eventViewModel.eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
+                    Image(systemName: eventViewModel.eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
                         .font(.system(size: 25))
                         .foregroundStyle(.accent)
                         .onTapGesture {
@@ -224,21 +224,6 @@ struct EventPopupView: View {
                 })
             }
         }
-    }
-}
-
-func eventCheckmarkIcon2(isAttending: Bool, hasSpacesLeft: Bool) -> String {
-    print("isAttending: \(isAttending)")
-    print("hasSpacesLeft: \(hasSpacesLeft)")
-    
-    if isAttending {
-        return "checkmark.circle.fill"
-    } else if !isAttending && hasSpacesLeft {
-        // not attending and has spaces left
-        return "checkmark.circle"
-    } else {
-        // not attending and no spaces left
-        return ""
     }
 }
 

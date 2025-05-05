@@ -14,7 +14,7 @@ struct SignUpView: View {
     @StateObject var authValidationViewModel = AuthValidationViewModel()
     @FocusState private var focusedField: Field?  // to go between textfields when submit
     @State private var showPassword: Bool = false
-    
+     
     // textfields
     enum Field: Hashable {
         case name, email, password

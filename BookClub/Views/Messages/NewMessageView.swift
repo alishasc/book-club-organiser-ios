@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 16/04/2025.
 //
 
+// MARK: ref- https://www.youtube.com/playlist?list=PL0dzCUj1L5JEN2aWYFCpqfTBeVHcGZjGw
+
 import SwiftUI
 
 struct NewMessageView: View {
@@ -58,7 +60,6 @@ struct NewMessageView: View {
                         .padding(.vertical, 8)
                 }
             }
-//            .padding()
             .scrollClipDisabled()
             .navigationTitle("New Message")
             .navigationBarTitleDisplayMode(.inline)
@@ -76,4 +77,5 @@ struct NewMessageView: View {
 //#Preview {
 //    UserListView(users: <#[BookClubMembers]#>)
 //}
+
 

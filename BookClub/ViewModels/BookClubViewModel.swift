@@ -20,10 +20,10 @@ class BookClubViewModel: ObservableObject {
     @Published var joinedClubs: [BookClub] = []
     @Published var bookClub: BookClub?  // used for triggering new club to be shown after creation
     @Published var coverImages: [UUID: UIImage] = [:]  // bookClubId : UIImage
-    
+    // for messages
     @Published var contacts: [BookClubMembers] = []
     @Published var memberPics: [String: UIImage] = [:]  // userId : UIImage
-    
+    // for book club details
     @Published var clubMemberPics: [UIImage] = []
     @Published var moderatorInfo: [String: UIImage] = [:]  // name : profile picture
     
@@ -227,6 +227,9 @@ class BookClubViewModel: ObservableObject {
                 // add member info to db
                 try db.collection("BookClubMembers").document(bookClubMember.id.uuidString).setData(from: bookClubMember)
             }
+            
+            // update contact list
+            try await getContactList()
         } catch {
             print("Error joining club: \(error.localizedDescription)")
         }
@@ -275,34 +278,66 @@ class BookClubViewModel: ObservableObject {
         var members: [BookClubMembers] = []
         
         do {
-            // loop joinedClubs array
             for club in joinedClubs {
-                // search 'BookClubMembers' collection
+                // fetch members of the same club
                 let querySnapshot = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: club.id.uuidString).getDocuments()
                 
+                // fetch club member details
                 for document in querySnapshot.documents {
-                    // new BookClubMember object
                     let clubMember = try document.data(as: BookClubMembers.self)
-                    if clubMember.userId != Auth.auth().currentUser!.uid {
-                        members.append(clubMember)
-                    }
                     
-                    // where to get profile picture from storage
-                    let imageRef = storageRef.child(
-                        clubMember.profilePictureURL
-                    )
-                    
-                    // get the image
-                    imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
-                        if let error = error {
-                            print(
-                                "Error occured fetching image: \(error.localizedDescription)"
-                            )
-                        } else if let data = data {
-                            let image = UIImage(data: data)
-                            // save user id and image to dictionary
-                            self.memberPics[clubMember.userId] = image
+                    // if a user isn't already added to the array...
+                    if !members.contains(where: { $0.userId == clubMember.userId }) {
+                        if clubMember.userId != Auth.auth().currentUser!.uid {
+                            members.append(clubMember)
                         }
+                    }
+                }
+                
+                // fetch the moderators of the joined clubs
+                let moderatorQuerySnapshot = try await db.collection("User").whereField("id", isEqualTo: club.moderatorId).getDocuments()
+                for moderatorDoc in moderatorQuerySnapshot.documents {
+                    let moderator = try moderatorDoc.data(as: User.self)
+                    let moderatorMember = BookClubMembers(bookClubId: club.id, bookClubName: club.name, userId: moderator.id, userName: moderator.name, profilePictureURL: moderator.profilePictureURL)
+                    
+                    members.append(moderatorMember)
+                }
+            }
+            
+            // fetch members of the clubs the logged in user has created
+            for club in createdClubs {
+                let querySnapshot = try await db.collection("BookClubMembers").whereField("bookClubId", isEqualTo: club.id.uuidString).getDocuments()
+                
+                // fetch club member details
+                for document in querySnapshot.documents {
+                    let clubMember = try document.data(as: BookClubMembers.self)
+                    
+                    // if a user isn't already added to the array...
+                    if !members.contains(where: { $0.userId == clubMember.userId }) {
+                        if clubMember.userId != Auth.auth().currentUser!.uid {
+                            members.append(clubMember)
+                        }
+                    }
+                }
+            }
+            
+            // get profile pics for all contacts in members
+            for user in members {
+                // where to get profile picture from storage
+                let imageRef = storageRef.child(
+                    user.profilePictureURL
+                )
+                
+                // get the image
+                imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
+                    if let error = error {
+                        print(
+                            "Error occured fetching image: \(error.localizedDescription)"
+                        )
+                    } else if let data = data {
+                        let image = UIImage(data: data)
+                        // save user id and image to dictionary
+                        self.memberPics[user.userId] = image
                     }
                 }
             }
@@ -350,7 +385,7 @@ class BookClubViewModel: ObservableObject {
                 imageRef.getData(maxSize: 8 * 1024 * 1024) { data, error in
                     if let error = error {
                         print(
-                            "error occured fetching image: \(error.localizedDescription)"
+                            "Error occured fetching image: \(error.localizedDescription)"
                         )
                     } else if let data = data {
                         let image = UIImage(data: data)
@@ -386,6 +421,9 @@ class BookClubViewModel: ObservableObject {
             if let document = querySnapshot.documents.first {
                 try await db.collection("BookClubMembers").document(document.documentID).delete()
             }
+            
+            // update contacts list
+            try await getContactList()
         } catch {
             print("Error deleting BookClubMembers document: \(error.localizedDescription)")
         }
