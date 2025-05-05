@@ -50,7 +50,7 @@ class ViewTemplates {
     }
     
     // on home and explore pages
-    static func bookClubRow(coverImage: UIImage, clubName: String) -> some View {
+    static func bookClubRow(coverImage: UIImage, clubName: String, clubGenre: String) -> some View {
         ZStack(alignment: .bottomLeading) {
             Image(uiImage: coverImage)
                 .resizable()
@@ -58,15 +58,24 @@ class ViewTemplates {
                 .frame(width: 240, height: 150)
                 .cornerRadius(10)
                 .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)
-            Text(clubName)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding([.leading, .bottom], 15)
+            
+            VStack(alignment: .leading) {
+                Text(clubName)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.leading)
+                
+                Text(clubGenre)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+            }
+            .padding([.leading, .bottom], 15)
         }
     }
     
-    static func bookClubExploreList(coverImage: UIImage, clubName: String) -> some View {
+    static func bookClubExploreList(coverImage: UIImage, clubName: String, clubGenre: String) -> some View {
         ZStack(alignment: .bottomLeading) {
             GeometryReader { geometry in
                 Image(uiImage: coverImage)
@@ -78,11 +87,20 @@ class ViewTemplates {
                     .shadow(color: .black.opacity(0.25), radius: 3, x: 0, y: 2)  // bottom shadow
             }
             .frame(height: 150)
-            Text(clubName)
-                .font(.title3)
-                .fontWeight(.semibold)
-                .foregroundStyle(.white)
-                .padding([.leading, .bottom], 15)
+            
+            VStack(alignment: .leading) {
+                Text(clubName)
+                    .font(.title3)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.leading)
+                
+                Text(clubGenre)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundStyle(.white)
+            }
+            .padding([.leading, .bottom], 15)
         }
     }
     

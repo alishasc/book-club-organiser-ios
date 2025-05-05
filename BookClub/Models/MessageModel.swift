@@ -32,7 +32,6 @@ struct RecentMessage: Identifiable, Codable {
     let toId: String
     let text: String
     let userName: String
-    let profilePictureURL: String // of recipient
     let timestamp: Timestamp
     
     init(documentId: String, data: [String: Any]) {
@@ -41,7 +40,6 @@ struct RecentMessage: Identifiable, Codable {
         self.toId = data["toId"] as? String ?? ""
         self.text = data["text"] as? String ?? ""
         self.userName = data["userName"] as? String ?? ""
-        self.profilePictureURL = data["profilePictureURL"] as? String ?? ""
         self.timestamp = data["timestamp"] as? Timestamp ?? Timestamp()
     }
 }

@@ -38,7 +38,7 @@ class BookViewModel: ObservableObject {
             print("failed to load book data: \(error.localizedDescription)")
         }
     }
-    
+     
     // fetches chosen book individually from API and saves to db
     func fetchBookFromAPI(bookClubId: UUID, selectedBook: Book, oldBookId: String) async throws {
         let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(selectedBook.id)?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
@@ -51,23 +51,23 @@ class BookViewModel: ObservableObject {
             let decoder = JSONDecoder()
             let book = try decoder.decode(Book.self, from: data)
 
-            self.currentRead = book
-            
-            if let book = self.currentRead {
-                await self.loadImage(from: book)
-            }
-
             // save as current read in BookClub collection
             try await db.collection("BookClub").document(bookClubId.uuidString).setData([
                 "currentBookId": book.id
             ], merge: true)
-                        
-            // save old book to previously read - [booksRead]
-            try await db.collection("BookClub").document(bookClubId.uuidString).updateData([
-                "booksRead": FieldValue.arrayUnion([oldBookId])
-            ])
+            
+            // if a book was already being read - move to previously read
+            if oldBookId != "" {
+                // save old book to previously read - [booksRead]
+                try await db.collection("BookClub").document(bookClubId.uuidString).updateData([
+                    "booksRead": FieldValue.arrayUnion([oldBookId])
+                ])
+            }
+            
+            self.currentRead = book
+            await self.loadImage(from: book)
         } catch {
-            print("failed to save book to db: \(error.localizedDescription)")
+            print("Failed to save book to db: \(error.localizedDescription)")
         }
     }
     
@@ -82,7 +82,7 @@ class BookViewModel: ObservableObject {
             let decoder = JSONDecoder()
             self.currentRead = try decoder.decode(Book.self, from: data)
         } catch {
-            print("failed to load book: \(error.localizedDescription)")
+            print("Failed to load book: \(error.localizedDescription)")
         }
         
         if let book = self.currentRead {

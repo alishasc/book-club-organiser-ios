@@ -40,6 +40,13 @@ class AuthViewModel: ObservableObject {
         }
     }
     
+    func fetchInitInformation(bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
+        try await bookClubViewModel.fetchBookClubs()
+        try await bookClubViewModel.fetchJoinedClubs()
+        try await bookClubViewModel.getContactList()
+        try await eventViewModel.fetchEvents()
+    }
+    
     func signUp(name: String, email: String, password: String) async throws {
         do {
             let result = try await Auth.auth().createUser(withEmail: email, password: password)
@@ -70,13 +77,6 @@ class AuthViewModel: ObservableObject {
                 isEmailInUse = true
             }
         }
-    }
-    
-    func fetchInitInformation(bookClubViewModel: BookClubViewModel, eventViewModel: EventViewModel) async throws {
-        try await bookClubViewModel.fetchBookClubs()
-        try await bookClubViewModel.fetchJoinedClubs()
-        try await bookClubViewModel.getContactList()
-        try await eventViewModel.fetchEvents()
     }
     
     func saveOnboardingDetails(favouriteGenres: [String], location: String) async throws {
@@ -337,11 +337,30 @@ class AuthViewModel: ObservableObject {
                 ])
                 try await doc.reference.delete()
             }
-            print("deleted attendee")
         } catch {
             print("Error removing document: \(error)")
         }
         
         logOut()
+    }
+    
+    // for editing genres on profile page
+    func toggleGenre(favouriteGenres: [String], genre: String) -> [String] {
+        var updatedGenres = favouriteGenres
+        
+        if updatedGenres.contains(genre) && updatedGenres.count > 1 {
+            // can't remove all genres
+            updatedGenres.removeAll { $0 == genre }
+        } else if !updatedGenres.contains(genre) && updatedGenres.count < 5 {
+            updatedGenres.append(genre)
+        }
+        
+        return updatedGenres
+    }
+    
+    // for editing email
+    func isEmailValid(email: String) -> Bool {
+        let emailRegex = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
+        return NSPredicate(format: "SELF MATCHES %@", emailRegex).evaluate(with: email)
     }
 }

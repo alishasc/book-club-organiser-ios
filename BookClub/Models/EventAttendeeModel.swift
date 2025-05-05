@@ -1,5 +1,5 @@
 //
-//  EventAttendees.swift
+//  EventAttendee.swift
 //  BookClub
 //
 //  Created by Alisha Carrington on 02/04/2025.

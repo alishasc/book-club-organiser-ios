@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 17/04/2025.
 //
 
+// MARK: ref- https://www.youtube.com/playlist?list=PL0dzCUj1L5JEN2aWYFCpqfTBeVHcGZjGw
+
 import SwiftUI
 import FirebaseAuth
 
@@ -24,6 +26,16 @@ struct ChatLogView: View {
         }
         .navigationTitle(chatUser?.userName ?? "")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Button(role: .destructive) {
+                    messageViewModel.deleteMessage()
+                } label: {
+                    Label("Delete", systemImage: "trash")
+                        .foregroundStyle(.red)
+                }
+            }
+        }
     }
     
     private var chatMessages: some View {

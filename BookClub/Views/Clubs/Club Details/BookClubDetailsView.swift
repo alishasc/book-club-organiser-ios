@@ -17,7 +17,7 @@ struct BookClubDetailsView: View {
     var isModerator: Bool
     var isMember: Bool
     
-    @State private var isMemberState = false  // re-render UI
+    @State private var isMemberState = false  // re-renders UI
     @State private var showAlert = false  // alert to leave club
     
     var body: some View {
@@ -106,6 +106,11 @@ struct BookClubDetailsView: View {
             }
             
             isMemberState = isMember
+        }
+        .onDisappear {
+            // clear current and previous books when leave
+            bookViewModel.currentRead = nil
+            bookViewModel.booksRead.removeAll()
         }
         .toolbar {
             if isModerator {

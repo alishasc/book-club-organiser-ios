@@ -592,26 +592,15 @@ class EventViewModel: ObservableObject {
         return filteredEventArr.sorted(by: { $0.0.dateAndTime < $1.0.dateAndTime })
     }
     
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    //    func attendingMemberCount(eventId: UUID) async throws {
-    //
-    //        let querySnapshot = try await db.collection("EventAttendees").whereField("eventId", isEqualTo: eventId.uuidString).getDocuments()
-    //        for _ in querySnapshot.documents {
-    //            if querySnapshot.documents.count > 0 {
-    //                self.totalAttending[eventId] = querySnapshot.documents.count
-    //            } else {
-    //                self.totalAttending.removeValue(forKey: eventId)
-    //            }
-    //        }
-    //    }
+    func eventCheckmarkIcon(isAttending: Bool, hasSpacesLeft: Bool) -> String {
+        if isAttending {
+            return "checkmark.circle.fill"
+        } else if !isAttending && hasSpacesLeft {
+            // not attending and has spaces left
+            return "checkmark.circle"
+        } else {
+            // not attending and no spaces left
+            return ""
+        }
+    }
 }

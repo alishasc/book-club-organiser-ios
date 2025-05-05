@@ -1,17 +1,17 @@
 {
   "images" : [
     {
-      "filename" : "banner 4.png",
+      "filename" : "Asset 6.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
     {
-      "filename" : "banner 4@2x.png",
+      "filename" : "Asset 6@2x.png",
       "idiom" : "universal",
       "scale" : "2x"
     },
     {
-      "filename" : "banner 4@3x.png",
+      "filename" : "Asset 6@3x.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

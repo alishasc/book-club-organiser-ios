@@ -86,7 +86,7 @@ struct ProfileView: View {
                     .padding(.bottom, 5)
                 
                 if !profile.favouriteGenres.isEmpty {
-                    Text(profile.favouriteGenres.joined(separator: ", "))
+                    Text(profile.favouriteGenres.sorted().joined(separator: ", "))
                         .font(.subheadline)
                         .padding(.bottom, -5)
                 } else {

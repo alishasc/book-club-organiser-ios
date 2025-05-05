@@ -5,6 +5,8 @@
 //  Created by Alisha Carrington on 17/04/2025.
 //
 
+// MARK: ref- https://www.youtube.com/playlist?list=PL0dzCUj1L5JEN2aWYFCpqfTBeVHcGZjGw
+
 import Foundation
 import FirebaseAuth
 import Firebase
@@ -145,7 +147,6 @@ class MessageViewModel: ObservableObject {
             "text": self.chatText,
             "fromId": fromId,
             "toId": toId,
-            "profileImageURL": chatUser?.profilePictureURL ?? "",
             "userName": chatUser?.userName ?? ""
         ] as [String : Any]
         
@@ -169,6 +170,10 @@ class MessageViewModel: ObservableObject {
                 return
             }
         }
+    }
+    
+    func deleteMessage() {
+        print("delete message")
     }
     
     func getTimeDifference(timestamp: Timestamp) -> String {

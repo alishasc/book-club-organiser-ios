@@ -75,12 +75,10 @@ struct EventsRowView: View {
                     // only show icons if the user isn't the moderator and is part of the club
                     if !isModerator && bookClubViewModel.checkIsMember(bookClub: bookClub) {
                         
-                        // MARK: no spaces left for event -
                         // if attending the event - keep filled checkmark visible
-                        // if not attending the event - hide checkmark icon completely
-                        
-                        if eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
-                            Image(systemName: eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
+                        // if not attending the event - hide checkmark icon completely                        
+                        if eventViewModel.eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0) != "" {
+                            Image(systemName: eventViewModel.eventCheckmarkIcon(isAttending: isAttendingEvent, hasSpacesLeft: spacesLeft > 0))
                                 .font(.system(size: 25))
                                 .foregroundStyle(.accent)
                                 .padding(.trailing, 12)
@@ -146,20 +144,6 @@ struct EventsRowView: View {
         }
     }
 }
-
-func eventCheckmarkIcon(isAttending: Bool, hasSpacesLeft: Bool) -> String {
-    if isAttending {
-        return "checkmark.circle.fill"
-    } else if !isAttending && hasSpacesLeft {
-        // not attending and has spaces left
-        return "checkmark.circle"
-    } else {
-        // not attending and no spaces left
-        return ""
-    }
-}
-
-// "checkmark.circle.fill" : "checkmark.circle"
 
 //#Preview {
 //    EventsRowView(bookClub: BookClub(name: "", moderatorId: "", moderatorName: "", coverImageURL: "", description: "", genre: "", meetingType: "Online", isPublic: true, creationDate: Date.now, currentBookId: "", booksRead: []), event: Event(moderatorId: "", bookClubId: UUID(), eventTitle: "event title", dateAndTime: Date.now, duration: 30, maxCapacity: 10), coverImage: UIImage(named: "banner") ?? UIImage(), isModerator: false)

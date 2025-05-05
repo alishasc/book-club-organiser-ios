@@ -8,19 +8,21 @@
 import SwiftUI
 
 struct EditGenresView: View {
+    @EnvironmentObject var authViewModel: AuthViewModel
     var genreChoices: [String]
     @Binding var favouriteGenres: [String]
     
     var body: some View {
         VStack {
             // current genres
-            HStack {
+            VStack(alignment: .leading) {
                 Text("Genres selected:")
                     .fontWeight(.medium)
-                Text(favouriteGenres.joined(separator: ", "))
+                Text(favouriteGenres.sorted().joined(separator: ", "))
                     .multilineTextAlignment(.leading)
-                Spacer()
+                Divider()
             }
+            .padding([.top, .horizontal])
             
             List(genreChoices, id: \.self) { genre in
                 HStack {
@@ -32,11 +34,12 @@ struct EditGenresView: View {
                 }
                 // add logic to toggle genre
                 .onTapGesture {
-                    favouriteGenres = toggleGenre(favouriteGenres: favouriteGenres, genre: genre)
+                    favouriteGenres = authViewModel.toggleGenre(favouriteGenres: favouriteGenres, genre: genre)
                 }
             }
+            .listStyle(.plain)
+            .scrollIndicators(.hidden)
         }
-        .padding()
     }
 }
 
