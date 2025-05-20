@@ -33,7 +33,7 @@ struct NewMessageView: View {
                                     .overlay(Circle().stroke(.black, lineWidth: 1))
                                     .shadow(radius: 2)
                             } else {
-                                Image("blueIcon")
+                                Image("fantasyProfile")
                                     .resizable()
                                     .scaledToFill()
                                     .frame(width: 60, height: 60)
