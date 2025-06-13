@@ -35,12 +35,12 @@ Dashboard showing the user's joined and created clubs, and upcoming events.
 <img width="300" src="https://github.com/user-attachments/assets/9d4a8f24-9dc9-4945-97c0-da0e85c5b61b" />
 
 ### Clubs Page
-Filter between joined and created clubs as well as between those which are online or in-person.
+Filter between online and in-person, joined and created clubs.
 <br>
 <img width="700" alt="your joined clubs@2x" src="https://github.com/user-attachments/assets/0c147f8a-16de-43d8-82da-b69f1596a331" />
 
 ### Book Club Details
-Individual book club view with club description, books read and/or currently reading, moderator and member information, and upcoming event information.
+Individual book club view with club description, books read and/or currently reading, moderator and member information, and upcoming event details.
 <br>
 <img width="300" src="https://github.com/user-attachments/assets/63257c2b-462c-4088-9aa9-ba33fc06a781" />
 
