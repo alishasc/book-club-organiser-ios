@@ -19,6 +19,7 @@ This project is the result of my final year BSc Computer Science project: a nati
 - **Google Books API** — For book searching and selections
 
 ## 📱 Screenshots
+
 ### Login and Signup
 Basic user authentication via Firebase Authentication.
 <br>
