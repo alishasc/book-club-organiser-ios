@@ -11,6 +11,7 @@ import UIKit
 
 @MainActor
 class BookViewModel: ObservableObject {
+    let googleBooksAPIKey = "INSERT_API_KEY_HERE"
     let db = Firestore.firestore()
 
     @Published var currentRead: Book?  // loaded from api
@@ -22,7 +23,7 @@ class BookViewModel: ObservableObject {
 
     // search results
     func fetchBooksList(searchQuery: String) async throws {
-        let bookUrlString = "https://www.googleapis.com/books/v1/volumes?q=\(searchQuery)&maxResults=15&key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
+        let bookUrlString = "https://www.googleapis.com/books/v1/volumes?q=\(searchQuery)&maxResults=15&key=\(googleBooksAPIKey)"
         
         guard let bookUrl = URL(string: bookUrlString) else {
             fatalError("Invalid URL: \(bookUrlString)")
@@ -41,7 +42,7 @@ class BookViewModel: ObservableObject {
      
     // fetches chosen book individually from API and saves to db
     func fetchBookFromAPI(bookClubId: UUID, selectedBook: Book, oldBookId: String) async throws {
-        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(selectedBook.id)?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
+        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(selectedBook.id)?key=\(googleBooksAPIKey)"
         guard let bookUrl = URL(string: bookUrlString) else {
             fatalError("Invalid URL: \(bookUrlString)")
         }
@@ -72,7 +73,7 @@ class BookViewModel: ObservableObject {
     }
     
     func fetchBook(bookId: String) async throws {
-        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(bookId)?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
+        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(bookId)?key=\(googleBooksAPIKey)"
         guard let bookUrl = URL(string: bookUrlString) else {
             fatalError("Invalid URL: \(bookUrlString)")
         }
@@ -99,7 +100,7 @@ class BookViewModel: ObservableObject {
             if let books = bookClub.booksRead {
                 if !books.isEmpty {
                     for bookId in books {
-                        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(bookId)?key=AIzaSyAQqgBd3cJn-lmTrbGmr--XMyfNnPprc8g"
+                        let bookUrlString = "https://www.googleapis.com/books/v1/volumes/\(bookId)?key=\(googleBooksAPIKey)"
                         guard let bookUrl = URL(string: bookUrlString) else {
                             fatalError("Invalid URL: \(bookUrlString)")
                         }
